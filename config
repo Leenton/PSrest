@@ -1,0 +1,4 @@
+[Server]
+HOSTNAME=localhost
+PORT=8080
+CERTPATH=na
