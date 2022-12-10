@@ -1,3 +1,13 @@
+class PSProcessor():
+    def __init__(self) -> None:
+        pass
+
+    def execute():
+        pass
+
+    def recieve():
+        return []
+
 '''
 The idea is simple, we launch as many simultanius powershell sessions we can get away with, and start and jobs on different powershell sessions/ processes
 
