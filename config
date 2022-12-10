@@ -2,3 +2,16 @@
 HOSTNAME=localhost
 PORT=8080
 CERTPATH=na
+
+[PSRepository]
+REPOSITORY=localPSGallary
+
+[Authenication]
+RADIUS=true
+
+[ExposedModules]
+MODULES=*
+
+[DisabledCmdlts]
+CMDLTS=remove-aduser
+
