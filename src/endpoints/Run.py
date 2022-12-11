@@ -8,31 +8,24 @@ class Run(object):
     def __init__(self) -> None:
         self.processor = PSProcessor()
         
-    async def run(self, command: Cmdlet):
-        self.processor.execute(command)
-        result = self.processor.recieve(command)
-        return serialize(result)
-        
-    async def on_get(self, req, resp, command):
+    async def run(self, command):
         try:
-            result = self.run(parse(command))
+            command = parse(command)
+            self.processor.execute(command)
+            result = self.processor.recieve(command)
+            return serialize(result)
         except: 
             pass
+
+    async def on_get(self, req, resp, command):
+        reponse = self.run(command)
+
     
     async def on_post(self, req, resp, command):
-        try:
-            result = self.run(parse(command))
-        except: 
-            pass
+        reponse = self.run(command)
 
     async def on_put(self, req, resp, command):
-        try:
-            result = self.run(parse(command))
-        except: 
-            pass
+        reponse = self.run(command)
 
     async def on_delete(self, req, resp, command):
-        try:
-            result = self.run(parse(command))
-        except: 
-            pass
+        reponse = self.run(command)
