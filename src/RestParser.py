@@ -1,3 +1,5 @@
+from entities.Cmdlet import Cmdlet
+
 #this file is filled with methods that that verify that the rebrequest we got is in fact a valid request. 
 
 def validate_authorization():
@@ -18,5 +20,4 @@ def parse(request):
     validate_command()
     validate_params()
     
-    return {"commandlet": "data"}
-    
+    return Cmdlet()

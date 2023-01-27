@@ -3,11 +3,15 @@ import asyncio
 
 class Cmdlet():
     
-    def __init__(self, platform, psversion, command, user='current_user') -> None:
+    def __init__(self, platform, psversion, user, command, ttl=60) -> None:
         self.platform = platform
         self.psversion = psversion
-        self.command = self.parse(command)
         self.runas = user
+        self.ttl = ttl
+
+        command = self.parse(command)
+        self.function = command['function']
+        self.params = command['params']
 
     async def run(self):
         #depending on platfrom we could maybe switch the host we execute the command on, 
@@ -15,8 +19,11 @@ class Cmdlet():
         completed = subprocess.run(["pwsh", "-Command", self.command], capture_output=True)
         print(completed)
 
-    def parse(self, command):
+    def parse(self) -> str:
         return """write-host 'hello world'"""
+
+    def serliaise(self) -> dict:
+        return {}
 
 command = Cmdlet('macOS', '7.3.1', 'write-host hello world string from URL')
 
