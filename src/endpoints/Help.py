@@ -2,14 +2,20 @@
 #we nuke the cache for any module that gets an update.
 from RestParser import *
 
+def get_help(command):
+    #Check our local cache for the command. If the version of the command in cache is different than 
+    #the version of the module currently installed, then refresh the cache with the new command.
+    pass
+
 class Help(object):
     async def on_get(self, req, resp, command = None):
         if command: 
-            
-             #return just the default documentation for the application
+            #logic to find out what command we are talking about, and to fish out it's help
+            command = parse(command)    
+            get_help(command.fucntion)
             pass
 
         else: 
 
-            #logic to find out what command we are talking about, and to fish out it's help
+             #return just the default documentation for the application
             pass
