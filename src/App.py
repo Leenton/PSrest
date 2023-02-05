@@ -20,8 +20,10 @@ if __name__ == "__main__":
 
     #Start the PSRest web server and listen on port 
     PSRest = App()
-    PSRest.add_route('/run/{command}', Run())
+    PSRest.add_route('/run', Run())
     PSRest.add_route('/help', Help())
     PSRest.add_route('/help/{command}', Help())
+    PSRest.add_route('/kill', Help())
+    PSRest.add_route('/running', Help())
 
     uvicorn.run(PSRest, host="0.0.0.0", port=PORT, log_level='info')
