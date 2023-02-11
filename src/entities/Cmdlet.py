@@ -1,6 +1,5 @@
 import subprocess
 import asyncio
-
 class Cmdlet():
     
     def __init__(self, platform, psversion, user, command, ttl=60) -> None:
@@ -19,8 +18,17 @@ class Cmdlet():
         completed = subprocess.run(["pwsh", "-Command", self.command], capture_output=True)
         print(completed)
 
-    def parse(self) -> str:
-        return """write-host 'hello world'"""
+    def parse(self, command: dict) -> str:
+
+        command_name = command['command']
+        
+        if(field == 'function'):
+            self.function = command[field]
+        elif(field == 'params'):
+            self.params = command[field]
+        
+        return command
+
 
     def serliaise(self) -> dict:
         return {}

@@ -1,6 +1,8 @@
 from entities.Cmdlet import Cmdlet
 from entities.PSTicket import PSTicket
-from queue import Queue
+from entities.PSRestQueue import PSRestQueue
+import asyncio
+import json
 class PSScheduler():
     '''
     This class is a singleton, that is used to schedule powershell jobs.
@@ -15,10 +17,9 @@ class PSScheduler():
 
     def __init__(self) -> None:
         self.schedule = {}
-        self.queue = Queue()
-        self.PSProcesQueue = Queue()
+        self.PSProcessQueue = PSRestQueue()
 
-    def request(self, command: Cmdlet) -> PSTicket:
+    def request(self, command: Cmdlet) -> PSTicket|None:
         '''
         This method is used to request a powershell job to be executed.
         '''
@@ -26,18 +27,25 @@ class PSScheduler():
 
         #Put the command in the schedule, it will be picked up for processing by the PSProcessor later.
         self.schedule[PSTicket.id] = command
-        self.queue.put({'command': command.serliaise(), 'ticket': ticket.id})
-        self.PSProcesQueue.put({'command': command.serliaise(), 'ticket': ticket.id})
+        try:
+            asyncio.run(self.PSProcessQueue.put(
+                f'{command.platform}{command.psversion}{command.runas}',
+                json.dumps({'command': command.serliaise(), 'ticket': ticket.id})
+            ))
+            return ticket
+        except Exception as e:
+            #TODO: Log this error
+            print(e)
+            return None
 
-        return ticket
+        
 
     def handleProcessors(self):
         '''
-        This method is used to handle the powershell processors.
+        This method is used to handle the powershell processors. ie start new ones, kill old ones, etc.
         '''
         pass
         
-
 '''
 The idea is simple, we launch as many simultanius powershell sessions we can get away with, and start and jobs on different powershell sessions/ processes
 

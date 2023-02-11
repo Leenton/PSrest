@@ -13,6 +13,6 @@ function Start-PSRest(){
 
 function Start-PSRestProcessor(){
 
-    while()True
+
     #This command will be used to start the ps rest server for this modle. Or maybe just an indivdual Processor
 } 

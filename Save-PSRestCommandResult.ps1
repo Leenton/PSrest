@@ -1,10 +1,11 @@
-function Invoke-PSRestCommnd(){
+function Save-PSRestCommandResult(){
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)]
-        [string]$Command,
+        [object]$Result,
         [Parameter(Mandatory=$false)]
         [string]$PSRestCommandResultPath = 'C:\PSRest\PSRestCommandResult.json'      
     )
-    Invoke-Expression $Command | Tee-Object -FilePath $PSRestCommandResultPath
+    $Result | ConvertTo-Json | Out-File -FilePath $PSRestCommandResultPath -Encoding UTF8 -Force
+
 }

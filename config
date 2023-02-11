@@ -10,8 +10,8 @@ REPOSITORY=localPSGallary
 RADIUS=true
 
 [TimeOut]
-CMDLTTTL=60
-TICKETTTL=60
+CMDLT_TTL=60
+TICKET_TTL=60
 
 [ExposedModules]
 MODULES=*

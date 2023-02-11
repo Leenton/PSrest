@@ -1,4 +1,3 @@
-from processing.PSProcessor import PSProcessor
 from exceptions.PSRExceptions import *
 from RestParser import *
 from PSParser import *
@@ -7,6 +6,7 @@ from endpoints.OAuth import validate_token
 from processing.PSScheduler import PSScheduler 
 from processing.PSResponseStorage import PSResponseStorage
 from entities.Logger import Logger
+from falcon.status_codes import * 
 #endpoint that gets called to actually execute the commands we want to execute with our application.
 
 class Run(object):
@@ -27,8 +27,10 @@ class Run(object):
 
             if(validate_token(req.get_header('ACCESS-TOKEN'), command.function, command.runas)):
                 ticket = self.scheduler.request(command)
-                response = await self.response_storage.get(ticket)
-                return serialize(response)
+                if(ticket):
+                    response = await self.response_storage.get(ticket)
+                    return serialize(response)
+                raise Exception('Failed to schedule command')
 
         except (
             UnAuthenticated,
@@ -53,16 +55,6 @@ class Run(object):
             #Return a 500 error
             return serialize(e)
 
-
-    async def on_get(self, req, resp, command):
-        reponse = self.run(command)
-        
-    
-    async def on_post(self, req, resp, command):
-        reponse = self.run(command)
-
-    async def on_put(self, req, resp, command):
-        reponse = self.run(command)
-
-    async def on_delete(self, req, resp, command):
-        reponse = self.run(command)
+    async def on_post(self, req, resp):
+        command = await req.get_media()
+        reponse = self.run(command, req)

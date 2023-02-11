@@ -7,5 +7,7 @@ CONFIG = configparser.ConfigParser()
 CONFIG.read_file(open((str(Path(__file__).parent.parent) + '/config'), 'r')) 
 HOSTNAME = CONFIG.get('Server', 'HOSTNAME')
 PORT = CONFIG.get('Server', 'PORT')
-CMDLTTTL = CONFIG.get('TimeOut', 'CMDLTTTL')
-TICKETTTL = CONFIG.get('TimeOut', 'TICKETTTL')
+CMDLT_TTL = CONFIG.get('TimeOut', 'CMDLT_TTL')
+TICKET_TTL = CONFIG.get('TimeOut', 'TICKET_TTL')
+PRIVATE_KEY = 'sdjhwdkjwqhdqajkwhdqjkwhdqjkwhdqwjkdhqwdqwd'
+PUBLIC_KEY = 'sdjhwdkjwqhdqajkwhdqjkwhdqjkwhdqwjkdhqwdqwd'

@@ -1,10 +1,14 @@
-function Start-PSRestProcessor($ProcessID, $PSPlatForm, $ProcessorQueue, $ResponseQueue){
+function Start-PSRestProcessor($ProcessID, $ProcessorQueue, $ResponseQueue){
+    $ErrorActionPreference = "Continue"
+    while($true){
+        #Get the command from the queue and execute it
+        try{
+            $Result = Invoke-PSRestCommand -Command (Get-PSRestCommand -ProcessorQueue $ProcessorQueue)
+        }
+        catch{
+            $Result = $_
+        }
 
-    while($True){
-        #retrive a reques from the processor queue, 
-
-        #process the request
-
-        #send the response back to another queue
+        Save-PSRestCommandResult -Result $Result -ResponseQueue $ResponseQueue -ProcessID $ProcessID
     }
 } 
