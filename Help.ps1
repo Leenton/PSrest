@@ -1,59 +1,72 @@
-function Format-Help ($command){
-    $Help = {}
-    $RawHelp = Get-Help $Command
+function Format-Command ($Command){
+    $FormatedCommand = @{}
+    $RawComand = Get-Command $Command -ShowCommandInfo
     
-    #add the command name, and the alias to an array of names
-    $Help['Names'] = @($Command.Name)
+    try{
+        $Aliases = Get-Alias -Definition $Command
+    }catch{
+        $Aliases = $Null
+    }
+    
+    $FormatedCommand['Names'] = @($RawComand.Name)
+    if($Alias){
+        foreach($Alias in $Aliases){
+            $FormatedCommand['Names'] += $Alias
+        }
+    }
 
-    #add the command name, and the alias to an array of names
-    $Help['Aliases'] = @($Command.Alias)
+    foreach($ParameterSet in $RawComand.ParameterSets){
+        $FormatedCommand['ParameterSets'] += Format-ParameterSet $ParameterSet
+    }
 
     #check for common parameters on the command if they exist call the function to get the help for them
-    if($RawHelp.CommonParameters){
-        foreach ($CommonParameter in Get-CommonParameters){
-            $Help['Parameters'] += $CommonParameter
-        }
+    if((Get-Help $Command).CommonParameters){
+        $FormatedCommand['CommonParameters'] = Get-CommonParameters
+    }else{
+        $FormatedCommand['CommonParameters'] = @()
     }
 
-    foreach($Parameter in $RawHelp.Parameters){
-        $Help['Parameters'] += $Parameter
-    }
-
-    return $Help
+    return $FormatedCommand
 }
-function get-commands($Module, $DissabledCommands){
-    try {
-        $Commands = Get-Command -Module $Module | Where-Object{$_ -notin $DissabledCommands}
-        $CommandHelp = @()
-        foreach($Command in $Commands){
-            $CommandHelp += Format-Help $Command
-        }
 
-
-    }
-    catch {
-        {1:<#Do this if a terminating exception happens#>}
-    }
-    get-module $module
+function Format-ParameterSet($ParameterSet){
+    $FormatedParameterSet = @{}
+    $FormatedParameterSet['Name'] = $ParameterSet.Name
+    $FormatedParameterSet['Parameters'] = $ParameterSet.Parameters
+    return $FormatedParameterSet
 }
 
 function Get-CommonParameters(){
     #return the standard common parameters and their data types
-    $CommonParameters = @(
-        'Verbose',
-        'Debug',
-        'ErrorAction',
-        'ErrorVariable',
-        'WarningAction',
-        'WarningVariable',
-        'InformationAction',
-        'InformationVariable',
-        'OutVariable',
-        'OutBuffer',
-        'PipelineVariable',
-        'WhatIf',
-        'Confirm'
-    )
+    $CommonParameters = @{
+        'Verbose' = 'SwitchParameter'
+        'Debug' = 'SwitchParameter'
+        'ErrorAction' = 'ActionPreference'
+        'ErrorVariable' = $null
+        'WarningAction' = 'ActionPreference'
+        'WarningVariable' = $null
+        'InformationAction' = 'ActionPreference'
+        'InformationVariable' = $null
+        'OutVariable' = $null
+        'OutBuffer' = $null
+        'PipelineVariable' = $null
+        'WhatIf' = 'SwitchParameter'
+        'Confirm' = 'SwitchParameter'
+    }
+    return $CommonParameters
 }
 
-
+function Get-PSRestCommands($Module, $DissabledCommands){
+    try {
+        $Commands = Get-Command -Module $Module | Where-Object{$_ -notin $DissabledCommands}
+        $CommandFormats = @()
+        foreach($Command in $Commands){
+            $CommandFormats += Format-Command $Command
+        }
+    }
+    catch {
+        throw $_
+    }
+    
+    return $CommandFormats
+}
