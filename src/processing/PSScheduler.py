@@ -3,6 +3,8 @@ from entities.PSTicket import PSTicket
 from entities.PSRestQueue import PSRestQueue
 import asyncio
 import json
+import subprocess
+
 class PSScheduler():
     '''
     This class is a singleton, that is used to schedule powershell jobs.
@@ -41,6 +43,7 @@ class PSScheduler():
         
 
     def handleProcessors(self):
+        subprocess.Popen(['powershell', 'Start-PSRestProcessor -ChannelName "PSRestQueue" -PSVersion "5.1" -Platform "Windows" -RunAs "System" -PublicKey "C:\\Users\\Public\\Documents\\PSRest\\PSRest.pub"'])
         '''
         This method is used to handle the powershell processors. ie start new ones, kill old ones, etc.
         '''
