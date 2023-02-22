@@ -3,6 +3,8 @@ from datetime import datetime
 
 class PSTicket():
     def __init__(self, ttl) -> None:
-        self.id = uuid4()
-        self.created = datetime.timestamp(datetime.now())
-        self.expires = datetime.timestamp(datetime.now()) + ttl
+        self.id = uuid4().hex
+        self.created: int = int(datetime.timestamp(datetime.now()))
+        self.expires: int = int(datetime.timestamp(datetime.now()) + ttl)
+
+

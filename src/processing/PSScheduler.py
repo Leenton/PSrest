@@ -3,8 +3,13 @@ from entities.PSTicket import PSTicket
 from entities.PSRestQueue import PSRestQueue
 import asyncio
 import json
-import subprocess
-
+import sqlite3
+from Config import *
+from datetime import datetime
+from processing.PSProcessor import PSProcessor
+from threading import Thread
+from multiprocessing import Queue
+from time import sleep
 class PSScheduler():
     '''
     This class is a singleton, that is used to schedule powershell jobs.
@@ -16,19 +21,42 @@ class PSScheduler():
             cls.__instance = super(PSScheduler, cls).__new__(cls)
         return cls.__instance
 
-
     def __init__(self) -> None:
-        self.schedule = {}
-        self.PSProcessQueue = PSRestQueue()
+        self.schedule = sqlite3.connect(':memory:')
 
+        #Create the tables for the scheduler and processor procsses
+        cursor = self.schedule.cursor()
+        cursor.execute('CREATE TABLE PSSchedule (ticket TEXT PRIMARY KEY, pid TEXT, processed INTEGER, created INTEGER, expires INTEGER')
+        cursor.execute('CREATE TABLE PSProcess (pid TEXT PRIMARY KEY, last_seen INTEGER')
+        self.schedule.commit()
+
+        self.PSProcessQueue = PSRestQueue()
+        self.PSProcessor = PSProcessor()
+        self.overflow_queue = Queue()
+        self.kill_queue = Queue()
+
+        Thread(target=self.PSProcessor.start, args=(
+            PS_PROCESSORS,
+            self.overflow_queue,
+            self.kill_queue,
+        )).start()
+        sleep(10)
+        Thread(target=self.schedule_processor).start()
+    
     def request(self, command: Cmdlet) -> PSTicket|None:
         '''
         This method is used to request a powershell job to be executed.
         '''
+        #Create a ticket for the command and put it in the schedule
         ticket = PSTicket()
+        cursor = self.schedule.cursor()
+        cursor.execute(
+            'INSERT INTO PSSchedule (ticket, pid, processed, created, expires) VALUES (?, ?, ?, ?, ?)',
+            (ticket.id, None, None, ticket.created, ticket.expires)
+        )
+        self.schedule.commit()
 
-        #Put the command in the schedule, it will be picked up for processing by the PSProcessor later.
-        self.schedule[PSTicket.id] = command
+        #Put the command on the PSProcessQueue
         try:
             asyncio.run(self.PSProcessQueue.put(
                 f'{command.platform}{command.psversion}{command.runas}',
@@ -40,25 +68,46 @@ class PSScheduler():
             print(e)
             return None
 
-        
+    def schedule_processor(self):
+        while(True):
+            #remove any expired tickets
+            cursor = self.schedule.cursor()
+            cursor.execute(
+                'DELETE FROM PSSchedule WHERE expires < ?',
+                (int(datetime.timestamp(datetime.now())))
+            )
+            self.schedule.commit()
 
-    def handleProcessors(self):
-        subprocess.Popen(['powershell', 'Start-PSRestProcessor -ChannelName "PSRestQueue" -PSVersion "5.1" -Platform "Windows" -RunAs "System" -PublicKey "C:\\Users\\Public\\Documents\\PSRest\\PSRest.pub"'])
-        '''
-        This method is used to handle the powershell processors. ie start new ones, kill old ones, etc.
-        '''
-        pass
-        
-'''
-The idea is simple, we launch as many simultanius powershell sessions we can get away with, and start and jobs on different powershell sessions/ processes
+            #if there are queued requests that have not been processed within the last 5 seconds, start a new processor
+            cursor = self.schedule.cursor()
+            cursor.execute(
+                'SELECT * FROM PSSchedule WHERE processed IS NULL AND pid IS NULL AND created < ?',
+                (int(datetime.timestamp(datetime.now())))
+            )
+            if(len(cursor.fetchall()) > 0):
+                #start a new processor
+                self.overflow_queue.put(True)
 
-we have 1 process that generates jobs from commands that are sent to the user. 
+            #if there are processors that have been running but have not been seen in the last 60 seconds, kill them.
+            cursor = self.schedule.cursor()
+            cursor.execute(
+                'SELECT pid FROM PSProcess WHERE last_seen > ? AND pid NOT IN (SELECT pid FROM PSSchedule WHERE pid IS NOT NULL',
+                (int(datetime.timestamp(datetime.now()) - 60))
+            )
+            processes = cursor.fetchall()
+            if(len(processes) > 0):
+                #kill the processor
+                for process in processes:
+                    self.kill_queue.put(process)
 
-1 process that executes these jobs, 
-
-1 process that retrives the state of all the jobs, and puts the status into a QUE
-
-Each request, basically puts a job on a queue, then just waits around on the job queue, for a job that looks like theirs (matching ID)
-
-This job is then taken by python and formated into a valid response for the end user. 
-'''
+            #if there are processors that have been running longer than their tickets expirey, kill them unless the ticet expirey is null
+            cursor = self.schedule.cursor()
+            cursor.execute(
+                'SELECT pid FROM PSSchedule WHERE pid IS NOT NULL AND expires IS NOT NULL AND expires < ?',
+                (int(datetime.timestamp(datetime.now())))
+            )
+            processes = cursor.fetchall()
+            if(len(processes) > 0):
+                #kill the processor
+                for process in processes:
+                    self.kill_queue.put(process)
