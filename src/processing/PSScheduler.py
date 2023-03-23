@@ -22,16 +22,9 @@ class PSScheduler():
         return cls.__instance
 
     def __init__(self) -> None:
-        self.schedule = sqlite3.connect(':memory:')
-
-        #Create the tables for the scheduler and processor procsses
-        cursor = self.schedule.cursor()
-        cursor.execute('CREATE TABLE PSSchedule (ticket TEXT PRIMARY KEY, pid TEXT, processed INTEGER, created INTEGER, expires INTEGER')
-        cursor.execute('CREATE TABLE PSProcess (pid TEXT PRIMARY KEY, last_seen INTEGER')
-        self.schedule.commit()
-
+        self.schedule = None
         self.PSProcessQueue = PSRestQueue()
-        self.PSProcessor = PSProcessor()
+        self.PSProcessor = PSProcessor(Queue(), Queue(), 'HALLO')
         self.overflow_queue = Queue()
         self.kill_queue = Queue()
 
@@ -69,12 +62,20 @@ class PSScheduler():
             return None
 
     def schedule_processor(self):
+        self.schedule = sqlite3.connect(':memory:')
+
+        #Create the tables for the scheduler and processor procsses
+        cursor = self.schedule.cursor()
+        cursor.execute('CREATE TABLE PSSchedule (ticket TEXT PRIMARY KEY, pid TEXT, processed INTEGER, created INTEGER, expires INTEGER)')
+        cursor.execute('CREATE TABLE PSProcess (pid TEXT PRIMARY KEY, last_seen INTEGER)')
+        self.schedule.commit()
+
         while(True):
             #remove any expired tickets
             cursor = self.schedule.cursor()
             cursor.execute(
                 'DELETE FROM PSSchedule WHERE expires < ?',
-                (int(datetime.timestamp(datetime.now())))
+                [int(datetime.timestamp(datetime.now()))]
             )
             self.schedule.commit()
 
@@ -82,7 +83,7 @@ class PSScheduler():
             cursor = self.schedule.cursor()
             cursor.execute(
                 'SELECT * FROM PSSchedule WHERE processed IS NULL AND pid IS NULL AND created < ?',
-                (int(datetime.timestamp(datetime.now())))
+                [int(datetime.timestamp(datetime.now()))]
             )
             if(len(cursor.fetchall()) > 0):
                 #start a new processor
@@ -91,8 +92,8 @@ class PSScheduler():
             #if there are processors that have been running but have not been seen in the last 60 seconds, kill them.
             cursor = self.schedule.cursor()
             cursor.execute(
-                'SELECT pid FROM PSProcess WHERE last_seen > ? AND pid NOT IN (SELECT pid FROM PSSchedule WHERE pid IS NOT NULL',
-                (int(datetime.timestamp(datetime.now()) - 60))
+                'SELECT pid FROM PSProcess WHERE last_seen > ? AND pid NOT IN (SELECT pid FROM PSSchedule WHERE pid IS NOT NULL)',
+                [int(datetime.timestamp(datetime.now()) - 60)]
             )
             processes = cursor.fetchall()
             if(len(processes) > 0):
@@ -104,7 +105,7 @@ class PSScheduler():
             cursor = self.schedule.cursor()
             cursor.execute(
                 'SELECT pid FROM PSSchedule WHERE pid IS NOT NULL AND expires IS NOT NULL AND expires < ?',
-                (int(datetime.timestamp(datetime.now())))
+                [int(datetime.timestamp(datetime.now()))]
             )
             processes = cursor.fetchall()
             if(len(processes) > 0):

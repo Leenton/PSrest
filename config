@@ -1,6 +1,6 @@
 [Server]
 HOSTNAME=localhost
-PORT=8080
+PORT=80
 CERTPATH=na
 
 [PSRepository]
@@ -18,4 +18,7 @@ MODULES=*
 
 [DisabledCmdlts]
 CMDLTS=remove-aduser
+
+[Help]
+HELP=true
 
