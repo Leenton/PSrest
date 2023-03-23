@@ -13,7 +13,7 @@ class Run(object):
     def __init__(self) -> None:
         self.scheduler = PSScheduler()
         self.response_storage = PSResponseStorage()
-        self.logger = Logger()
+        self.logger = Logger('log.txt', 'info')
 
     async def run(self, command, req = None):
         try:

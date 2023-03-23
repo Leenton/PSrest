@@ -7,7 +7,7 @@ class LogHanlder():
     
     def __init__(self):
         self.filename = ''
-        self.file = open('', 'w')
+        self.file = open('log.txt', 'w')
         self.file.write('')
         self.log_queue = Queue()
 

@@ -11,4 +11,4 @@ CMDLT_TTL = CONFIG.get('TimeOut', 'CMDLT_TTL')
 TICKET_TTL = CONFIG.get('TimeOut', 'TICKET_TTL')
 PRIVATE_KEY = 'sdjhwdkjwqhdqajkwhdqjkwhdqjkwhdqwjkdhqwdqwd'
 PUBLIC_KEY = 'sdjhwdkjwqhdqajkwhdqjkwhdqjkwhdqwjkdhqwdqwd'
-PS_PROCESSORS = 16
+PS_PROCESSORS =4

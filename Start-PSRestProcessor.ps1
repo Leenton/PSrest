@@ -1,4 +1,4 @@
-function Start-PSRestProcessor($ProcessID,$PublicKey, $ProcessorQueue, $ResponseQueue){
+function Start-PSRestProcessor($ProcessID, $PublicKey, $ProcessorQueue, $ResponseQueue, $Nats){
     $ErrorActionPreference = "Continue"
     while($true){
         #Get the command from the queue and execute it

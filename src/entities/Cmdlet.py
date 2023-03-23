@@ -20,7 +20,7 @@ class Cmdlet():
 
     def parse(self, command: dict) -> str:
 
-        command_name = command['command']
+        command_name = command
         
         if(field == 'function'):
             self.function = command[field]
@@ -33,19 +33,19 @@ class Cmdlet():
     def serliaise(self) -> dict:
         return {}
 
-command = Cmdlet('macOS', '7.3.1', 'write-host hello world string from URL')
+# command = Cmdlet('macOS', '7.3.1', 'leenton','write-host hello world string from URL')
 
-async def process(command: Cmdlet):
-    for x in range(10):
-        await command.run()
-
-
+# async def process(command: Cmdlet):
+#     for x in range(10):
+#         await command.run()
 
 
-import time
-s = time.perf_counter()
-asyncio.run(process(command))
-elapsed = time.perf_counter() - s
-print(f"{__file__} executed in {elapsed:0.2f} seconds.")
+
+
+# import time
+# s = time.perf_counter()
+# asyncio.run(process(command))
+# elapsed = time.perf_counter() - s
+# print(f"{__file__} executed in {elapsed:0.2f} seconds.")
 
 

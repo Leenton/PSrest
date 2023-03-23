@@ -3,8 +3,7 @@ import subprocess
 from uuid import uuid4
 
 class PSProcessor():
-    def __init__(self, process_count: int, kill_queue: Queue, request_overflow_queue: Queue, publickey: str) -> None:
-        self.process_count = process_count
+    def __init__(self, kill_queue: Queue, request_overflow_queue: Queue, publickey: str) -> None:
         self.kill_queue = kill_queue
         self.request_overflow_queue = request_overflow_queue
         self.publickey = publickey
