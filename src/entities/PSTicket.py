@@ -7,4 +7,10 @@ class PSTicket():
         self.created: int = int(datetime.timestamp(datetime.now()))
         self.expires: int = int(datetime.timestamp(datetime.now()) + ttl)
 
+    def serialise(self):
+        return {
+            'id': self.id,
+            'created': self.created,
+            'expires': self.expires
+        }
 

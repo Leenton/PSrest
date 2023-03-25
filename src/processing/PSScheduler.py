@@ -27,6 +27,7 @@ class PSScheduler():
         self.PSProcessor = PSProcessor(Queue(), Queue(), 'HALLO')
         self.overflow_queue = Queue()
         self.kill_queue = Queue()
+        self.request_queue = Queue()
 
         Thread(target=self.PSProcessor.start, args=(
             PS_PROCESSORS,
@@ -42,18 +43,13 @@ class PSScheduler():
         '''
         #Create a ticket for the command and put it in the schedule
         ticket = PSTicket()
-        cursor = self.schedule.cursor()
-        cursor.execute(
-            'INSERT INTO PSSchedule (ticket, pid, processed, created, expires) VALUES (?, ?, ?, ?, ?)',
-            (ticket.id, None, None, ticket.created, ticket.expires)
-        )
-        self.schedule.commit()
+        self.request_queue.put(ticket.serialise())
 
         #Put the command on the PSProcessQueue
         try:
             asyncio.run(self.PSProcessQueue.put(
-                f'{command.platform}{command.psversion}{command.runas}',
-                json.dumps({'command': command.serliaise(), 'ticket': ticket.id})
+                f'{CHANNEL}',
+                json.dumps({'command': command.value(), 'ticket': ticket.id})
             ))
             return ticket
         except Exception as e:
@@ -71,6 +67,17 @@ class PSScheduler():
         self.schedule.commit()
 
         while(True):
+            #insert any new tickets into the schedule from the RestQueue
+            try:
+                ticket = self.request_queue.get(False)
+                cursor = self.schedule.cursor()
+                cursor.execute(
+                    'INSERT INTO PSSchedule (ticket, pid, processed, created, expires) VALUES (?, ?, ?, ?, ?)',
+                    (ticket.id, None, None, ticket.created, ticket.expires)
+                )
+            except Exception:
+                pass
+
             #remove any expired tickets
             cursor = self.schedule.cursor()
             cursor.execute(

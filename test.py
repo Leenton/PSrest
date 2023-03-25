@@ -1,6 +1,15 @@
+import json
+data = {
+    "foreground" : "red",
+    "background" : "blue",
+    "object" : "THIS IS A SAMPLE STRING"
+}
 
-#use nats to publish to our nats server on a particular queue group 
+data = [
+    "red",
+    "blue",
+    "THIS IS A SAMPLE STRING"
+]
 
-
-
-
+parameter = "THIS IS A SAMPLE STRING"
+print(json.dumps({"string" : parameter}))

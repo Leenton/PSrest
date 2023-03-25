@@ -7,13 +7,14 @@ from processing.PSScheduler import PSScheduler
 from processing.PSResponseStorage import PSResponseStorage
 from entities.Logger import Logger
 from falcon.status_codes import * 
+from queue import Queue
 #endpoint that gets called to actually execute the commands we want to execute with our application.
 
 class Run(object):
-    def __init__(self) -> None:
+    def __init__(self, log_queue: Queue) -> None:
         self.scheduler = PSScheduler()
         self.response_storage = PSResponseStorage()
-        self.logger = Logger('log.txt', 'info')
+        self.logger = Logger(log_queue)
 
     async def run(self, command, req = None):
         try:

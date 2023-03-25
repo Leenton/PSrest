@@ -2,6 +2,7 @@
 #we nuke the cache for any module that gets an update.
 from RestParser import *
 from processing.PSScheduler import PSScheduler 
+from processing.PSResponseStorage import PSResponseStorage
 from PSParser import *
 from Config import *
 
@@ -17,29 +18,40 @@ def get_help(command):
 class Help(object):
     def __init__(self) -> None:
         self.scheduler = PSScheduler()
+        self.response_storage = PSResponseStorage()
 
     async def on_get(self, req, resp, command = None):
         if command: 
-            #check if the command is in the allowed commands list
-            #if it is, then return the help for that command
-
-            cmdlet = Cmdlet(
-                None,
-                None,
-                None,
-                parse("Get-Help -Name " + command + " -Full"),
-                req.getHeader('TTL')
-            )
-            ticket = self.scheduler.request(cmdlet)
-            
-            if(ticket):
-                response = await self.response_storage.get(ticket)
-                return serialize(response)
-            
-            raise Exception('Failed to schedule command')
-            
-
+            command = command.lower()
+            if command in get_allowed_commands():
+                cmdlet = Cmdlet(
+                    None,
+                    None,
+                    None,
+                    parse("Get-Help -Name " + command + " -Full"),
+                    CMDLT_TTL
+                )
+                ticket = self.scheduler.request(cmdlet)
+                
+                if(ticket):
+                    response = await self.response_storage.get(ticket)
+                    return serialize(response)
+                
+                raise Exception('Failed to schedule command')
+            else: 
+                #if the command is not in the allowed commands list then return a forbidden error
+                pass
         else: 
-            #if the help page has been disabled in the config file then return a 404 error here or a disabled by admin message
+            #if the help page has been disabled in the config file then return a forbiden error
+
             #return just the default documentation for the application
             pass
+
+def get_allowed_commands():
+    #return a list of all the commands that are allowed to be executed
+    #this should be a list of all the commands that are in the allowed modules minus the commands that are not allowed
+
+    #get all the commands in the allowed modules
+
+
+    return 

@@ -13,6 +13,9 @@ RADIUS=true
 CMDLT_TTL=60
 TICKET_TTL=60
 
+[PSExecution]
+ARBITRARY_COMMANDS=false
+
 [ExposedModules]
 MODULES=*
 
