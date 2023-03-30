@@ -1,13 +1,23 @@
 import json
 import base64
-# from Config import *
-
-ARBITRARY_COMMANDS = False
+from Config import *
+from entities.CmdletLibrary import CmdletLibrary
 class Cmdlet():
-    
-    def __init__(self,command, ttl=60) -> None:
+    def __init__(
+            self,
+            cmdlet_library: CmdletLibrary,
+            command: dict,
+            platform = None,
+            psversion = None,
+            ttl=60
+            ) -> None:
+        
+        self.function = None
         self.ttl = ttl
+        self.platform = platform
+        self.psversion = psversion
         self.value = self.parse(command)
+        self.cmdlet_library = cmdlet_library
 
     def parse(self, command: dict) -> str:
         cmdlet = {}
@@ -17,9 +27,11 @@ class Cmdlet():
                 return command['cmdlet']
             else:
                 #verify cmdlet exists
-                if(command['cmdlet'].lower() in self.get_allowed_cmdlets()):
-                    cmdlet['cmdlet'] = command['cmdlet'].lower()      
-                    cmdlet['mandatory'] = self.has_mandatory_parameters(cmdlet['cmdlet'])
+                info = self.cmdlet_library.get_cmdlet(command['cmdlet'].lower())
+                if(info):
+                    cmdlet['cmdlet'] = info
+                    self.function = info.command
+                    cmdlet['mandatory'] = info.has_mandatory_parameters
                 else:
                     raise Exception('Invalid cmdlet provided')
 
@@ -27,7 +39,7 @@ class Cmdlet():
             cmdlet['parameters'] = []
             if(isinstance(command['parameters'], (dict))):
                 if(isinstance(command['parameters'], dict)):
-                    for parameter_name, parameter_value in command['parameters']:
+                    for parameter_name, parameter_value in command['parameters'].items():
                         if(isinstance(parameter_name, (str, int))):
                             cmdlet['parameters'].append([parameter_name, self.sanitise(parameter_value)])
                         else:
@@ -67,9 +79,6 @@ class Cmdlet():
                 return '$true'
             else:
                 return '$false'
-            
-        elif(isinstance(parameter, None)):
-            return '$null'
         
         elif(isinstance(parameter, list)):
             return '@(' + ','.join([self.sanitise(element) for element in parameter]) + ')'
@@ -92,10 +101,4 @@ class Cmdlet():
             #      We should probably find a way to do this in python, rather than rely on microsoft's powershell implementation.
             return f'(([System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String("{string}")) | ConvertFrom-Json).string)'
         else:
-            raise Exception('Invalid parameter type provided')
-    
-    def get_allowed_cmdlets(self) -> list:
-        return ['write-host', 'get-childitem']
-
-    def has_mandatory_parameters(self, cmdlet: str) -> bool:
-        return False
+            return '$null'

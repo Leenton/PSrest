@@ -10,7 +10,7 @@ REPOSITORY=localPSGallary
 RADIUS=true
 
 [TimeOut]
-CMDLT_TTL=60
+CMDLET_TTL=60
 TICKET_TTL=60
 
 [PSExecution]
@@ -19,8 +19,11 @@ ARBITRARY_COMMANDS=false
 [ExposedModules]
 MODULES=*
 
-[DisabledCmdlts]
-CMDLTS=remove-aduser
+[DisabledCmdlets]
+CMDLETS=Get-Help
+
+[EnabledCmdlets]
+CMDLETS=Write-Host
 
 [Help]
 HELP=true

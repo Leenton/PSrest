@@ -1,16 +1,20 @@
-import asyncio
-import nats
+# import asyncio
+# import nats
 
-async def main():
-    # Connect to NATS!
-    nc = await nats.connect("localhost:4222")
+# async def main():
+#     # Connect to NATS!
+#     nc = await nats.connect("localhost:4222")
 
-    # Receive messages on 'foo'
-    sub = await nc.subscribe("test")
+#     # Receive messages on 'foo'
+#     sub = await nc.subscribe("test")
 
-    # Process a message
-    msg = await sub.next_msg(60)
-    print("Received:", msg)
+#     # Process a message
+#     msg = await sub.next_msg(60)
+#     print("Received:", msg)
 
-if __name__ == '__main__':
-    asyncio.run(main())
+# if __name__ == '__main__':
+#     asyncio.run(main())
+
+test = {}
+
+print(test["dwdwdwd"])

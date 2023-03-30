@@ -1,5 +1,5 @@
-def validate_token(req, action):
-    pass
+def validate(req, action):
+    True
 
 class OAuth(): 
     def __init__(self, private_key, public_key, token_dir, encryption_key) -> None:

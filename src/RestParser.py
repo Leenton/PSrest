@@ -14,10 +14,9 @@ def validate_command():
 def validate_params():
     pass
 
-def parse(request):
+def parse(request) -> dict:
     validate_authorization()
     validate_encoding()
     validate_command()
-    validate_params()
     
-    return Cmdlet()
+    return {}

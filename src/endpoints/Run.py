@@ -2,7 +2,8 @@ from exceptions.PSRExceptions import *
 from RestParser import *
 from PSParser import *
 from entities.Cmdlet import Cmdlet
-from endpoints.OAuth import validate_token
+from entities.CmdletLibrary import CmdletLibrary
+from endpoints.OAuth import validate
 from processing.PSScheduler import PSScheduler 
 from processing.PSResponseStorage import PSResponseStorage
 from entities.Logger import Logger
@@ -15,18 +16,19 @@ class Run(object):
         self.scheduler = PSScheduler()
         self.response_storage = PSResponseStorage()
         self.logger = Logger(log_queue)
+        self.cmdlet_library = CmdletLibrary()
 
     async def run(self, command, req = None):
         try:
             command = Cmdlet(
+                self.cmdlet_library,
+                command,
                 req.getHeader('PLATFORM'),
                 req.getHeader('PSVERSION'),
-                req.getHeader('RUNAS'),
-                parse(command),
                 req.getHeader('TTL')
             )
 
-            if(validate_token(req.get_header('ACCESS-TOKEN'), command.function, command.runas)):
+            if(validate(req.get_header('ACCESS-TOKEN'), command.function)):
                 ticket = self.scheduler.request(command)
                 if(ticket):
                     response = await self.response_storage.get(ticket)
