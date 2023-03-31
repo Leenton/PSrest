@@ -10,7 +10,7 @@ class PSProcessor():
 
     def execute(self, id, platform = 'pwsh'):
         try:
-            result = subprocess.run([f'{platform}', "-Command", f'test -uuid {id}'] , stdout=subprocess.DEVNULL)
+            result = subprocess.run([f'{platform}', "-Command", f'start-sleep -s 60; write-host "slept"'] , stdout=subprocess.DEVNULL)
         except Exception as e:
             #TODO: Log this error
             print(e)

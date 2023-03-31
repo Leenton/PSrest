@@ -24,6 +24,7 @@ class Cmdlet():
 
         if(command['cmdlet']):
             if(ARBITRARY_COMMANDS):
+                self.function = command['cmdlet']
                 return command['cmdlet']
             else:
                 #verify cmdlet exists

@@ -19,10 +19,10 @@ ARBITRARY_COMMANDS=false
 [ExposedModules]
 MODULES=*
 
-[DisabledCmdlets]
+[DisableCmdlets]
 CMDLETS=Get-Help
 
-[EnabledCmdlets]
+[EnableCmdlets]
 CMDLETS=Write-Host
 
 [Help]

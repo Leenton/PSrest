@@ -16,7 +16,7 @@ ARBITRARY_COMMANDS = CONFIG.get('PSExecution', 'ARBITRARY_COMMANDS')
 CHANNEL = uuid4().hex
 HELP = CONFIG.get('Help', 'HELP')
 MODULES = CONFIG.get('ExposedModules', 'MODULES')
-DISABLE_COMMANDS = CONFIG.get('DisabledCmdlets', 'CMDLETS')
+DISABLE_COMMANDS = CONFIG.get('DisableCmdlets', 'CMDLETS')
 ENABLE_COMMANDS = CONFIG.get('EnableCmdlets', 'CMDLETS')
 
 #We should sanatise our constants so we know they are safe before the application just rolls with it.

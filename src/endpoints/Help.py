@@ -2,7 +2,7 @@
 #we nuke the cache for any module that gets an update.
 from Config import *
 from entities.CmdletLibrary import CmdletLibrary
-
+from falcon.status_codes import HTTP_200, HTTP_404, HTTP_500
 
 class Help(object):
     def __init__(self) -> None:
@@ -13,17 +13,27 @@ class Help(object):
             #check command is a valid string and escape any SQL injection attempts
 
             if(isinstance(command, str)):
-                info = self.cmdlet_library.get_cmdlet(command)
+                info = self.cmdlet_library.get_cmdlet(command.lower())
                 if(info):
-                    return info.help
+                    resp.status = HTTP_200
+                    resp.content_type = 'text/html'
+                    resp.text = info.help
                 else:
-                    raise Exception('Command not found')
+                    resp.status = HTTP_404
+                    resp.content_type = 'text/html'
+                    resp.text = "Page not found! You sure that command exists buddy?"
             else:
-                raise Exception('Invalid command provided')
+                    resp.status = HTTP_500
+                    resp.content_type = 'text/html'
+                    resp.text = "Something went wrong! The name of this command is not a string!"
         else:
             if(not HELP):
-                raise Exception('forbidden')
-            #if the help page has been disabled in the config file then return a forbiden error
-
-            #return just the default documentation for the application
-            pass
+                #Replace this with the fancy 500 error page
+                resp.status = HTTP_200
+                resp.content_type = 'text/html'
+                resp.text = "Forbidden buddy yooooo!"
+            
+            #Replace this with the fancy help page
+            resp.status = HTTP_200
+            resp.content_type = 'text/html'
+            resp.text = "PLAIN OLD DOCUMENTATION"

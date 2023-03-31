@@ -6,16 +6,16 @@ from entities.CmdletLibrary import CmdletLibrary
 from endpoints.OAuth import validate
 from processing.PSScheduler import PSScheduler 
 from processing.PSResponseStorage import PSResponseStorage
-from entities.Logger import Logger
 from falcon.status_codes import * 
-from queue import Queue
+import json
+
 #endpoint that gets called to actually execute the commands we want to execute with our application.
 
 class Run(object):
-    def __init__(self, log_queue: Queue) -> None:
+    def __init__(self) -> None:
         self.scheduler = PSScheduler()
         self.response_storage = PSResponseStorage()
-        self.logger = Logger(log_queue)
+        # self.logger = Logger(log_queue, 1)
         self.cmdlet_library = CmdletLibrary()
 
     async def run(self, command, req = None):
@@ -23,17 +23,23 @@ class Run(object):
             command = Cmdlet(
                 self.cmdlet_library,
                 command,
-                req.getHeader('PLATFORM'),
-                req.getHeader('PSVERSION'),
-                req.getHeader('TTL')
+                req.get_header('PLATFORM') or None,
+                req.get_header('PSVERSION') or None,
+                req.get_header('TTL') or None
             )
 
-            if(validate(req.get_header('ACCESS-TOKEN'), command.function)):
-                ticket = self.scheduler.request(command)
+            token = req.get_header('ACCESS-TOKEN') or None
+            if(validate(token, command.function)):
+                ticket = await self.scheduler.request(command)
                 if(ticket):
-                    response = await self.response_storage.get(ticket)
+                    try:
+                        response = await self.response_storage.get(ticket)
+                    except Exception as e:
+                        raise Exception('Command timed out before response was received')
                     return serialize(response)
                 raise Exception('Failed to schedule command')
+            else:
+                print("WTF?")
 
         except (
             UnAuthenticated,
@@ -54,10 +60,10 @@ class Run(object):
             #Return a 408 error
             return serialize(e)
 
-        except Exception as e:
-            #Return a 500 error
-            return serialize(e)
+        # except Exception as e:
+        #     #Return a 500 error
+        #     return serialize(e)
 
     async def on_post(self, req, resp):
         command = await req.get_media()
-        reponse = self.run(command, req)
+        reponse = await self.run(command, req)
