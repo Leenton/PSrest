@@ -14,10 +14,17 @@ from endpoints.OAuth import OAuth
 from endpoints.Resources import Resources
 from Config import *
 
+#import processing entities
+from processing.PSResponseStorage import PSResponseStorage
+
 if __name__ == '__main__':
     # logger = LogHanlder()
     # logging = Thread(target=logger.start, args=())
     # logging.start()
+    
+    storage = PSResponseStorage(S3SERVER, S3ACCESSKEY, S3SECRETKEY)
+    cleaner = Thread(target=storage.clear, args=())
+    cleaner.start()
 
     #Start the PSRest web server and listen on port 
     PSRest = App()
@@ -29,4 +36,4 @@ if __name__ == '__main__':
     # PSRest.add_route('/resources/{resource}', Resources()) #Page to return static files like images for help page
     # PSRest.add_route('/running', Running()) #Page to show all running jobs
 
-    uvicorn.run(PSRest, host='0.0.0.0', port=PORT, log_level='info')
+    # uvicorn.run(PSRest, host='0.0.0.0', port=PORT, log_level='info')

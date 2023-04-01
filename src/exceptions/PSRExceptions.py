@@ -1,21 +1,10 @@
 from entities.Cmdlet import Cmdlet
-
+from entities.PSTicket import PSTicket
 class InvalidToken(Exception):
     '''
     Exception raised when supplied an invalid token
     '''
     def __init__(self, message='Access token is invalid.'):
-        self.message = message
-        super().__init__(self.message)
-
-    def __str__(self):
-        return f'{self.message}'
-
-class UnAuthenticated(Exception):
-    '''
-    Exception raised for users who have not been authenticated
-    '''
-    def __init__(self, message='User is not authenticated.'):
         self.message = message
         super().__init__(self.message)
 
@@ -105,3 +94,26 @@ class CmdletExecutionTimeout(Exception):
 
     def __str__(self):
         return f'Cmdlet: "{self.cmdlet.function}" timed out after {self.cmdlet.ttl} seconds.'
+    
+class ExpiredPSTicket(Exception):
+    '''
+    Exception raised when the ticket has expired before a valid response was received from PSResponceStore
+    '''
+    def __init__(self, ticket: PSTicket, message='Ticket has expired.'):
+        self.ticket = ticket
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'Ticket: "{self.ticket.id}" has expired after waiting {self.ticket.ttl} seconds while executing cmdlet: {self.ticket.command}'
+    
+class SchedulerException(Exception):
+    '''
+    Exception raised when the scheduler fails.
+    '''
+    def __init__(self, message='Scheduler failed.'):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.message}'

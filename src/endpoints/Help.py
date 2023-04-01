@@ -2,7 +2,8 @@
 #we nuke the cache for any module that gets an update.
 from Config import *
 from entities.CmdletLibrary import CmdletLibrary
-from falcon.status_codes import HTTP_200, HTTP_404, HTTP_500
+from falcon.status_codes import HTTP_200, HTTP_403, HTTP_404, HTTP_500
+import json 
 
 class Help(object):
     def __init__(self) -> None:
@@ -20,18 +21,18 @@ class Help(object):
                     resp.text = info.help
                 else:
                     resp.status = HTTP_404
-                    resp.content_type = 'text/html'
-                    resp.text = "Page not found! You sure that command exists buddy?"
+                    resp.content_type = 'application/json'
+                    resp.text = json.dumps({'error': 'Page not found'})
             else:
                     resp.status = HTTP_500
-                    resp.content_type = 'text/html'
-                    resp.text = "Something went wrong! The name of this command is not a string!"
+                    resp.content_type = 'application/json'
+                    resp.text = json.dumps({'error': 'Something went wrong!.'})
         else:
             if(not HELP):
                 #Replace this with the fancy 500 error page
-                resp.status = HTTP_200
-                resp.content_type = 'text/html'
-                resp.text = "Forbidden buddy yooooo!"
+                resp.status = HTTP_403
+                resp.content_type = 'application/json'
+                resp.text = json.dumps({'error': 'Forbidden, help is disabled by the server'})
             
             #Replace this with the fancy help page
             resp.status = HTTP_200

@@ -1,7 +1,7 @@
 from entities.Cmdlet import Cmdlet
 from entities.PSTicket import PSTicket
 from entities.PSRestQueue import PSRestQueue
-import asyncio
+from exceptions.PSRExceptions import SchedulerException
 import json
 import sqlite3
 from Config import *
@@ -36,12 +36,12 @@ class PSScheduler():
         sleep(10)
         Thread(target=self.schedule_processor).start()
     
-    async def request(self, command: Cmdlet) -> PSTicket|None:
+    async def request(self, command: Cmdlet) -> PSTicket:
         '''
         This method is used to request a powershell job to be executed.
         '''
         #Create a ticket for the command and put it in the schedule
-        ticket = PSTicket(command.ttl)
+        ticket = PSTicket(command)
         self.request_queue.put(ticket.serialise())
 
         #Put the command on the PSProcessQueue
@@ -52,9 +52,7 @@ class PSScheduler():
             )
             return ticket
         except Exception as e:
-            #TODO: Log this error
-            print(e)
-            return None
+            raise SchedulerException('Scheduler failed to schedule the command request.')
 
     def schedule_processor(self):
         schedule = sqlite3.connect(':memory:')

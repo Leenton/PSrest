@@ -18,6 +18,9 @@ HELP = CONFIG.get('Help', 'HELP')
 MODULES = CONFIG.get('ExposedModules', 'MODULES')
 DISABLE_COMMANDS = CONFIG.get('DisableCmdlets', 'CMDLETS')
 ENABLE_COMMANDS = CONFIG.get('EnableCmdlets', 'CMDLETS')
-
+S3BUCKET = "psrestresponses"
+S3ACCESSKEY = "mcmTU4zXs9f22hu9"
+S3SECRETKEY = "AYMGmvCZcGq5w1rW8eLIYXfx525N8Fdy"
+S3SERVER = "localhost:9000"
 #We should sanatise our constants so we know they are safe before the application just rolls with it.
 
