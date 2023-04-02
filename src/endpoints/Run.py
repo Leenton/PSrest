@@ -38,7 +38,6 @@ class Run(object):
                 await self.response_storage.delete(ticket)
             else:
                 resp.status = HTTP_403
-                resp.content_type = 'application/json'
                 resp.text = json.dumps({'error': 'You are not authorised to run this command'})
 
         except (
