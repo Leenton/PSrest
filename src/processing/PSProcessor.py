@@ -3,14 +3,16 @@ import subprocess
 from uuid import uuid4
 
 class PSProcessor():
-    def __init__(self, kill_queue: Queue, request_overflow_queue: Queue, publickey: str) -> None:
+    def __init__(self, kill_queue: Queue, request_overflow_queue: Queue, public_key: str) -> None:
         self.kill_queue = kill_queue
         self.request_overflow_queue = request_overflow_queue
-        self.publickey = publickey
+        self.public_key = public_key
 
-    def execute(self, id, platform = 'pwsh'):
+    def execute(self, id: str, platform = 'pwsh'):
         try:
-            result = subprocess.run([f'{platform}', "-Command", f'start-sleep -s 60; write-host "slept"'] , stdout=subprocess.DEVNULL)
+            result = subprocess.run(
+                [f'{platform}', "-Command", f'Start-PSProcessor -ProcessID {id} -PublicKey {self.public_key}'],
+                stdout=subprocess.DEVNULL)
         except Exception as e:
             #TODO: Log this error
             print(e)
@@ -31,7 +33,7 @@ class PSProcessor():
                 id = uuid4().hex
                 Process(name=(f'PSRestProcessor {id}'), target=self.execute, args=(id,)).start()
             
-            #if we recieve a kill signal, kill the specified process
+            #if we receive a kill signal, kill the specified process
             if(not kill_queue.empty()):
                 kill_child = kill_queue.get()
                 for child in active_children():

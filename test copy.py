@@ -9,7 +9,7 @@ async def main():
     while(True):
         print("Sending")
         nc = await nats.connect()
-        await nc.publish("test", b'Hello')
+        await nc.publish("test", b'BIG GAY')
         print("Sent")
         sleep(0.1)
 

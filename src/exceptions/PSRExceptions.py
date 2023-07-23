@@ -117,3 +117,14 @@ class SchedulerException(Exception):
 
     def __str__(self):
         return f'{self.message}'
+    
+class PSRQueueException(Exception):
+    '''
+    Exception raised when the PSRQueue encounters an error.
+    '''
+    def __init__(self, message='PSRQueue failed.'):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.message}'

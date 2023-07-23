@@ -10,6 +10,12 @@ from processing.PSProcessor import PSProcessor
 from threading import Thread
 from multiprocessing import Queue
 from time import sleep
+import asyncio
+
+def load_public_key():
+    with open('keys/public.pem', 'rb') as p:
+        return p.read()
+
 class PSScheduler():
     '''
     This class is a singleton, that is used to schedule powershell jobs.
@@ -23,7 +29,7 @@ class PSScheduler():
 
     def __init__(self) -> None:
         self.PSProcessQueue = PSRestQueue()
-        self.PSProcessor = PSProcessor(Queue(), Queue(), 'HALLO')
+        self.PSProcessor = PSProcessor(Queue(), Queue(), load_public_key())
         self.overflow_queue = Queue()
         self.kill_queue = Queue()
         self.request_queue = Queue()
@@ -47,7 +53,6 @@ class PSScheduler():
         #Put the command on the PSProcessQueue
         try:
             await self.PSProcessQueue.put(
-                f'{CHANNEL}',
                 json.dumps({'command': command.value, 'ticket': ticket.id})
             )
             return ticket
@@ -56,7 +61,7 @@ class PSScheduler():
 
     def schedule_processor(self):
         schedule = sqlite3.connect(':memory:')
-
+        psrq_queue = PSRestQueue()
         #Create the tables for the scheduler and processor procsses
         cursor = schedule.cursor()
         cursor.execute('CREATE TABLE PSSchedule (ticket TEXT PRIMARY KEY, pid TEXT, processed INTEGER, created INTEGER, expires INTEGER)')
@@ -74,6 +79,22 @@ class PSScheduler():
                 )
             except Exception:
                 pass
+
+                        #update the pid of any tickets that are being processed
+            
+            while(True):
+                try:
+                    pid_ticket = asyncio.run(psrq_queue.get())
+                    pid_ticket = json.loads(pid_ticket)
+                    #update only if the processed field is null
+                    cursor = schedule.cursor()
+                    cursor.execute(
+                        'UPDATE PSSchedule SET pid = ?, processed = ? WHERE ticket = ?',
+                        (pid_ticket['pid'], pid_ticket['processed'], pid_ticket['ticket'])
+                    )
+                    schedule.commit()
+                except Exception:
+                    break
 
             #remove any expired tickets
             cursor = schedule.cursor()
@@ -116,4 +137,3 @@ class PSScheduler():
                 #kill the processor
                 for process in processes:
                     self.kill_queue.put(process)
-            sleep(0.001)
