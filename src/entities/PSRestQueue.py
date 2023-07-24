@@ -2,7 +2,7 @@ from queue import Queue, Empty
 import asyncio
 from exceptions.PSRExceptions import PSRQueueException
 from json import dumps,loads
-
+from Config import PSRESTQUEUE_PUT, PSRESTQUEUE_GET, PSRESTQUEUE_SERVE
 class PSRestQueue():
 
     def __init__(self):
@@ -10,10 +10,11 @@ class PSRestQueue():
         self.associated_queue = Queue()
         
     async def put(self, message: str, retry = 6)-> None: 
+        'Put a message on the queue to be distrubuted to a free PSProcessor.'
         tries = 1
         while(retry > tries):
             try:
-                reader, writer = await asyncio.open_unix_connection('./PSRestQueue13')
+                reader, writer = await asyncio.open_unix_connection(PSRESTQUEUE_PUT)
                 writer.write(message.encode('utf-8'))
                 await writer.drain()
                 break
@@ -25,8 +26,17 @@ class PSRestQueue():
 
         if(retry == tries):
             raise PSRQueueException('Failed to send message to PSRestQueue, via unix socket.')
+    
+    async def get(self) -> str:
+        reader, writer = await asyncio.open_unix_connection(PSRESTQUEUE_GET)
+        data = await reader.read()
+        if(data):
+            return data.decode('utf-8')
+        else:
+            raise PSRQueueException('Empty queue.')
 
     async def receive_commands(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
+        ''' Listens for commands from PSRESTQUEUE_PUT and puts them on the queue'''
         data = await reader.read()
         if(data):
             self.queue.put(data.decode('utf-8'))
@@ -56,26 +66,18 @@ class PSRestQueue():
             await writer.drain()
             writer.close()
     
-    async def get(self) -> str:
-        reader, writer = await asyncio.open_unix_connection('./PSRestQueue15')
-        data = await reader.read()
-        if(data):
-            return data.decode('utf-8')
-        else:
-            raise PSRQueueException('Empty queue.')
-
     async def start_serving(self):
-        server = await asyncio.start_unix_server(self.serve, './PSRestQueue14')
+        server = await asyncio.start_unix_server(self.serve, PSRESTQUEUE_SERVE)
         async with server:
             await server.serve_forever()
 
     async def start_receive(self): 
-        listener = await asyncio.start_unix_server(self.receive_commands, './PSRestQueue13')
+        listener = await asyncio.start_unix_server(self.receive_commands, PSRESTQUEUE_PUT)
         async with listener:
             await listener.serve_forever()
 
     async def start_serving_associated(self):
-        server = await asyncio.start_unix_server(self.serve_associated, './PSRestQueue15')
+        server = await asyncio.start_unix_server(self.serve_associated, PSRESTQUEUE_GET)
         async with server:
             await server.serve_forever()
 
