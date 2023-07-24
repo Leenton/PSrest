@@ -34,8 +34,8 @@ class Run(object):
             if(validate(token, command.function)):
                 ticket = await self.scheduler.request(command)
                 resp.status = HTTP_200
-                resp.text = (await self.response_storage.get(ticket)).data
-                await self.response_storage.delete(ticket)
+                resp.text = self.response_storage.get(ticket)
+                self.response_storage.delete(ticket)
             else:
                 resp.status = HTTP_403
                 resp.text = json.dumps({'error': 'You are not authorised to run this command'})
