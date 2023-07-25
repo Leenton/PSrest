@@ -15,14 +15,12 @@ from endpoints.Resources import Resources
 from Config import *
 
 #import processing entities
-from processing.PSResponseStorage import PSResponseStorage
 
 if __name__ == '__main__':
     # logger = LogHanlder()
     # logging = Thread(target=logger.start, args=())
     # logging.start()
     
-    storage = PSResponseStorage(S3SERVER, S3ACCESSKEY, S3SECRETKEY)
     cleaner = Thread(target=storage.clear, args=())
     cleaner.start()
 

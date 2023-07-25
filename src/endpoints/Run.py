@@ -4,9 +4,9 @@ from PSParser import *
 import aiofiles
 from entities.Cmdlet import Cmdlet
 from entities.CmdletLibrary import CmdletLibrary
+from entities.PSRestResponseStream import PSRestResponseStream
 from endpoints.OAuth import validate
 from processing.PSScheduler import PSScheduler 
-from processing.PSResponseStorage import PSResponseStorage
 import json
 from Config import *
 from falcon.status_codes import HTTP_200, HTTP_400, HTTP_401, HTTP_403, HTTP_408, HTTP_500
@@ -16,7 +16,6 @@ from falcon.status_codes import HTTP_200, HTTP_400, HTTP_401, HTTP_403, HTTP_408
 class Run(object):
     def __init__(self) -> None:
         self.scheduler = PSScheduler()
-        self.response_storage = PSResponseStorage()
         # self.logger = Logger(log_queue, 1)
         self.cmdlet_library = CmdletLibrary()
 
@@ -35,7 +34,8 @@ class Run(object):
             if(validate(token, command.function)):
                 ticket = await self.scheduler.request(command)
                 resp.status = HTTP_200
-                resp.stream = aiofiles.open((await self.response_storage.get(ticket)), 'rb')
+                stream = PSRestResponseStream(ticket)
+                resp.stream = stream.read()
             else:
                 resp.status = HTTP_403
                 resp.text = json.dumps({'error': 'You are not authorised to run this command'})
