@@ -99,7 +99,7 @@ class ExpiredPSTicket(Exception):
     '''
     Exception raised when the ticket has expired before a valid response was received from PSResponceStore
     '''
-    def __init__(self, ticket: PSTicket, message='Ticket has expired.'):
+    def __init__(self, ticket: PSTicket, message='Timed out waiting to process command.'):
         self.ticket = ticket
         self.message = message
         super().__init__(self.message)

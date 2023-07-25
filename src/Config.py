@@ -18,13 +18,13 @@ HELP = CONFIG.get('Help', 'HELP')
 MODULES = CONFIG.get('ExposedModules', 'MODULES')
 DISABLE_COMMANDS = CONFIG.get('DisableCmdlets', 'CMDLETS')
 ENABLE_COMMANDS = CONFIG.get('EnableCmdlets', 'CMDLETS')
-S3BUCKET = "psrestresponses"
-S3ACCESSKEY = "mcmTU4zXs9f22hu9"
-S3SECRETKEY = "AYMGmvCZcGq5w1rW8eLIYXfx525N8Fdy"
-S3SERVER = "localhost:9000"
-TMPDIR = "./tmp"
-PSRESTQUEUE_PUT = TMPDIR + '/' + uuid4().hex
-PSRESTQUEUE_GET = TMPDIR + '/' + uuid4().hex
-PSRESTQUEUE_SERVE = TMPDIR + '/' + uuid4().hex
+
+TMP_DIR = "./tmp"
+SIGNAL_DIR = TMP_DIR + '/' + 'sig'
+RESPONSE_DIR = TMP_DIR + '/' + 'resp'
+
+PSRESTQUEUE_PUT = TMP_DIR + '/' + uuid4().hex
+PSRESTQUEUE_GET = TMP_DIR + '/' + uuid4().hex
+PSRESTQUEUE_SERVE = TMP_DIR + '/' + uuid4().hex
 #We should sanatise our constants so we know they are safe before the application just rolls with it.
 
