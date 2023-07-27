@@ -10,8 +10,7 @@ REPOSITORY=localPSGallary
 RADIUS=true
 
 [TimeOut]
-CMDLET_TTL=60
-TICKET_TTL=60
+DEFAULT_TTL=60
 
 [PSExecution]
 ARBITRARY_COMMANDS=false
@@ -27,4 +26,3 @@ CMDLETS=Write-Host
 
 [Help]
 HELP=true
-

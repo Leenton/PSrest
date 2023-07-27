@@ -79,6 +79,7 @@ class PSRestQueue():
     async def start_serving_associated(self):
         server = await asyncio.start_unix_server(self.serve_associated, PSRESTQUEUE_GET)
         async with server:
+            server
             await server.serve_forever()
 
     async def start(self):

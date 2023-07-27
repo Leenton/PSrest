@@ -12,9 +12,6 @@ from multiprocessing import Queue
 from time import sleep
 import asyncio
 
-def load_public_key():
-    with open('keys/public.pem', 'rb') as p:
-        return p.read()
 
 class PSScheduler():
     '''
@@ -29,7 +26,7 @@ class PSScheduler():
 
     def __init__(self) -> None:
         self.PSProcessQueue = PSRestQueue()
-        self.PSProcessor = PSProcessor(Queue(), Queue(), load_public_key())
+        self.PSProcessor = PSProcessor(Queue(), Queue())
         self.overflow_queue = Queue()
         self.kill_queue = Queue()
         self.request_queue = Queue()
@@ -57,7 +54,7 @@ class PSScheduler():
             )
             return ticket
         except Exception as e:
-            raise SchedulerException('Scheduler failed to schedule the command request.')
+            raise SchedulerException('Scheduler failed to schedule the command to a PSProcessor.')
 
     def schedule_processor(self):
         schedule = sqlite3.connect(':memory:')

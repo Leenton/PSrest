@@ -9,7 +9,7 @@ class Cmdlet():
             command: dict,
             platform = None,
             psversion = None,
-            ttl=60
+            ttl=DEFAULT_TTL
             ) -> None:
         
         self.function = None

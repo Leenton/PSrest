@@ -34,8 +34,13 @@ class Run(object):
             if(validate(token, command.function)):
                 ticket = await self.scheduler.request(command)
                 resp.status = HTTP_200
-                stream = PSRestResponseStream(ticket)
-                resp.stream = stream.read()
+
+                try:
+                    stream = PSRestResponseStream(ticket)
+                    resp.content_length = stream.length
+                    resp.stream = stream.read()
+                except Exception as e:
+                    raise ExpiredPSTicket('Time out occurred waiting for PSProcessor to return the response.')
             else:
                 resp.status = HTTP_403
                 resp.text = json.dumps({'error': 'You are not authorised to run this command'})
@@ -54,8 +59,12 @@ class Run(object):
             resp.status = HTTP_401
             resp.text = json.dumps({'error': e.message})
         
-        except (CmdletExecutionTimeout, ExpiredPSTicket) as e:
+        except ExpiredPSTicket as e:
             resp.status = HTTP_408
+            resp.text = json.dumps({'error': e.message})
+        
+        except SchedulerException as e:
+            resp.status = HTTP_500
             resp.text = json.dumps({'error': e.message})
 
         except Exception as e:

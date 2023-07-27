@@ -97,7 +97,7 @@ class CmdletExecutionTimeout(Exception):
     
 class ExpiredPSTicket(Exception):
     '''
-    Exception raised when the ticket has expired before a valid response was received from PSResponceStore
+    Exception raised when the ticket has expired before a valid response was received from the PSProcessor
     '''
     def __init__(self, ticket: PSTicket, message='Timed out waiting to process command.'):
         self.ticket = ticket

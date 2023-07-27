@@ -1,3 +1,5 @@
+import jwt
+
 def validate(req, action):
     return True
 
@@ -18,4 +20,7 @@ class OAuth():
         pass
 
     def remove_actions(self, key, actions): 
+        pass
+    
+    async def on_post(self, req, resp):
         pass
