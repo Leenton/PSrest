@@ -9,23 +9,15 @@ from exceptions.PSRExceptions import ProcessorException
 import sqlite3
 from datetime import datetime
 from Config import PS_PROCESSORS, RESPONSE_DIR, PSRESTQUEUE_PUT
+from threading import Thread
+from processing.PSProcess import PSProcess
 
 class PSProcessor():
-    '''
-    This class is a singleton, that is used to schedule powershell jobs.
-    '''
-    __instance = None
-
-    def __new__(cls):
-        if(cls.__instance is None):
-            cls.__instance = super(PSProcessor, cls).__new__(cls)
-        return cls.__instance
-        
-    def __init__(self) -> None:
-        self.PSProcessQueue = PSRestQueue()
-        self.kill_queue = Queue()
-        self.requests= Queue()
-        self.process_alerts = Queue()
+    def __init__(self, kill: Queue, requests: Queue, alerts: Queue) -> None:
+        self.process_queue = PSRestQueue()
+        self.kill = kill
+        self.requests = requests
+        self.alerts = alerts
         self.process_count = PS_PROCESSORS
 
     async def request(self, command: Cmdlet) -> PSTicket:
@@ -36,24 +28,14 @@ class PSProcessor():
         ticket = PSTicket(command)
         self.requests.put(ticket.serialise())
 
-        #Put the command on the PSProcessQueue
+        #Put the command on the process_queue
         try:
-            await self.PSProcessQueue.put(
+            await self.process_queue.put(
                 json.dumps({'command': command.value, 'ticket': ticket.id})
             )
             return ticket
         except Exception as e:
             raise ProcessorException('Scheduler failed to schedule the command to a PSProcessor.')
-
-
-    def execute(self, id: str, platform = 'pwsh'):
-        try:
-            result = subprocess.run(
-                [f'{platform}', "-Command", f'Start-PSRestProcessor -ProcessId "{id}" -ResponsePath "{RESPONSE_DIR}" -SocketPath "{PSRESTQUEUE_PUT}""'],
-                stdout=subprocess.DEVNULL)
-        except Exception as e:
-            #TODO: Log this error
-            print(e)
     
     def start(self):
         '''
@@ -69,103 +51,113 @@ class PSProcessor():
         processor.commit()
         
         for x in range(self.process_count):
-            id = uuid4().hex
-            Process(name=(f'PSRestProcessor {id}'), target=self.execute, args=(id,)).start()
+            psprocess = PSProcess()
+            Process(name=(f'PSRestProcessor {psprocess.id}'), target=psprocess.execute).start()
 
+        count = 0
         while(True):
-            #Check request queue for new requests
-            try:
-                ticket = self.requests.get(False)
-                cursor = processor.cursor()
-                cursor.execute(
-                    'INSERT INTO PSProcessor (ticket, pid, processed, created, expires) VALUES (?, ?, ?, ?, ?)',
-                    (ticket['id'], None, None, ticket['created'], ticket['expires'])
-                )
-            except Exception:
-                pass
+            count += 1
+            print(f'{count}')
+            # print('Scheduler running')
+            # #Check request queue for new requests
+            # try:
+            #     ticket = self.requests.get(False)
+            #     cursor = processor.cursor()
+            #     cursor.execute(
+            #         'INSERT INTO PSProcessor (ticket, pid, processed, created, expires) VALUES (?, ?, ?, ?, ?)',
+            #         (ticket['id'], None, None, ticket['created'], ticket['expires'])
+            #     )
+            # except Exception:
+            #     pass
             
-            #Check to see which processes have been killed and update the database
-            try:
-                pid = self.kill_queue.get(False)
-                cursor = processor.cursor()
-                cursor.execute(
-                    'DELETE FROM PSProcess WHERE pid = ?',
-                    [pid]
-                )
-                processor.commit()
-            except Exception:
-                pass
+            # #Check to see which processes have been killed and update the database
+            # try:
+            #     pid = self.kill.get(False)
+            #     cursor = processor.cursor()
+            #     cursor.execute(
+            #         'DELETE FROM PSProcess WHERE pid = ?',
+            #         [pid]
+            #     )
+            #     processor.commit()
+            # except Exception:
+            #     pass
 
-            #Check the process_alerts queue for jobs picked up by processes
-            try:
-                process_alert = self.process_alerts.get(False)
-                cursor = processor.cursor()
-                cursor.execute('UPDATE PSProcessor SET pid = ? WHERE ticket = ?',
-                    (process_alert['pid'], process_alert['ticket'])
-                )
-                processor.commit()
-                cursor = processor.cursor()
-                cursor.execute('UPDATE PSProcess SET last_seen = ? WHERE pid = ?',
-                    ((datetime.timestamp(datetime.now())), process_alert['pid'])
-                )
-                processor.commit()
-            except Exception:
-                pass
+            # #Check the alerts queue for jobs picked up by processes
+            # try:
+            #     process_alert = self.alerts.get(False)
+            #     cursor = processor.cursor()
+            #     cursor.execute('UPDATE PSProcessor SET pid = ? WHERE ticket = ?',
+            #         (process_alert['pid'], process_alert['ticket'])
+            #     )
+            #     processor.commit()
+            #     cursor = processor.cursor()
+            #     cursor.execute('UPDATE PSProcess SET last_seen = ? WHERE pid = ?',
+            #         ((datetime.timestamp(datetime.now())), process_alert['pid'])
+            #     )
+            #     processor.commit()
+            # except Exception:
+            #     pass
 
-            #Check the kill_queue for processes that we have been told to kill
-            try:
-                pid = self.kill_queue.get(False)
-                cursor = processor.cursor()
-                cursor.execute('DELETE FROM PSProcess WHERE pid = ?', [pid])
-                processor.commit()
-                for child in active_children():
-                    if child.name == pid:
-                        #TODO: Log this
-                        #log how long the process was running for before it was killed
-                        child.terminate()
+            # #Check the kill for processes that we have been told to kill
+            # try:
+            #     pid = self.kill.get(False)
+            #     cursor = processor.cursor()
+            #     cursor.execute('DELETE FROM PSProcess WHERE pid = ?', [pid])
+            #     processor.commit()
+            #     for child in active_children():
+            #         if child.name == pid:
+            #             #TODO: Log this
+            #             #log how long the process was running for before it was killed
+            #             child.terminate()
 
-            except Exception:
-                pass
+            # except Exception:
+            #     pass
             
-            #If there are tickets that have been waiting for too long, spin up a new process to process them
-            try:
-                cursor = processor.cursor()
-                cursor.execute(
-                    'SELECT ticket FROM PSProcessor WHERE pid IS NULL AND created < ?',
-                    [datetime.timestamp(datetime.now()) - 0.25]
-                )
-                tickets = cursor.fetchall()
-                if(len(tickets) > 0):
-                    #spin up a new process to process the ticket
-                    id = uuid4().hex
-                    Process(name=(f'PSRestProcessor {id}'), target=self.execute, args=(id,)).start()
-            except Exception:
-                pass
+            # #If there are tickets that have been waiting for too long, spin up a new process to process them
+            # try:
+            #     cursor = processor.cursor()
+            #     cursor.execute(
+            #         'SELECT ticket FROM PSProcessor WHERE pid IS NULL AND created < ?',
+            #         [datetime.timestamp(datetime.now()) - 0.25]
+            #     )
+            #     tickets = cursor.fetchall()
+            #     if(len(tickets) > 0):
+            #         #spin up a new process to process the ticket
+            #         psprocess = PSProcess()
+            #         Process(name=(f'PSRestProcessor {psprocess.id}'), target=psprocess.execute).start()
+            # except Exception:
+            #     pass
 
-            #Check for processes that are processing tickets that have expired
-            try:
-                cursor = processor.cursor()
-                cursor.execute(
-                    'SELECT pid FROM PSProcessor WHERE pid IS NOT NULL AND expires < ?',
-                    [int(datetime.timestamp(datetime.now()))]
-                )
-                processes = cursor.fetchall()
-                if(len(processes) > 0):
-                    #kill the processor
-                    for process in processes:
-                        self.kill_queue.put(process['pid'])
-                        cursor = processor.cursor()
-                        cursor.execute('DELETE FROM PSProcessor WHERE pid = ?', [process['pid']])
-                        processor.commit()
-            except Exception:
-                pass
+            # #Check for processes that are processing tickets that have expired
+            # try:
+            #     cursor = processor.cursor()
+            #     cursor.execute(
+            #         'SELECT pid FROM PSProcessor WHERE pid IS NOT NULL AND expires < ?',
+            #         [int(datetime.timestamp(datetime.now()))]
+            #     )
+            #     processes = cursor.fetchall()
+            #     if(len(processes) > 0):
+            #         #kill the processor
+            #         for process in processes:
+            #             self.kill.put(process['pid'])
+            #             cursor = processor.cursor()
+            #             cursor.execute('DELETE FROM PSProcessor WHERE pid = ?', [process['pid']])
+            #             processor.commit()
+            # except Exception:
+            #     pass
 
-            #Check the number of processes running, and start a new one if there are less than the number we want
-            running_psrestprocessors = 0
-            for child in active_children():
-                if child.name.startswith('PSRestProcessor'):
-                    running_psrestprocessors += 1
+            # #Check the number of processes running, and start a new one if there are less than the number we want
+            # running_psrestprocessors = 0
+            # for child in active_children():
+            #     if child.name.startswith('PSRestProcessor'):
+            #         running_psrestprocessors += 1
         
-            if(running_psrestprocessors < self.process_count):
-                id = uuid4().hex
-                Process(name=(f'PSRestProcessor {id}'), target=self.execute, args=(id,)).start()
+            # if(running_psrestprocessors < self.process_count):
+            #     psprocess = PSProcess()
+            #     Process(name=(f'PSRestProcessor {psprocess.id}'), target=psprocess.execute).start()
+            
+
+
+def start_processor(kill = Queue(), requests = Queue(), alerts = Queue()):
+    processor = PSProcessor(kill, requests, alerts)
+    processor.start()

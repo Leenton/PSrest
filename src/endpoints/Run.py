@@ -2,7 +2,7 @@ from exceptions.PSRExceptions import *
 from RestParser import *
 from PSParser import *
 import aiofiles
-from entities.Cmdlet import Cmdlet, UnkownCmdlet, InvalidCmdlet
+from entities.Cmdlet import *
 from entities.CmdletLibrary import CmdletLibrary
 from entities.PSRestResponseStream import PSRestResponseStream
 from endpoints.OAuth import validate
@@ -11,18 +11,36 @@ import json
 from queue import Queue 
 from Config import *
 from falcon.status_codes import HTTP_200, HTTP_400, HTTP_401, HTTP_403, HTTP_408, HTTP_500
+from falcon.media.validators import jsonschema
 
 #endpoint that gets called to actually execute the commands we want to execute with our application.
+schema = {
+    "type" : "object",
+    "properties" : {    
+        "cmdlet" : {"type" : "string"},
+        "parameters" : {"type" : ["object", "array"], "optional": True},
+    },
+}
 
 class Run(object):
-    def __init__(self) -> None:
-        # self.scheduler = PSScheduler()
-        self.processor = PSProcessor()
-        # self.logger = Logger(log_queue, 1)
+    def __init__(self, kill, requests, alerts) -> None:
+        self.processor = PSProcessor(kill, requests, alerts)
         self.cmdlet_library = CmdletLibrary()
-
+    
+    @jsonschema.validate(schema)
     async def on_post(self, req, resp):
+        if(self.processor.started == False):
+            self.processor.started = True
+            self.processor.thread.start()
+        
         resp.content_type = 'application/json'
+       
+        try:
+            if (req.get_header('TTL')) > int(MAX_TTL):
+                raise InvalidCmdlet(f'TTL is too long. Please use a value less than {MAX_TTL} seconds.')
+        except ValueError:
+            raise InvalidCmdlet(f'TTL is not a valid number. Please use a value less than {MAX_TTL} seconds.')
+
         try:
             command = Cmdlet(
                 self.cmdlet_library,
@@ -51,6 +69,7 @@ class Run(object):
             InvalidToken,
             UnkownCmdlet,
             InvalidCmdlet,
+            InvalidCmdletParameter
             ) as e:
             resp.status = HTTP_400
             resp.text = json.dumps({'error': e.message})
@@ -63,7 +82,10 @@ class Run(object):
             resp.status = HTTP_408
             resp.text = json.dumps({'error': e.message})
         
-        except SchedulerException as e:
+        except (
+            SchedulerException,
+            PSRQueueException
+            ) as e:
             resp.status = HTTP_500
             resp.text = json.dumps({'error': e.message})
 

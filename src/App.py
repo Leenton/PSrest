@@ -3,7 +3,7 @@ from falcon.asgi import App
 import uvicorn
 from threading import Thread
 from LogHanlder import LogHanlder
-from queue import Queue
+from multiprocessing import Process, Queue
 
 # #import endpoints
 # from endpoints.Kill import Kill
@@ -12,19 +12,30 @@ from endpoints.Help import Help
 from endpoints.Run import Run
 from endpoints.OAuth import OAuth
 from endpoints.Resources import Resources
+from entities.PSRestQueue import serve_queue
+from processing.PSProcessor import start_processor
 from Config import *
+
 
 #import processing entities
 
 if __name__ == '__main__':
-    # logger = LogHanlder()
-    # logging = Thread(target=logger.start, args=())
-    # logging.start()
+
+    #Handle the Python Powershell communication in a separate Process
+    queue = Process(target=serve_queue, name='PSRestQueue')
+    queue.start()
+
+    kill = Queue()
+    requests = Queue()
+    alerts = Queue()
+    processing = Process(target=start_processor, name='PSProcessor', args=(kill, requests, alerts))
+    processing.start()
 
     #Start the PSRest web server and listen on port 
     PSRest = App()
+    
     PSRest.add_route('/oauth', OAuth()) #Page to get an access token
-    PSRest.add_route('/run', Run()) #Page to run commands
+    PSRest.add_route('/run', Run(kill, requests, alerts)) #Page to run commands
     PSRest.add_route('/help', Help()) #Page to show help for PSRest
     PSRest.add_route('/help/{command}', Help()) #Page to show help for a specific command
     

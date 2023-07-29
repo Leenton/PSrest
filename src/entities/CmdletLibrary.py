@@ -11,7 +11,7 @@ class CmdletLibrary():
         #create a temporary database to store the cmdlets in memory
         self.intialize()
     
-    def get_cmdlet(self, cmdlet_name) -> CmdletInfo | None:
+    def get_cmdlet(self, cmdlet_name: str) -> CmdletInfo | None:
         try:
             cmdlet_info: CmdletInfo = self.cmdlets[cmdlet_name.lower()]
             return cmdlet_info

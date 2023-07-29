@@ -17,8 +17,8 @@ class Cmdlet():
         self.ttl = ttl
         self.platform = platform
         self.psversion = psversion
-        self.value = self.parse(command)
         self.cmdlet_library = cmdlet_library
+        self.value = self.parse(command)
 
     def parse(self, command: dict) -> str:
         cmdlet = {}
@@ -34,7 +34,7 @@ class Cmdlet():
                     if(info):
                         cmdlet['cmdlet'] = info
                         self.function = info.command
-                        cmdlet['mandatory'] = info.has_mandatory_parameters
+                        cmdlet['mandatory'] = info.mandatory_parameters
                     else:
                         raise UnkownCmdlet(self, 'Cmdlet does not exist in the current environment, or you do not have permission to run it.')
         except KeyError:
@@ -42,10 +42,8 @@ class Cmdlet():
         
         try:
             cmdlet['parameters'] = []
-            if(isinstance(command['parameters'], None)):
-                raise KeyError
 
-            elif(isinstance(command['parameters'], (dict))):
+            if(isinstance(command['parameters'], (dict))):
                 for parameter_name, parameter_value in command['parameters'].items():
                     if(isinstance(parameter_name, (str))):
                         cmdlet['parameters'].append([parameter_name, self.sanitise(parameter_value)])
@@ -64,7 +62,7 @@ class Cmdlet():
 
         if(cmdlet['cmdlet']):
             #convert the cmdlet dictionary into a valid poweshell command string.
-            cmdlet_string = cmdlet['cmdlet']
+            cmdlet_string = cmdlet['cmdlet'].command
             if(cmdlet['parameters']):
                 for parameter in cmdlet['parameters']:
                     if(isinstance(parameter, list)):
