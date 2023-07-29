@@ -10,7 +10,7 @@ class PSRestQueue():
         self.associated_queue = Queue()
         
     async def put(self, message: str, retry = 6)-> None: 
-        'Put a message on the queue to be distrubuted to a free PSProcessor.'
+        'Put a message on the queue to be distributed to a free PSProcessor.'
         tries = 1
         while(retry > tries):
             try:
