@@ -2,12 +2,13 @@ from exceptions.PSRExceptions import *
 from RestParser import *
 from PSParser import *
 import aiofiles
-from entities.Cmdlet import Cmdlet
+from entities.Cmdlet import Cmdlet, UnkownCmdlet, InvalidCmdlet
 from entities.CmdletLibrary import CmdletLibrary
 from entities.PSRestResponseStream import PSRestResponseStream
 from endpoints.OAuth import validate
 from processing.PSProcessor import PSProcessor
 import json
+from queue import Queue 
 from Config import *
 from falcon.status_codes import HTTP_200, HTTP_400, HTTP_401, HTTP_403, HTTP_408, HTTP_500
 
@@ -49,7 +50,7 @@ class Run(object):
             UnSupportedPlatform,
             InvalidToken,
             UnkownCmdlet,
-            InvalidCmdletParameter,
+            InvalidCmdlet,
             ) as e:
             resp.status = HTTP_400
             resp.text = json.dumps({'error': e.message})

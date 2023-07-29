@@ -2,6 +2,7 @@ import json
 import base64
 from Config import *
 from entities.CmdletLibrary import CmdletLibrary
+
 class Cmdlet():
     def __init__(
             self,
@@ -22,36 +23,44 @@ class Cmdlet():
     def parse(self, command: dict) -> str:
         cmdlet = {}
 
-        if(command['cmdlet']):
-            if(ARBITRARY_COMMANDS):
-                self.function = command['cmdlet']
-                return command['cmdlet']
-            else:
-                #verify cmdlet exists
-                info = self.cmdlet_library.get_cmdlet(command['cmdlet'].lower())
-                if(info):
-                    cmdlet['cmdlet'] = info
-                    self.function = info.command
-                    cmdlet['mandatory'] = info.has_mandatory_parameters
+        try:
+            if(command['cmdlet']):
+                if(ARBITRARY_COMMANDS):
+                    self.function = command['cmdlet']
+                    return command['cmdlet']
                 else:
-                    raise Exception('Invalid cmdlet provided')
-
-        if(command['parameters']):
+                    #verify cmdlet exists
+                    info = self.cmdlet_library.get_cmdlet(command['cmdlet'].lower())
+                    if(info):
+                        cmdlet['cmdlet'] = info
+                        self.function = info.command
+                        cmdlet['mandatory'] = info.has_mandatory_parameters
+                    else:
+                        raise UnkownCmdlet(self, 'Cmdlet does not exist in the current environment, or you do not have permission to run it.')
+        except KeyError:
+            raise InvalidCmdlet(self, 'No cmdlet provided')
+        
+        try:
             cmdlet['parameters'] = []
-            if(isinstance(command['parameters'], (dict))):
-                if(isinstance(command['parameters'], dict)):
-                    for parameter_name, parameter_value in command['parameters'].items():
-                        if(isinstance(parameter_name, (str, int))):
-                            cmdlet['parameters'].append([parameter_name, self.sanitise(parameter_value)])
-                        else:
-                            raise Exception('Invalid parameter name provided')
-                else:
-                    for parameter_value in command['parameters']:
-                        cmdlet['parameters'].append(self.sanitise(parameter_value))
-            elif(isinstance(command['parameters'], None)):
-                cmdlet['parameters'] = None
+            if(isinstance(command['parameters'], None)):
+                raise KeyError
+
+            elif(isinstance(command['parameters'], (dict))):
+                for parameter_name, parameter_value in command['parameters'].items():
+                    if(isinstance(parameter_name, (str))):
+                        cmdlet['parameters'].append([parameter_name, self.sanitise(parameter_value)])
+                    else:
+                        raise InvalidCmdletParameter(self, 'Invalid parameter name provided, or parameter name is not a string.')
+
+
+            elif(isinstance(command['parameters'], (list))):
+                for parameter_value in command['parameters']:
+                    cmdlet['parameters'].append(self.sanitise(parameter_value))
+
             else:
-                raise Exception('Invalid parameters provided')
+                raise InvalidCmdletParameter(self, 'Poorly formatted parameters provided')
+        except KeyError:
+            cmdlet['parameters'] = None
 
         if(cmdlet['cmdlet']):
             #convert the cmdlet dictionary into a valid poweshell command string.
@@ -64,11 +73,11 @@ class Cmdlet():
                         cmdlet_string += f' {parameter}'
 
             if(cmdlet['mandatory'] and not cmdlet['parameters']):
-                raise Exception('Mandatory parameters not provided')
+                raise InvalidCmdletParameter(self, 'Mandatory parameters not provided')
             
             return cmdlet_string
         else:
-            raise Exception('Invalid cmdlet provided')
+            raise InvalidCmdlet(self)
     
     def sanitise(self, parameter: int | bool | None | list | dict | str) -> str:
 
@@ -103,3 +112,65 @@ class Cmdlet():
             return f'(([System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String("{string}")) | ConvertFrom-Json).string)'
         else:
             return '$null'
+        
+class InvalidCmdlet(Exception):
+    '''
+    Exception raised when the cmdlet requested is invalid
+    '''
+    def __init__(self, cmdlet: Cmdlet, message='Cmdlet is invalid.'):
+        self.cmdlet = cmdlet
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'Cmdlet: "{self.cmdlet.function}" is invalid.'
+    
+class UnkownCmdlet(Exception):
+    '''
+    Exception raised when the cmdlet requested does not exist in the current environment
+    '''
+    def __init__(self, cmdlet: Cmdlet, message='Cmdlet is not supported.'):
+        self.cmdlet = cmdlet
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'Cmdlet: "{self.cmdlet.function}" does not exist in the current environment.'
+
+class InvalidCmdletParameter(Exception):
+    '''
+    Exception raised when the cmdlet parameters are invalid
+    '''
+    def __init__(self, parameter: str, cmdlet: Cmdlet, message='Cmdlet parameters are invalid.'):
+        self.parameter = parameter
+        self.cmdlet = cmdlet
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'The value for parameter "{self.parameter}" is not a valid parameter, or was not provided to the function "{self.cmdlet.function}".'
+
+class CmdletExecutionError(Exception):
+    '''
+    Exception raised when the cmdlet execution fails
+    '''
+    def __init__(self, cmdlet: Cmdlet, message='Cmdlet execution failed.'):
+        self.cmdlet = cmdlet
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'Cmdlet: "{self.cmdlet.function}" failed to execute.'
+
+class CmdletExecutionTimeout(Exception):
+    '''
+    Exception raised when the cmdlet execution times out
+    '''
+    def __init__(self, cmdlet: Cmdlet, message='Cmdlet execution timed out.'):
+        self.cmdlet = cmdlet
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'Cmdlet: "{self.cmdlet.function}" timed out after {self.cmdlet.ttl} seconds.'
+    

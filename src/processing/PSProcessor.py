@@ -21,10 +21,9 @@ class PSProcessor():
             cls.__instance = super(PSProcessor, cls).__new__(cls)
         return cls.__instance
         
-    def __init__(self, kill_queue: Queue, request_overflow_queue: Queue) -> None:
+    def __init__(self) -> None:
         self.PSProcessQueue = PSRestQueue()
-        self.kill_queue = kill_queue
-        self.request_overflow_queue = request_overflow_queue
+        self.kill_queue = Queue()
         self.requests= Queue()
         self.process_alerts = Queue()
         self.process_count = PS_PROCESSORS

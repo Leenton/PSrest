@@ -4,7 +4,7 @@ def validate(req, action):
     return True
 
 class OAuth(): 
-    def __init__(self, private_key, public_key, token_dir, encryption_key) -> None:
+    def __init__(self,) -> None:
         pass
 
     def verify(self, token, action): 

@@ -5,9 +5,9 @@ from threading import Thread
 from LogHanlder import LogHanlder
 from queue import Queue
 
-#import endpoints
-from endpoints.Kill import Kill
-from endpoints.Running import Running
+# #import endpoints
+# from endpoints.Kill import Kill
+# from endpoints.Running import Running
 from endpoints.Help import Help
 from endpoints.Run import Run
 from endpoints.OAuth import OAuth
