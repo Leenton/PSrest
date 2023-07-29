@@ -7,9 +7,9 @@ class Cmdlet():
             self,
             cmdlet_library: CmdletLibrary,
             command: dict,
+            ttl: float,
             platform = None,
-            psversion = None,
-            ttl=DEFAULT_TTL
+            psversion = None
             ) -> None:
         
         self.function = None
@@ -68,7 +68,7 @@ class Cmdlet():
             
             return cmdlet_string
         else:
-            raise Exception('Invalid commandlet provided')
+            raise Exception('Invalid cmdlet provided')
     
     def sanitise(self, parameter: int | bool | None | list | dict | str) -> str:
 

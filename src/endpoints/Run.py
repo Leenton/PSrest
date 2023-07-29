@@ -6,7 +6,7 @@ from entities.Cmdlet import Cmdlet
 from entities.CmdletLibrary import CmdletLibrary
 from entities.PSRestResponseStream import PSRestResponseStream
 from endpoints.OAuth import validate
-from processing.PSScheduler import PSScheduler 
+from processing.PSProcessor import PSProcessor
 import json
 from Config import *
 from falcon.status_codes import HTTP_200, HTTP_400, HTTP_401, HTTP_403, HTTP_408, HTTP_500
@@ -15,7 +15,8 @@ from falcon.status_codes import HTTP_200, HTTP_400, HTTP_401, HTTP_403, HTTP_408
 
 class Run(object):
     def __init__(self) -> None:
-        self.scheduler = PSScheduler()
+        # self.scheduler = PSScheduler()
+        self.processor = PSProcessor()
         # self.logger = Logger(log_queue, 1)
         self.cmdlet_library = CmdletLibrary()
 
@@ -25,14 +26,12 @@ class Run(object):
             command = Cmdlet(
                 self.cmdlet_library,
                 (await req.get_media()),
-                req.get_header('PLATFORM') or None,
-                req.get_header('PSVERSION') or None,
-                req.get_header('TTL') or None
+                req.get_header('TTL') or int(DEFAULT_TTL)
             )
 
             token = req.get_header('ACCESS-TOKEN') or None
             if(validate(token, command.function)):
-                ticket = await self.scheduler.request(command)
+                ticket = await self.processor.request(command)
                 resp.status = HTTP_200
 
                 try:

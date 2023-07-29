@@ -117,6 +117,17 @@ class SchedulerException(Exception):
 
     def __str__(self):
         return f'{self.message}'
+
+class ProcessorException(Exception):
+    '''
+    Exception raised when the processor fails.
+    '''
+    def __init__(self, message='Processor failed.'):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.message}'
     
 class PSRQueueException(Exception):
     '''
