@@ -8,7 +8,7 @@ import json
 from exceptions.PSRExceptions import ProcessorException
 import sqlite3
 from datetime import datetime
-from Config import PS_PROCESSORS
+from Config import PS_PROCESSORS, RESPONSE_DIR, PSRESTQUEUE_PUT
 
 class PSProcessor():
     '''
@@ -50,7 +50,7 @@ class PSProcessor():
     def execute(self, id: str, platform = 'pwsh'):
         try:
             result = subprocess.run(
-                [f'{platform}', "-Command", f'Start-PSProcessor -ProcessID {id}'],
+                [f'{platform}', "-Command", f'Start-PSRestProcessor -ProcessId "{id}" -ResponsePath "{RESPONSE_DIR}" -SocketPath "{PSRESTQUEUE_PUT}""'],
                 stdout=subprocess.DEVNULL)
         except Exception as e:
             #TODO: Log this error

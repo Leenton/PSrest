@@ -2,6 +2,7 @@
 from pathlib import Path
 import configparser
 from uuid import uuid4
+from os import path
 
 CONFIG = configparser.ConfigParser()      
 CONFIG.read_file(open((str(Path(__file__).parent.parent) + '/config'), 'r')) 
@@ -25,7 +26,8 @@ DISABLE_COMMANDS = CONFIG.get('DisableCmdlets', 'CMDLETS')
 ENABLE_COMMANDS = CONFIG.get('EnableCmdlets', 'CMDLETS')
 
 #Constants for storage and socket communication
-TMP_DIR = "./tmp"
+
+TMP_DIR = path.abspath("./tmp")
 RESPONSE_DIR = TMP_DIR + '/' + 'resp'
 PSRESTQUEUE_PUT = TMP_DIR + '/' + uuid4().hex
 PSRESTQUEUE_GET = TMP_DIR + '/' + uuid4().hex
