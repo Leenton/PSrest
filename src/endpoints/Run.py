@@ -12,40 +12,31 @@ from queue import Queue
 from Config import *
 from falcon.status_codes import HTTP_200, HTTP_400, HTTP_401, HTTP_403, HTTP_408, HTTP_500
 from falcon.media.validators import jsonschema
-
-#endpoint that gets called to actually execute the commands we want to execute with our application.
-schema = {
-    "type" : "object",
-    "properties" : {    
-        "cmdlet" : {"type" : "string"},
-        "parameters" : {"type" : ["object", "array"], "optional": True},
-    },
-}
+from entities.Schema import RUN_SCHEMA
 
 class Run(object):
-    def __init__(self, kill, requests, alerts) -> None:
+    def __init__(self, kill: Queue, requests: Queue, alerts: Queue) -> None:
         self.processor = PSProcessor(kill, requests, alerts)
         self.cmdlet_library = CmdletLibrary()
     
-    @jsonschema.validate(schema)
+    @jsonschema.validate(RUN_SCHEMA)
     async def on_post(self, req, resp):
-        if(self.processor.started == False):
-            self.processor.started = True
-            self.processor.thread.start()
-        
         resp.content_type = 'application/json'
        
         try:
-            if (req.get_header('TTL')) > int(MAX_TTL):
+            ttl = req.get_header('TTL')
+            if ttl is None:
+                pass
+            elif (ttl) > int(MAX_TTL):
                 raise InvalidCmdlet(f'TTL is too long. Please use a value less than {MAX_TTL} seconds.')
-        except ValueError:
+        except (ValueError, TypeError):
             raise InvalidCmdlet(f'TTL is not a valid number. Please use a value less than {MAX_TTL} seconds.')
 
         try:
             command = Cmdlet(
                 self.cmdlet_library,
                 (await req.get_media()),
-                req.get_header('TTL') or int(DEFAULT_TTL)
+                ttl or int(DEFAULT_TTL)
             )
 
             token = req.get_header('ACCESS-TOKEN') or None
@@ -58,7 +49,7 @@ class Run(object):
                     resp.content_length = stream.length
                     resp.stream = stream.read()
                 except Exception as e:
-                    raise ExpiredPSTicket('Time out occurred waiting for PSProcessor to return the response.')
+                    raise ExpiredPSTicket(ticket, 'Timed out occurred waiting for PSProcessor to return the response.')
             else:
                 resp.status = HTTP_403
                 resp.text = json.dumps({'error': 'You are not authorised to run this command'})

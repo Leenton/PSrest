@@ -1,4 +1,4 @@
-from multiprocessing import Process, active_children, Queue
+from multiprocessing import Process, active_children
 import subprocess
 from uuid import uuid4
 from entities.PSTicket import PSTicket
@@ -8,9 +8,11 @@ import json
 from exceptions.PSRExceptions import ProcessorException
 import sqlite3
 from datetime import datetime
-from Config import PS_PROCESSORS, RESPONSE_DIR, PSRESTQUEUE_PUT
+from Config import PS_PROCESSORS
 from threading import Thread
+from queue import Queue
 from processing.PSProcess import PSProcess
+from time import sleep
 
 class PSProcessor():
     def __init__(self, kill: Queue, requests: Queue, alerts: Queue) -> None:
@@ -54,49 +56,50 @@ class PSProcessor():
             psprocess = PSProcess()
             Process(name=(f'PSRestProcessor {psprocess.id}'), target=psprocess.execute).start()
 
-        count = 0
         while(True):
-            count += 1
-            print(f'{count}')
-            # print('Scheduler running')
-            # #Check request queue for new requests
-            # try:
-            #     ticket = self.requests.get(False)
-            #     cursor = processor.cursor()
-            #     cursor.execute(
-            #         'INSERT INTO PSProcessor (ticket, pid, processed, created, expires) VALUES (?, ?, ?, ?, ?)',
-            #         (ticket['id'], None, None, ticket['created'], ticket['expires'])
-            #     )
-            # except Exception:
-            #     pass
+            #Check request queue for new requests
+            try:
+                ticket = self.requests.get(False)
+                cursor = processor.cursor()
+                print("INSERTING TICKET")
+                cursor.execute(
+                    'INSERT INTO PSProcessor (ticket, pid, processed, created, expires) VALUES (?, ?, ?, ?, ?)',
+                    (ticket['id'], None, None, ticket['created'], ticket['expires'])
+                )
+            except Exception:
+                pass
             
-            # #Check to see which processes have been killed and update the database
-            # try:
-            #     pid = self.kill.get(False)
-            #     cursor = processor.cursor()
-            #     cursor.execute(
-            #         'DELETE FROM PSProcess WHERE pid = ?',
-            #         [pid]
-            #     )
-            #     processor.commit()
-            # except Exception:
-            #     pass
+            #Check to see which processes have been killed and update the database
+            try:
+                pid = self.kill.get(False)
+                cursor = processor.cursor()
+                print("DELETING PROCESS")
+                cursor.execute(
+                    'DELETE FROM PSProcess WHERE pid = ?',
+                    [pid]
+                )
+                processor.commit()
+            except Exception:
+                pass
 
-            # #Check the alerts queue for jobs picked up by processes
-            # try:
-            #     process_alert = self.alerts.get(False)
-            #     cursor = processor.cursor()
-            #     cursor.execute('UPDATE PSProcessor SET pid = ? WHERE ticket = ?',
-            #         (process_alert['pid'], process_alert['ticket'])
-            #     )
-            #     processor.commit()
-            #     cursor = processor.cursor()
-            #     cursor.execute('UPDATE PSProcess SET last_seen = ? WHERE pid = ?',
-            #         ((datetime.timestamp(datetime.now())), process_alert['pid'])
-            #     )
-            #     processor.commit()
-            # except Exception:
-            #     pass
+            #Check the alerts queue for jobs picked up by processes
+            try:
+                process_alert = self.alerts.get(False)
+                print("UPDATING TICKET")
+                cursor = processor.cursor()
+                cursor.execute('UPDATE PSProcessor SET pid = ? WHERE ticket = ?',
+                    (process_alert['pid'], process_alert['ticket'])
+                )
+                processor.commit()
+                cursor = processor.cursor()
+                cursor.execute('UPDATE PSProcess SET last_seen = ? WHERE pid = ?',
+                    ((datetime.timestamp(datetime.now())), process_alert['pid'])
+                )
+                processor.commit()
+            except Exception:
+                pass
+
+            sleep(0.001)
 
             # #Check the kill for processes that we have been told to kill
             # try:

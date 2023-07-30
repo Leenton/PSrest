@@ -3,7 +3,8 @@ from falcon.asgi import App
 import uvicorn
 from threading import Thread
 from LogHanlder import LogHanlder
-from multiprocessing import Process, Queue
+from multiprocessing import Process
+from queue import Queue
 
 # #import endpoints
 # from endpoints.Kill import Kill
@@ -28,8 +29,10 @@ if __name__ == '__main__':
     kill = Queue()
     requests = Queue()
     alerts = Queue()
-    processing = Process(target=start_processor, name='PSProcessor', args=(kill, requests, alerts))
+    processing = Thread(target=start_processor, name='PSProcessor', args=(kill, requests, alerts))
     processing.start()
+    # processing = Process(target=start_processor, name='PSProcessor', args=(kill, requests, alerts))
+    # processing.start()
 
     #Start the PSRest web server and listen on port 
     PSRest = App()
