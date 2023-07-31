@@ -3,6 +3,8 @@ import asyncio
 from exceptions.PSRExceptions import PSRQueueException
 from json import dumps,loads
 from Config import PSRESTQUEUE_PUT, PSRESTQUEUE_GET, PSRESTQUEUE_SRV
+from time import sleep
+import socket
 class PSRestQueue():
 
     def __init__(self):
@@ -14,15 +16,14 @@ class PSRestQueue():
         tries = 1
         while(retry > tries):
             try:
-                reader, writer = await asyncio.open_unix_connection(PSRESTQUEUE_PUT)
-                writer.write(message.encode('utf-8'))
-                await writer.drain()
+                soc = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                soc.connect(PSRESTQUEUE_PUT)
+                soc.send(message.encode('utf-8'))
+                soc.close()
                 break
-            except Exception:
+            except Exception as e:
                 tries += 1
                 await asyncio.sleep(0.01 * retry)
-        
-        writer.close()
 
         if(retry == tries):
             raise PSRQueueException('Unable to issue command. Please try again.')
@@ -51,18 +52,22 @@ class PSRestQueue():
             writer.close()
         
     async def serve(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
-        data = await reader.read()
+        data = await reader.read(32)
         if(data):
             pid = (data.decode('utf-8'))
             while(True):
                 try:
-                    command = self.queue.get(False)
+                    command: str = self.queue.get(False)
                     break
                 except Empty:
                     await asyncio.sleep(0.001)
-
-            self.associated_queue.put(dumps({'pid': pid, 'ticket': loads(command)['ticket']}))
-            writer.write(command.encode('utf-8'))
+            self.associated_queue.put(dumps({'pid': pid, 'ticket': loads(command)['Ticket']}))
+            command = command.encode('utf-8')
+            length = len(command)
+            #left pad with 0 until its 16 bytes in length
+            writer.write(str(length).zfill(16).encode('utf-8'))
+            await writer.drain()
+            writer.write(command)
             await writer.drain()
             writer.close()
     

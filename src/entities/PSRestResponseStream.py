@@ -8,7 +8,7 @@ class PSRestResponseStream():
         self.ticket = ticket
         soc = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         soc.bind(RESPONSE_DIR + f'/{self.ticket.id}')
-        soc.listen(0)
+        soc.listen(1)
         soc.settimeout(ticket.ttl)
         connection, return_address = soc.accept()
         data = connection.recv(16)
@@ -26,4 +26,4 @@ class PSRestResponseStream():
         self.soc.close()
 
         #delete the file when we are done with it
-        os.remove(f'./{self.ticket}')
+        os.remove(RESPONSE_DIR + f'./{self.ticket}')

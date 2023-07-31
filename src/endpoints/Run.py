@@ -33,10 +33,20 @@ class Run(object):
             raise InvalidCmdlet(f'TTL is not a valid number. Please use a value less than {MAX_TTL} seconds.')
 
         try:
-            command = Cmdlet(
+            depth = req.get_header('DEPTH')
+            if depth is None:
+                pass
+            elif (depth) > int(MAX_DEPTH):
+                raise InvalidCmdlet(f'DEPTH is too long. Please use a value less than {MAX_DEPTH}.')
+        except (ValueError, TypeError):
+            raise InvalidCmdlet(f'DEPTH is not a valid number. Please use a value less than {MAX_DEPTH}.')
+        
+        try:
+            command: Cmdlet = Cmdlet(
                 self.cmdlet_library,
                 (await req.get_media()),
-                ttl or int(DEFAULT_TTL)
+                ttl or int(DEFAULT_TTL),
+                depth or int(DEFAULT_DEPTH)
             )
 
             token = req.get_header('ACCESS-TOKEN') or None
@@ -49,7 +59,7 @@ class Run(object):
                     resp.content_length = stream.length
                     resp.stream = stream.read()
                 except Exception as e:
-                    raise ExpiredPSTicket(ticket, 'Timed out occurred waiting for PSProcessor to return the response.')
+                    raise ExpiredPSTicket(ticket, 'Time out occurred waiting for PSProcessor to return the response.')
             else:
                 resp.status = HTTP_403
                 resp.text = json.dumps({'error': 'You are not authorised to run this command'})

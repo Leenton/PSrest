@@ -9,12 +9,14 @@ class Cmdlet():
             cmdlet_library: CmdletLibrary,
             command: dict,
             ttl: float,
+            depth: int,
             platform = None,
             psversion = None
             ) -> None:
         
         self.function = None
         self.ttl = ttl
+        self.depth = depth
         self.platform = platform
         self.psversion = psversion
         self.cmdlet_library = cmdlet_library

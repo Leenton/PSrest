@@ -10,7 +10,7 @@ REPOSITORY=localPSGallary
 RADIUS=true
 
 [TimeOut]
-DEFAULT_TTL=5
+DEFAULT_TTL=20
 MAX_TTL=900
 
 [PSExecution]
@@ -27,3 +27,6 @@ CMDLETS=Write-Host
 
 [Help]
 HELP=true
+
+[Response]
+DEFAULT_DEPTH=4

@@ -13,6 +13,7 @@ from threading import Thread
 from queue import Queue
 from processing.PSProcess import PSProcess
 from time import sleep
+from entities.PSRestQueue import PSRQueueException
 
 class PSProcessor():
     def __init__(self, kill: Queue, requests: Queue, alerts: Queue) -> None:
@@ -33,10 +34,10 @@ class PSProcessor():
         #Put the command on the process_queue
         try:
             await self.process_queue.put(
-                json.dumps({'command': command.value, 'ticket': ticket.id})
+                json.dumps({'Command': command.value, 'Ticket': ticket.id, 'Depth': command.depth})
             )
             return ticket
-        except Exception as e:
+        except PSRQueueException as e:
             raise ProcessorException('Scheduler failed to schedule the command to a PSProcessor.')
     
     def start(self):
@@ -61,7 +62,6 @@ class PSProcessor():
             try:
                 ticket = self.requests.get(False)
                 cursor = processor.cursor()
-                print("INSERTING TICKET")
                 cursor.execute(
                     'INSERT INTO PSProcessor (ticket, pid, processed, created, expires) VALUES (?, ?, ?, ?, ?)',
                     (ticket['id'], None, None, ticket['created'], ticket['expires'])

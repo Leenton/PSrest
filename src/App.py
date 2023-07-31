@@ -5,6 +5,7 @@ from threading import Thread
 from LogHanlder import LogHanlder
 from multiprocessing import Process
 from queue import Queue
+from subprocess import Popen, PIPE
 
 # #import endpoints
 # from endpoints.Kill import Kill
@@ -22,9 +23,10 @@ from Config import *
 
 if __name__ == '__main__':
 
+    # process = Popen(['python3', 'Queue.py'], stdout=PIPE, stderr=PIPE)
     #Handle the Python Powershell communication in a separate Process
-    queue = Process(target=serve_queue, name='PSRestQueue')
-    queue.start()
+    # queue = Process(target=serve_queue, name='PSRestQueue')
+    # queue.start()
 
     kill = Queue()
     requests = Queue()
