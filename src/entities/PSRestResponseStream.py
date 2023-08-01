@@ -2,6 +2,7 @@ from entities.PSTicket import PSTicket
 from Config import *
 import socket
 import os
+import asyncio
 
 class PSRestResponseStream():
     def __init__(self, ticket: PSTicket) -> None:
@@ -26,4 +27,13 @@ class PSRestResponseStream():
         self.soc.close()
 
         #delete the file when we are done with it
-        os.remove(RESPONSE_DIR + f'./{self.ticket}')
+        tries = 1
+        backoff = 0.001
+        while(tries > 8):
+            try:
+                os.remove(RESPONSE_DIR + f'./{self.ticket}')
+                break
+            except FileNotFoundError:
+                tries += 1
+                await asyncio.sleep(backoff*tries)
+                break

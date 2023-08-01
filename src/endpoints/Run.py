@@ -1,23 +1,26 @@
+import json
+# import language builtins and 3rd party modules
+from queue import Queue
+from falcon.status_codes import HTTP_200, HTTP_400, HTTP_401, HTTP_403, HTTP_408, HTTP_500
+from falcon.media.validators import jsonschema
+import os
+import asyncio
+
+# import project dependencies
 from exceptions.PSRExceptions import *
-from RestParser import *
-from PSParser import *
-import aiofiles
 from entities.Cmdlet import *
 from entities.CmdletLibrary import CmdletLibrary
 from entities.PSRestResponseStream import PSRestResponseStream
-from endpoints.OAuth import validate
-from processing.PSProcessor import PSProcessor
-import json
-from queue import Queue 
-from Config import *
-from falcon.status_codes import HTTP_200, HTTP_400, HTTP_401, HTTP_403, HTTP_408, HTTP_500
-from falcon.media.validators import jsonschema
 from entities.Schema import RUN_SCHEMA
+from entities.OAuthService import OAuthService
+from processing.PSProcessor import PSProcessor
+from Config import *
 
 class Run(object):
     def __init__(self, kill: Queue, requests: Queue, alerts: Queue) -> None:
         self.processor = PSProcessor(kill, requests, alerts)
         self.cmdlet_library = CmdletLibrary()
+        self.oauth = OAuthService()
     
     @jsonschema.validate(RUN_SCHEMA)
     async def on_post(self, req, resp):
@@ -49,48 +52,60 @@ class Run(object):
                 depth or int(DEFAULT_DEPTH)
             )
 
-            token = req.get_header('ACCESS-TOKEN') or None
-            if(validate(token, command.function)):
-                ticket = await self.processor.request(command)
-                resp.status = HTTP_200
+            self.oauth.validate_action(req.get_header('ACCESS-TOKEN') or '', command.function)
+            ticket = await self.processor.request(command)
+            resp.status = HTTP_200
 
-                try:
-                    stream = PSRestResponseStream(ticket)
-                    resp.content_length = stream.length
-                    resp.stream = stream.read()
-                except Exception as e:
-                    raise ExpiredPSTicket(ticket, 'Time out occurred waiting for PSProcessor to return the response.')
-            else:
-                resp.status = HTTP_403
-                resp.text = json.dumps({'error': 'You are not authorised to run this command'})
+            try:
+                stream = PSRestResponseStream(ticket)
+                resp.content_length = stream.length
+                resp.stream = stream.read()
+            except Exception as e:
+                await self.cleanup(ticket)
+                raise ExpiredPSTicket(ticket, 'Time out occurred waiting for PSProcessor to return the response.')
 
         except (
             UnSuppotedPSVersion,
             UnSupportedPlatform,
-            InvalidToken,
             UnkownCmdlet,
             InvalidCmdlet,
             InvalidCmdletParameter
             ) as e:
             resp.status = HTTP_400
-            resp.text = json.dumps({'error': e.message})
+            resp.text = json.dumps({'title': 'Request data failed validation', 'description': e.message})
 
-        except UnAuthorised as e:
+        except InvalidToken as e:
             resp.status = HTTP_401
-            resp.text = json.dumps({'error': e.message})
+            resp.text = json.dumps({'title': 'Unauthorized Request', 'description': e.message})
+        
+        except UnAuthorised as e:
+            resp.status = HTTP_403
+            resp.text = json.dumps({'title': 'Forbidden Request', 'description': e.message})
         
         except ExpiredPSTicket as e:
             resp.status = HTTP_408
-            resp.text = json.dumps({'error': e.message})
+            resp.text = json.dumps({'title': 'Request Timeout', 'description': e.message})
         
         except (
             SchedulerException,
             PSRQueueException
             ) as e:
             resp.status = HTTP_500
-            resp.text = json.dumps({'error': e.message})
+            resp.text = json.dumps({'title': 'Internal Server Error', 'description': e.message})
 
         except Exception as e:
             resp.status = HTTP_500
-            resp.text = json.dumps({'error': 'Something went wrong!.'})
+            resp.text = json.dumps({'title': 'Internal Server Error', 'description': 'Something went wrong!'})
             print(e) 
+
+    async def cleanup(self, ticket: PSTicket):
+        tries = 1
+        backoff = 0.001
+        while(tries > 8):
+            try:
+                os.remove(RESPONSE_DIR + f'./{ticket.id}')
+                break
+            except FileNotFoundError:
+                tries += 1
+                await asyncio.sleep(backoff*tries)
+                break

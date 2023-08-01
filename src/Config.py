@@ -3,6 +3,7 @@ from pathlib import Path
 import configparser
 from uuid import uuid4
 from os import path
+from secrets import token_bytes
 
 CONFIG = configparser.ConfigParser()      
 CONFIG.read_file(open((str(Path(__file__).parent.parent) + '/config'), 'r')) 
@@ -12,13 +13,14 @@ PORT = CONFIG.get('Server', 'PORT')
 #Constants for the ticketing system
 DEFAULT_TTL = CONFIG.get('TimeOut', 'DEFAULT_TTL')
 MAX_TTL = CONFIG.get('TimeOut', 'MAX_TTL')
+ACCESS_TOKEN_TTL = 3600
 
 #Constants for how we serve responses
-DEFAULT_DEPTH = CONFIG.get('Response', 'DEPTH')
+DEFAULT_DEPTH = CONFIG.get('Response', 'DEFAULT_DEPTH')
 MAX_DEPTH = 100
 
 #Constants for the encryption
-SECRET_KEY = ''
+SECRET_KEY = token_bytes(256).hex()
 PRIVATE_KEY = ''
 PUBLIC_KEY = ''
 

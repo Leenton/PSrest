@@ -23,10 +23,10 @@ from Config import *
 
 if __name__ == '__main__':
 
-    # process = Popen(['python3', 'Queue.py'], stdout=PIPE, stderr=PIPE)
+    # process = Popen(['python3', 'src/Queue.py'])
     #Handle the Python Powershell communication in a separate Process
-    # queue = Process(target=serve_queue, name='PSRestQueue')
-    # queue.start()
+    queue = Process(target=serve_queue, name='PSRestQueue')
+    queue.start()
 
     kill = Queue()
     requests = Queue()
@@ -40,9 +40,10 @@ if __name__ == '__main__':
     PSRest = App()
     
     PSRest.add_route('/oauth', OAuth()) #Page to get an access token
-    PSRest.add_route('/run', Run(kill, requests, alerts)) #Page to run commands
-    PSRest.add_route('/help', Help()) #Page to show help for PSRest
-    PSRest.add_route('/help/{command}', Help()) #Page to show help for a specific command
+    
+    # PSRest.add_route('/run', Run(kill, requests, alerts)) #Page to run commands
+    # PSRest.add_route('/help', Help()) #Page to show help for PSRest
+    # PSRest.add_route('/help/{command}', Help()) #Page to show help for a specific command
     
     # PSRest.add_route('/kill/{ticket_id}', Kill()) #Page to kill a job
     # PSRest.add_route('/resources/{resource}', Resources()) #Page to return static files like images for help page
