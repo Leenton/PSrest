@@ -40,13 +40,14 @@ if __name__ == '__main__':
     PSRest = App()
     
     PSRest.add_route('/oauth', OAuth()) #Page to get an access token
-    
-    # PSRest.add_route('/run', Run(kill, requests, alerts)) #Page to run commands
-    # PSRest.add_route('/help', Help()) #Page to show help for PSRest
-    # PSRest.add_route('/help/{command}', Help()) #Page to show help for a specific command
+
+    PSRest.add_route('/run', Run(kill, requests, alerts)) #Page to run commands
+    PSRest.add_route('/help', Help()) #Page to show help for PSRest
+    PSRest.add_route('/help/{command}', Help()) #Page to show help for a specific command
     
     # PSRest.add_route('/kill/{ticket_id}', Kill()) #Page to kill a job
     # PSRest.add_route('/resources/{resource}', Resources()) #Page to return static files like images for help page
     # PSRest.add_route('/running', Running()) #Page to show all running jobs
+    # PSRest.add_route('/running/{ticket_id}', Running()) #Page to show all running jobs
 
     uvicorn.run(PSRest, host='0.0.0.0', port=PORT, log_level='info')

@@ -5,6 +5,9 @@ from uuid import uuid4
 from os import path
 from secrets import token_bytes
 
+#OAuth Database
+DATABASE = './data.db'
+
 CONFIG = configparser.ConfigParser()      
 CONFIG.read_file(open((str(Path(__file__).parent.parent) + '/config'), 'r')) 
 HOSTNAME = CONFIG.get('Server', 'HOSTNAME')
@@ -14,7 +17,7 @@ PORT = CONFIG.get('Server', 'PORT')
 DEFAULT_TTL = CONFIG.get('TimeOut', 'DEFAULT_TTL')
 MAX_TTL = CONFIG.get('TimeOut', 'MAX_TTL')
 ACCESS_TOKEN_TTL = 3600
-
+REFRESH_TOKEN_TTL = 86400 * 14
 #Constants for how we serve responses
 DEFAULT_DEPTH = CONFIG.get('Response', 'DEFAULT_DEPTH')
 MAX_DEPTH = 100
