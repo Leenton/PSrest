@@ -1,5 +1,5 @@
 import subprocess
-from Config import RESPONSE_DIR, PSRESTQUEUE_PUT
+from Config import RESPONSE_DIR, PSRESTQUEUE_SRV, PSRESTQUEUE_WAIT
 from uuid import uuid4
 
 class PSProcess():
@@ -9,9 +9,16 @@ class PSProcess():
 
     def execute(self):
         try:
-            result = subprocess.run(
-                [f'{self.platform}', "-Command", f'Start-PSRestProcessor -ProcessId "{self.id}" -ResponsePath "{RESPONSE_DIR}" -SocketPath "{PSRESTQUEUE_PUT}""'],
+            completed = result = subprocess.run(
+                [
+                    f'{self.platform}',
+                    "-Command",
+                    f'Start-PSRestProcessor -ProcessorId "{self.id}" -ResponseDirectory "{RESPONSE_DIR}" -SocketPath "{PSRESTQUEUE_SRV}" -WaitTime {PSRESTQUEUE_WAIT}'
+                ],
                 stdout=subprocess.DEVNULL)
+            print(completed)
         except Exception as e:
             #TODO: Log this error
             print(e)
+
+        print("Fuck this shit we're out")

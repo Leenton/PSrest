@@ -23,7 +23,7 @@ DEFAULT_DEPTH = CONFIG.get('Response', 'DEFAULT_DEPTH')
 MAX_DEPTH = 100
 
 #Constants for the encryption
-SECRET_KEY = token_bytes(256).hex()
+SECRET_KEY = '2ed154d0c89362da0e2fc49257c5fb27c01cdfbc85238ea334e84dbc8eccfee3812b41add4149999b2277780b0edbdda4905f46f607fd3ffd8d3601113c1e7ae'
 PRIVATE_KEY = ''
 PUBLIC_KEY = ''
 
@@ -42,6 +42,6 @@ RESPONSE_DIR = TMP_DIR + '/' + 'resp'
 PSRESTQUEUE_PUT = TMP_DIR + '/' + '5a682fbbe1bc487793d55fa09b55c547'
 PSRESTQUEUE_GET = TMP_DIR + '/' + '95b51250d7ef4fcdaea1cf51886b8ba5'
 PSRESTQUEUE_SRV = TMP_DIR + '/' + 'fcf29f8069d646e8bdc75af3eb7f02e4'
-
+PSRESTQUEUE_WAIT = 250
 #TODO: Sanitise the contents we get from the config file to prevent code injection.
 

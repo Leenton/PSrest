@@ -59,15 +59,26 @@ class OAuthService():
             self.get_refresh_token(row[0])
         )
 
-    def validate_action(access_token: str, action: str) -> None:
+    def validate_action(self, header: str, action: str) -> None:
+        #Get the access token from the header
+        authorization = header.split(' ')
+        if(not authorization or authorization[0].lower() != 'bearer'):
+            raise UnAuthorised('Authorization scheme not supported or authorization poorly formatted.')
+        
+        access_token = authorization[-1]
+
         try:
             token = jwt.decode(access_token, SECRET_KEY, algorithms=['HS512'])
             #check if the action is in the list of actions for the user in the returned token
-            if action in token['action'] and token['expiry'] > datetime.timestamp(datetime.now()):
-                #Log the action and the client id somewhere
+            if(token['expiry'] > datetime.timestamp(datetime.now())):
+                raise InvalidToken('Access token has expired.')
+            
+            if action.lower() in token['actions']:
                 return
+            
             else:
                 raise UnAuthorised('You do not have permission to perform this action.')
+            
         except (jwt.DecodeError,
                 jwt.ExpiredSignatureError,
                 jwt.ImmatureSignatureError,
@@ -82,8 +93,9 @@ class OAuthService():
                 jwt.PyJWKClientError,
                 jwt.PyJWKError,
                 jwt.PyJWKSetError,
-                jwt.PyJWTError):
-            
+                jwt.PyJWTError,
+                InvalidToken) as e:
+            print(e)
             raise InvalidToken('Invalid access token provided.')
     
     def get_refresh_token(self, cid: int) -> str:
@@ -126,7 +138,7 @@ class OAuthService():
         return jwt.encode(
             {
                 'reference': cid, 
-                'actions':self.get_client_actions(cid),
+                'actions': self.get_client_actions(cid),
                 'expiry': datetime.timestamp(datetime.now()) + ACCESS_TOKEN_TTL
             },
             SECRET_KEY,

@@ -3,6 +3,7 @@ from Config import *
 import socket
 import os
 import asyncio
+from math import factorial
 
 class PSRestResponseStream():
     def __init__(self, ticket: PSTicket) -> None:
@@ -29,11 +30,14 @@ class PSRestResponseStream():
         #delete the file when we are done with it
         tries = 1
         backoff = 0.001
-        while(tries > 8):
+        while(tries <= 5):
             try:
                 os.remove(RESPONSE_DIR + f'./{self.ticket}')
                 break
             except FileNotFoundError:
                 tries += 1
-                await asyncio.sleep(backoff*tries)
+                await asyncio.sleep(backoff*(factorial(tries)))
                 break
+        
+        if(tries >= 5):
+            print(f'Failed to delete {self.ticket} after 5 tries.')

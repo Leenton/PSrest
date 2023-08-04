@@ -14,6 +14,7 @@ from queue import Queue
 from processing.PSProcess import PSProcess
 from time import sleep
 from entities.PSRestQueue import PSRQueueException
+from threading import Thread
 
 class PSProcessor():
     def __init__(self, kill: Queue, requests: Queue, alerts: Queue) -> None:
@@ -55,51 +56,53 @@ class PSProcessor():
         
         for x in range(self.process_count):
             psprocess = PSProcess()
-            Process(name=(f'PSRestProcessor {psprocess.id}'), target=psprocess.execute).start()
+            Thread(name=(f'PSProcess {psprocess.id}'), target=psprocess.execute).start()
 
         while(True):
+            sleep(1)
+        # while(True):
             #Check request queue for new requests
-            try:
-                ticket = self.requests.get(False)
-                cursor = processor.cursor()
-                cursor.execute(
-                    'INSERT INTO PSProcessor (ticket, pid, processed, created, expires) VALUES (?, ?, ?, ?, ?)',
-                    (ticket['id'], None, None, ticket['created'], ticket['expires'])
-                )
-            except Exception:
-                pass
+            # try:
+            #     ticket = self.requests.get(False)
+            #     cursor = processor.cursor()
+            #     cursor.execute(
+            #         'INSERT INTO PSProcessor (ticket, pid, processed, created, expires) VALUES (?, ?, ?, ?, ?)',
+            #         (ticket['id'], None, None, ticket['created'], ticket['expires'])
+            #     )
+            # except Exception:
+            #     pass
             
-            #Check to see which processes have been killed and update the database
-            try:
-                pid = self.kill.get(False)
-                cursor = processor.cursor()
-                print("DELETING PROCESS")
-                cursor.execute(
-                    'DELETE FROM PSProcess WHERE pid = ?',
-                    [pid]
-                )
-                processor.commit()
-            except Exception:
-                pass
+            # #Check to see which processes have been killed and update the database
+            # try:
+            #     pid = self.kill.get(False)
+            #     cursor = processor.cursor()
+            #     print("DELETING PROCESS")
+            #     cursor.execute(
+            #         'DELETE FROM PSProcess WHERE pid = ?',
+            #         [pid]
+            #     )
+            #     processor.commit()
+            # except Exception:
+            #     pass
 
-            #Check the alerts queue for jobs picked up by processes
-            try:
-                process_alert = self.alerts.get(False)
-                print("UPDATING TICKET")
-                cursor = processor.cursor()
-                cursor.execute('UPDATE PSProcessor SET pid = ? WHERE ticket = ?',
-                    (process_alert['pid'], process_alert['ticket'])
-                )
-                processor.commit()
-                cursor = processor.cursor()
-                cursor.execute('UPDATE PSProcess SET last_seen = ? WHERE pid = ?',
-                    ((datetime.timestamp(datetime.now())), process_alert['pid'])
-                )
-                processor.commit()
-            except Exception:
-                pass
+            # #Check the alerts queue for jobs picked up by processes
+            # try:
+            #     process_alert = self.alerts.get(False)
+            #     print("UPDATING TICKET")
+            #     cursor = processor.cursor()
+            #     cursor.execute('UPDATE PSProcessor SET pid = ? WHERE ticket = ?',
+            #         (process_alert['pid'], process_alert['ticket'])
+            #     )
+            #     processor.commit()
+            #     cursor = processor.cursor()
+            #     cursor.execute('UPDATE PSProcess SET last_seen = ? WHERE pid = ?',
+            #         ((datetime.timestamp(datetime.now())), process_alert['pid'])
+            #     )
+            #     processor.commit()
+            # except Exception:
+            #     pass
 
-            sleep(0.001)
+            # sleep(0.001)
 
             # #Check the kill for processes that we have been told to kill
             # try:

@@ -14,29 +14,23 @@ class Help(object):
         self.cmdlet_library = CmdletLibrary()
 
     async def on_get(self, req, resp, command = None):
-        if command and HELP: 
-            if(isinstance(command, str)):
-                info = self.cmdlet_library.get_cmdlet(command.lower())
-                if(info):
-                    resp.status = HTTP_200
-                    resp.content_type = 'text/html'
-                    resp.text = self.build_help_page(info)
-                else:
-                    resp.status = HTTP_404
-                    resp.content_type = 'application/json'
-                    resp.text = json.dumps({'error': 'Page not found'})
-            else:
-                    resp.status = HTTP_500
-                    resp.content_type = 'application/json'
-                    resp.text = json.dumps({'error': 'Something went wrong!.'})
-        else:
-            if(not HELP):
+        resp.content_type = 'application/json'
+
+        if(not HELP):
                 #Replace this with the fancy 500 error page
                 resp.status = HTTP_403
-                resp.content_type = 'application/json'
-                resp.text = json.dumps({'error': 'Forbidden, help is disabled by the server'})
-            
-            #Replace this with the fancy help page
+                resp.text = json.dumps({'title': 'Forbidden', 'description': 'Help is disabled on this server.'})
+
+        elif command and (info := self.cmdlet_library.get_cmdlet(command.lower())):
+                resp.status = HTTP_200
+                resp.content_type = 'text/html'
+                resp.text = self.build_help_page(info)
+
+        elif command:
+                resp.status = HTTP_404
+                resp.text = json.dumps({'title': '404 Not Found', 'description': 'The page you are looking for does not exist.'})
+                
+        else:
             resp.status = HTTP_200
             resp.content_type = 'text/html'
             async with aiofiles.open('./src/html/help.html', 'rb') as f:

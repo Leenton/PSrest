@@ -5,6 +5,7 @@ from falcon.status_codes import HTTP_200, HTTP_400, HTTP_401, HTTP_403, HTTP_408
 from falcon.media.validators import jsonschema
 import os
 import asyncio
+import math
 
 # import project dependencies
 from exceptions.PSRExceptions import *
@@ -52,7 +53,9 @@ class Run(object):
                 depth or int(DEFAULT_DEPTH)
             )
 
-            self.oauth.validate_action(req.get_header('ACCESS-TOKEN') or '', command.function)
+            auth = req.get_header('Authorization')
+
+            self.oauth.validate_action(req.get_header('Authorization') or '', command.function)
             ticket = await self.processor.request(command)
             resp.status = HTTP_200
 
@@ -101,11 +104,13 @@ class Run(object):
     async def cleanup(self, ticket: PSTicket):
         tries = 1
         backoff = 0.001
-        while(tries > 8):
+        while(tries <= 5):
             try:
                 os.remove(RESPONSE_DIR + f'./{ticket.id}')
                 break
             except FileNotFoundError:
                 tries += 1
-                await asyncio.sleep(backoff*tries)
+                await asyncio.sleep(backoff*(math.factorial(tries)))
                 break
+        if(tries >= 5):
+            print(f'Failed to delete {ticket.id} after 5 tries.')
