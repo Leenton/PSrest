@@ -53,4 +53,4 @@ if __name__ == '__main__':
     # PSRest.add_route('/running', Running()) #Page to show all running jobs
     # PSRest.add_route('/running/{ticket_id}', Running()) #Page to show all running jobs
 
-    uvicorn.run(PSRest, host='0.0.0.0', port=PORT, log_level='critical')
+    uvicorn.run(PSRest, host='0.0.0.0', port=PORT, log_level='info')
