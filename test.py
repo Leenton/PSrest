@@ -9,21 +9,21 @@ print(token)
 result = jwt.decode(token, secret, algorithms=['HS512'])
 print(result)
 
-# from argon2 import PasswordHasher
-# import sqlite3
-# hasher = PasswordHasher()
-# db = sqlite3.connect('data.db')
-# cursor = db.cursor()
-# cursor.executescript("""
-# CREATE TABLE client (cid INTEGER PRIMARY KEY AUTOINCREMENT, client_id TEXT, client_secret TEXT);
-# CREATE TABLE refresh_client_map (rid INTEGER PRIMARY KEY AUTOINCREMENT, refresh_token TEXT, expiry REAL, cid INTEGER, FOREIGN KEY(cid) REFERENCES client(cid));
-# CREATE TABLE action_client_map (aid INTEGER PRIMARY KEY AUTOINCREMENT, action TEXT, cid INTEGER, FOREIGN KEY(cid) REFERENCES client(cid));
-# """
-# )
+from argon2 import PasswordHasher
+import sqlite3
+hasher = PasswordHasher()
+db = sqlite3.connect('data.db')
+cursor = db.cursor()
+cursor.executescript("""
+CREATE TABLE client (cid INTEGER PRIMARY KEY AUTOINCREMENT, client_id TEXT, client_secret TEXT, name TEXT, description TEXT, authentication TEXT);
+CREATE TABLE refresh_client_map (rid INTEGER PRIMARY KEY AUTOINCREMENT, refresh_token TEXT, expiry REAL, cid INTEGER, FOREIGN KEY(cid) REFERENCES client(cid) ON DELETE CASCADE);
+CREATE TABLE action_client_map (aid INTEGER PRIMARY KEY AUTOINCREMENT, action TEXT, cid INTEGER, FOREIGN KEY(cid) REFERENCES client(cid) ON DELETE CASCADE);
+"""
+)
 
-# cursor = db.cursor()
-# cursor.execute(
-#     'INSERT INTO client (client_id, client_secret) VALUES (?, ?)',
-#     ('test12312313', hasher.hash('test'))
-# )
-# db.commit()
+cursor = db.cursor()
+cursor.execute(
+    'INSERT INTO client (client_id, client_secret, name, description, authentication) VALUES (?, ?, ?, ?, ?)',
+    ('wqqiqw1212kn', hasher.hash('test'), 'test application', 'test client id and secret for testing purposses only', 'client_credential')
+)
+db.commit()

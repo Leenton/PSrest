@@ -15,7 +15,7 @@ OAUTH_SCHEMA = {
         "client_secret" : {"type" : "string", "optional": True},
         "refresh_token" : {"type" : "string", "optional": True},
         "grant_type" : {"enum": [
-            "client_credentials",
+            "client_credential",
             "refresh_token"
             ]},
     },

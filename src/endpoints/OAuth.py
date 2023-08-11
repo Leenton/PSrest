@@ -20,7 +20,7 @@ class OAuth():
         credentials: dict = await req.get_media()
 
         try:
-            if(credentials['grant_type'] == 'client_credentials'):
+            if(credentials['grant_type'] == 'client_credential'):
                 #Check if the client id and secret are valid
                 response_token: OAuthResponse = self.service.validate_client_credential(
                     credentials['client_id'],

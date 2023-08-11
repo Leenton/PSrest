@@ -1,31 +1,64 @@
 function Get-PSRestApplication()
 {
     [CmdletBinding()]
-    param
-    (
-        [Parameter(Mandatory=$false)]
-        # The name of the application
-        [string]$Name
+    param(
+        [Parameter(Mandatory=$false, ParameterSetName='Name', Position=0)]
+        # The Name of the Application to search for.
+        [string]$Name,
+
+        [Parameter(Mandatory=$false, ParameterSetName='Id', Position=0)]
+        # The Id of the Application to search for.
+        [int32]$Id
     )
     
-
-    if ($Name)
-    {
-        $result = & "python3 src/ConsoleApp.py --get $Name"
+    if ($Name -or $Id){
+        if($Id){
+            $result = & python3 ./src/ConsoleApp.py --method get --id $Id
+        }
+        else{
+            $result = & python3 ./src/ConsoleApp.py --method get --name "$Name"
+        }
     }
-    else
-    {
-        $result = & "python3 src/ConsoleApp.py --get"
+    else{
+        $result = & python3 ./src/ConsoleApp.py --method get
+    }
+    
+    try{
+        $application = ConvertFrom-Json $result
+    }catch {
+        throw "Error occured attempting to get the specified application(s)."
     }
 
-    $application = ConvertFrom-Json $result
-
-    if (!$application -and $Name)
-    {
+    if (!$application.data -and $Name){
         throw "The application '$Name' does not exist."
+    }elseif($application.data -eq 'invalid'){
+        throw "An Id and Name cannot be specified at the same time."
     }
 
-    return $application
+    return $application.data
+}
+
+function Remove-PSRestApplication()
+{
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        # The Id of the Application to remove
+        [int32]$Id
+    )
+
+    $result = & python3 ./src/ConsoleApp.py --method remove --id $Id
+    
+    try{
+        $result = $result | ConvertFrom-Json
+        if($result.data -eq $true){
+            return
+        }
+    }catch{
+        throw $result
+    }
+
+    throw "The Application specified does not exist."
 }
 
 function Add-PSRestApplication()
@@ -40,8 +73,8 @@ function Add-PSRestApplication()
         [Parameter(Mandatory=$false)]
         [string]$Description,
         [Parameter(Mandatory=$false)]
-        # The type of authentication to use, either 'client_credentials' or 'access_token'. Note that 'access_token' is not recommended for security reasons.
-        [ValidateSet('client_credentials', 'access_token')]
+        # The type of authentication to use, either 'client_credential' or 'access_token'. Note that 'access_token' is not recommended for security reasons.
+        [ValidateSet('client_credential', 'access_token')]
         [string]$AuthType = 'client_credentials',
         [Parameter(Mandatory=$true)]
         # The cmdlets the application is permitted to use.
@@ -81,25 +114,12 @@ function Add-PSRestApplication()
     }
 
 
-    $result = & "python3 src/ConsoleApp.py --add-application --name $Name --description $Description --auth-type $AuthType --cmdlet $Cmdlets"
+    $result = & "python3 ./src/ConsoleApp.py --add-application --name $Name --description $Description --auth-type $AuthType --cmdlet $Cmdlets"
     $application = ConvertFrom-Json $result
     return $application
 }
 
-function Remove-PSRestApplication()
-{
-    [CmdletBinding()]
-    param
-    (
-        [Parameter(Mandatory=$true)]
-        # The name of the application
-        [string]$Name
-    )
 
-    $result = & "python3 src/ConsoleApp.py --remove-application --name $Name"
-    $application = ConvertFrom-Json $result
-    return $application
-}
 
 function Set-PSRestApplication()
 {
@@ -113,8 +133,8 @@ function Set-PSRestApplication()
         [Parameter(Mandatory=$false)]
         [string]$Description,
         [Parameter(Mandatory=$false)]
-        # The type of authentication to use, either 'client_credentials' or 'access_token'. Note that 'access_token' is not recommended for security reasons.
-        [ValidateSet('client_credentials', 'access_token')]
+        # The type of authentication to use, either 'client_credential' or 'access_token'. Note that 'access_token' is not recommended for security reasons.
+        [ValidateSet('client_credential', 'access_token')]
         [string]$AuthType,
         [Parameter(Mandatory=$false)]
         # The cmdlets the application is permitted to use.
@@ -153,7 +173,7 @@ function Set-PSRestApplication()
         throw "The application '$Name' does not exist."
     }
 
-    $result = & "python3 src/ConsoleApp.py --set-application --name $Name --description $Description --auth-type $AuthType --cmdlet $Cmdlets"
+    $result = & "python3 ./src/ConsoleApp.py --set-application --name $Name --description $Description --auth-type $AuthType --cmdlet $Cmdlets"
     $application = ConvertFrom-Json $result
     return $application
 }
