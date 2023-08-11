@@ -4,6 +4,7 @@ import jwt
 from argon2 import PasswordHasher
 import sqlite3
 from datetime import datetime, timedelta
+from typing import List, Tuple
 
 class PSRestConsole():
     def __init__(self,) -> None:
@@ -74,7 +75,7 @@ class PSRestConsole():
         
         return False
     
-    def add_application(self, name: str, description: str|None, authentication: str, actions: list) -> dict:
+    def add_application(self, name: str, description: str|None, authentication: str, actions: List[str]) -> dict:
         #check if the client exists
         cursor = self.database.cursor()
         cursor.execute("SELECT cid FROM client WHERE name LIKE ?", (name,))
@@ -98,10 +99,10 @@ class PSRestConsole():
             cid = cursor.fetchone()[0]
 
             for action in actions:
-                cursor.execute('INSERT INTO action_client_map (cid, action) VALUES (?, ?)', (cid, action))
+                cursor.execute('INSERT INTO action_client_map (cid, action) VALUES (?, ?)', (cid, action.lower()))
                 self.database.commit()
 
-            access_token = jwt.encode({'cid': cid, 'actions': actions, 'expiry': expiry, 'da': True}, SECRET_KEY, algorithm='HS256')
+            access_token = jwt.encode({'reference': cid, 'expiry': expiry}, SECRET_KEY, algorithm='HS512')
 
             return {'access_token': access_token}
         

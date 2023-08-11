@@ -69,11 +69,11 @@ class OAuthService():
 
         try:
             token = jwt.decode(access_token, SECRET_KEY, algorithms=['HS512'])
-            #check if the action is in the list of actions for the user in the returned token
+            #Check if the action is in the list of actions for the user in the returned token
             if(token['expiry'] > datetime.timestamp(datetime.now())):
                 raise InvalidToken('Access token has expired.')
             
-            if action.lower() in token['actions']:
+            if action.lower() in self.get_client_actions(token['reference']):
                 return
             
             else:
@@ -99,7 +99,7 @@ class OAuthService():
             raise InvalidToken('Invalid access token provided.')
     
     def get_refresh_token(self, cid: int) -> str:
-        #Get the refresh token associated with the c                                                                                                                                 id from the db
+        #Get the refresh token associated with the cid from the db
         db = sqlite3.connect(DATABASE)
 
         #Delete the old refresh token
@@ -125,11 +125,7 @@ class OAuthService():
         db = sqlite3.connect(DATABASE)
         cursor = db.cursor()
         cursor.execute('SELECT action FROM action_client_map WHERE cid = ?', (cid,))
-        actions = cursor.fetchall()
-        
-        user_actions = []
-        for action in actions:
-            user_actions.append(action[0])
+        user_actions = [row[0] for row in cursor.fetchall()]
 
         return user_actions
 
@@ -138,8 +134,7 @@ class OAuthService():
         return jwt.encode(
             {
                 'reference': cid, 
-                'actions': self.get_client_actions(cid),
-                'expiry': datetime.timestamp(datetime.now()) + ACCESS_TOKEN_TTL
+                'expiry': datetime.timestamp(datetime.now()) + ACCESS_TOKEN_TTL,
             },
             SECRET_KEY,
             algorithm='HS512'
