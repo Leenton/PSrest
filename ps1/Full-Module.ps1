@@ -25,7 +25,6 @@ function Get-PSRestApplication()
     try{
         $application = ConvertFrom-Json $result
     }catch {
-        write-host $_
         throw "Error occured attempting to get the specified application(s)."
     }
 
@@ -124,26 +123,24 @@ function Add-PSRestApplication()
         $application = ConvertFrom-Json $result
         return $application.data
     }catch{
-        write-host $_
         throw "Error occured attempting to add the specified application."
     }
 }
 
 function Set-PSRestApplication()
 {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName='Id')]
     param
     (
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true, ParameterSetName='Name', Position=0)]
         # The name of the application
         [string]$Name,
+        [Parameter(Mandatory=$true, ParameterSetName='Id', Position=0)]
+        # The name of the application
+        [string]$Id,
         # The description of the application
         [Parameter(Mandatory=$false)]
         [string]$Description,
-        [Parameter(Mandatory=$false)]
-        # The type of authentication to use, either 'client_credential' or 'access_token'. Note that 'access_token' is not recommended for security reasons.
-        [ValidateSet('client_credential', 'access_token')]
-        [string]$AuthType,
         [Parameter(Mandatory=$false)]
         # The cmdlets the application is permitted to use.
         [string[]]$Cmdlet
@@ -161,30 +158,46 @@ function Set-PSRestApplication()
 
     # Verify tha the specified cmdlets exist on the system.
     $Cmdlets = @()
-    foreach ($cmdlet in $Cmdlet)
+    foreach ($Cmd in $Cmdlet)
     {
-        $command = Get-Command $cmdlet -ErrorAction SilentlyContinue
-        if ($command)
+        $Command = Get-Command $Cmd -ErrorAction SilentlyContinue
+        if ($Command)
         {
-            $Cmdlets += $cmdlet
+            $Cmdlets += $Cmd
         }
         else
         {
-            throw "The cmdlet '$cmdlet' does not exist on the system."
+            throw "The cmdlet '$Cmd' does not exist on the system."
         }
     }
 
-    # Verify that the application exists.
-    $existingApplication = Get-PSRestApplication -Name $Name -ErrorAction SilentlyContinue
-    if (!$existingApplication)
-    {
-        throw "The application '$Name' does not exist."
+    try{
+        if($Name){
+            $application = Get-PSRestApplication -Name $Name -ErrorAction SilentlyContinue
+            if(!$application){
+                throw "The application '$Name' does not exist."
+            }
+            $Id = $application.id
+        }else{
+            $application = Get-PSRestApplication -Id $Id -ErrorAction SilentlyContinue
+            if(!$application){
+                throw "The application with id '$Id' does not exist."
+            }
+        }
+
+        $result = Invoke-PSRestConsole -command "--method set --id $Id $($Description ? "--description '$Description' " : '')$($Cmdlets ? "--actions $($Cmdlets -join ',')" : '' )"
+        $application = ConvertFrom-Json $result
+
+        if($application.data -eq $true){
+            return
+        }else{
+            throw "Error occured attempting to modify the specified application."
+        }
+
+    }catch{
+        throw "Error occured attempting to modify the specified application."
     }
 
-    $result = Invoke-PSRestConsole -command "--method add --name $Name --description $Description --auth-type $AuthType --cmdlet $Cmdlets"
-    # $result = & Invoke-Expression -Command ('& ' + (Get-PSRestApplicationPath) + " --method add --name $Name --description $Description --auth-type $AuthType --cmdlet $Cmdlets");
-    $application = ConvertFrom-Json $result
-    return $application
 }
 
 function Invoke-PSRestConsole(){
@@ -196,8 +209,7 @@ function Invoke-PSRestConsole(){
     )
 
     $FullCommand = '& python3 ./src/ConsoleApp.py ' + $Command
-    Write-Host $FullCommand
     $result = Invoke-Expression -Command ($FullCommand)
-    return $result
 
+    return $result
 }

@@ -30,10 +30,9 @@ class PSRestConsole():
                 return self.get_application()
         elif request['method'] == 'set':
             return self.set_application(
-                request['name'],
-                request['description'],
-                request['authentication'],
-                request['actions']
+                request['id'],
+                request.get('description', None),
+                request.get('actions', None),
             )
     
     def get_application(self, name: str|None = None, id: int|None = None) -> dict:
@@ -125,20 +124,20 @@ class PSRestConsole():
             print("Invalid authentication method.")
             exit(1)
     
-    def set_application(self, name: str, description: str|None, actions: list) -> dict:
+    def set_application(self, cid: str, description: str|None, actions: List[str]|None) -> dict:
         cursor = self.database.cursor()
-        cursor.execute("SELECT cid FROM client WHERE name = ?", (name,))
-        cid = cursor.fetchone()[0]
 
-        if(description is not None):
-            cursor.execute("UPDATE client SET description = ?, authentication = ? WHERE cid = ?", (description, cid))
+        if(description):
+            print("Updating description")
+            cursor.execute("UPDATE client SET description = ? WHERE cid = ?", (description, cid))
             self.database.commit()
 
-        cursor.execute("DELETE FROM action_client_map WHERE cid = ?", (cid,))
-        self.database.commit()
-
-        for action in actions:
-            cursor.execute('INSERT INTO action_client_map (cid, action) VALUES (?, ?)', (cid, action))
+        if(actions is not None):
+            cursor.execute("DELETE FROM action_client_map WHERE cid = ?", (cid,))
             self.database.commit()
 
-        return {}
+            for action in actions:
+                cursor.execute('INSERT INTO action_client_map (cid, action) VALUES (?, ?)', (cid, action))
+                self.database.commit()
+
+        return True
