@@ -43,5 +43,8 @@ PSRESTQUEUE_PUT = TMP_DIR + '/' + '5a682fbbe1bc487793d55fa09b55c547'
 PSRESTQUEUE_GET = TMP_DIR + '/' + '95b51250d7ef4fcdaea1cf51886b8ba5'
 PSRESTQUEUE_SRV = TMP_DIR + '/' + 'fcf29f8069d646e8bdc75af3eb7f02e4'
 PSRESTQUEUE_WAIT = 250
+
+RESOURCE_DIR = path.abspath("./src/resources/")
+
 #TODO: Sanitise the contents we get from the config file to prevent code injection.
 
