@@ -53,8 +53,6 @@ class Run(object):
                 depth or int(DEFAULT_DEPTH)
             )
 
-            auth = req.get_header('Authorization')
-
             self.oauth.validate_action(req.get_header('Authorization') or '', command.function)
             ticket = await self.processor.request(command)
             resp.status = HTTP_200
