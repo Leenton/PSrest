@@ -9,7 +9,7 @@ class Resources(object):
     async def on_get(self, req, resp, resource):
 
         #check if the file exists
-        if not os.path.isfile(RESOURCE_DIR + resource):
+        if not os.path.isfile(RESOURCE_DIR + '/' + resource):
             resp.status = HTTP_404
             resp.content_type = 'application/json'
             resp.text = json.dumps({'title': '404 Not Found', 'description': 'The page you are looking for does not exist.'})
@@ -41,5 +41,5 @@ class Resources(object):
                     resp.text = json.dumps({'title': '404 Not Found', 'description': 'The page you are looking for does not exist.'})
             
             resp.status = HTTP_200
-            async with aiofiles.open(RESOURCE_DIR + resource , 'rb') as f:
+            async with aiofiles.open(RESOURCE_DIR + '/' + resource , 'rb') as f:
                 resp.text = await f.read()
