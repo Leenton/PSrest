@@ -64,11 +64,11 @@ if __name__ == '__main__':
 
     PSRest.add_route('/', Home()) #Page to get all running processes
     PSRest.add_route('/oauth', OAuth()) #Page to get an access token
-    PSRest.add_route('/run', Run(kill, requests, alerts)) #Page to run commands
+    PSRest.add_route('/run', Run(kill, requests, alerts, stats, processes)) #Page to run commands
     PSRest.add_route('/help', Help()) #Page to show help for PSRest
     PSRest.add_route('/help/{command}', Help()) #Page to show help for a specific command
     PSRest.add_route('/resources/{resource}', Resources()) #Page to return static files like images for help page
     PSRest.add_route('/processes', Processes())
-    PSRest.add_route('/processes/{event_type}', ProcessEvents())
+    PSRest.add_route('/processes/{event_type}', ProcessEvents(stats, processes))
 
     uvicorn.run(PSRest, host='0.0.0.0', port=PORT, log_level='info')

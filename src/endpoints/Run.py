@@ -18,8 +18,8 @@ from processing.PSProcessor import PSProcessor
 from Config import *
 
 class Run(object):
-    def __init__(self, kill: Queue, requests: Queue, alerts: Queue) -> None:
-        self.processor = PSProcessor(kill, requests, alerts)
+    def __init__(self, kill: Queue, requests: Queue, alerts: Queue, stats: Queue, processes: Queue) -> None:
+        self.processor = PSProcessor(kill, requests, alerts, stats, processes)
         self.cmdlet_library = CmdletLibrary()
         self.oauth = OAuthService()
     
@@ -58,10 +58,12 @@ class Run(object):
             resp.status = HTTP_200
 
             try:
-                stream = PSRestResponseStream(ticket)
+                stream = PSRestResponseStream(ticket, self.processor)
                 resp.content_length = stream.length
                 resp.stream = stream.read()
             except Exception as e:
+                #Send a bad alert to the processor to let it know that the command failed to execute
+                self.processor.send_result({'ticket': ticket.id, 'status': 'failed', 'error': e})
                 await self.cleanup(ticket)
                 raise ExpiredPSTicket(ticket, 'Time out occurred waiting for PSProcessor to return the response.')
 

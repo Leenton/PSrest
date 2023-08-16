@@ -4,10 +4,12 @@ import socket
 import os
 import asyncio
 from math import factorial
+from processing.PSProcessor import PSProcessor
 
 class PSRestResponseStream():
-    def __init__(self, ticket: PSTicket) -> None:
+    def __init__(self, ticket: PSTicket, processor: PSProcessor) -> None:
         self.ticket = ticket
+        self.processor = processor
         soc = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         soc.bind(RESPONSE_DIR + f'/{self.ticket.id}')
         soc.listen(1)
@@ -26,6 +28,8 @@ class PSRestResponseStream():
             yield data
         self.connection.close()
         self.soc.close()
+
+        self.processor.send_result({'ticket':self.ticket.serialise(), 'status': COMPETED})
 
         #delete the file when we are done with it
         tries = 1

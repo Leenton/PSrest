@@ -2,7 +2,7 @@ from queue import Queue, Empty
 import asyncio
 from exceptions.PSRExceptions import PSRQueueException
 from json import dumps,loads
-from Config import PSRESTQUEUE_PUT, PSRESTQUEUE_GET, PSRESTQUEUE_SRV
+from Config import *
 from time import sleep
 import socket
 class PSRestQueue():

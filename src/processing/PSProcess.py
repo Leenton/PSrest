@@ -1,5 +1,5 @@
 import subprocess
-from Config import RESPONSE_DIR, PSRESTQUEUE_SRV, PSRESTQUEUE_WAIT
+from Config import *
 from uuid import uuid4
 
 class PSProcess():

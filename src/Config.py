@@ -21,7 +21,7 @@ REFRESH_TOKEN_TTL = 86400 * 14
 #Constants for how we serve responses
 DEFAULT_DEPTH = CONFIG.get('Response', 'DEFAULT_DEPTH')
 MAX_DEPTH = 100
-TOO_LONG = 0.5
+TOO_LONG = 0.25
 
 #Constants for the encryption
 SECRET_KEY = '2ed154d0c89362da0e2fc49257c5fb27c01cdfbc85238ea334e84dbc8eccfee3812b41add4149999b2277780b0edbdda4905f46f607fd3ffd8d3601113c1e7ae'
@@ -36,6 +36,8 @@ HELP = CONFIG.get('Help', 'HELP')
 MODULES = CONFIG.get('ExposedModules', 'MODULES')
 DISABLE_COMMANDS = CONFIG.get('DisableCmdlets', 'CMDLETS')
 ENABLE_COMMANDS = CONFIG.get('EnableCmdlets', 'CMDLETS')
+COMPETED = 'completed'
+FAILED = 'failed'
 
 #Constants for storage and socket communication
 
