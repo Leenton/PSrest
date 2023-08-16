@@ -18,6 +18,8 @@ from endpoints.Run import Run
 from endpoints.OAuth import OAuth
 from endpoints.Home import Home
 from endpoints.Resources import Resources
+from endpoints.Processes import Processes
+from endpoints.ProcessEvents import ProcessEvents
 from entities.PSRestQueue import serve_queue
 from processing.PSProcessor import start_processor
 from Config import *
@@ -47,7 +49,14 @@ if __name__ == '__main__':
     kill = Queue()
     requests = Queue()
     alerts = Queue()
-    processing = Thread(target=start_processor, name='PSProcessor', args=(kill, requests, alerts))
+    stats = Queue()
+    processes = Queue()
+
+    processing = Thread(
+        target=start_processor,
+        name='PSProcessor',
+        args=(kill, requests, alerts, stats, processes)
+        )
     processing.start()
 
     #Start the webserver
@@ -59,5 +68,7 @@ if __name__ == '__main__':
     PSRest.add_route('/help', Help()) #Page to show help for PSRest
     PSRest.add_route('/help/{command}', Help()) #Page to show help for a specific command
     PSRest.add_route('/resources/{resource}', Resources()) #Page to return static files like images for help page
+    PSRest.add_route('/processes', Processes())
+    PSRest.add_route('/processes/{event_type}', ProcessEvents())
 
     uvicorn.run(PSRest, host='0.0.0.0', port=PORT, log_level='info')

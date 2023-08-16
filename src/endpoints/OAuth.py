@@ -10,7 +10,7 @@ from entities.OAuthService import OAuthService
 from entities.Schema import OAUTH_SCHEMA
 from Config import * 
 
-class OAuth(): 
+class OAuth(object): 
     def __init__(self,) -> None:
         self.service = OAuthService()
     

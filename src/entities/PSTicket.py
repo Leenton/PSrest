@@ -9,6 +9,7 @@ class PSTicket():
         self.expires: float = datetime.timestamp(datetime.now()) + float(command.ttl)
         self.ttl: float = command.ttl
         self.command: str = command.function
+        self.application_name: str = ''
 
     def serialise(self) -> dict:
         return {
@@ -16,6 +17,7 @@ class PSTicket():
             'created': self.created,
             'expires': self.expires,
             'ttl': self.ttl,
-            'command': self.command
+            'command': self.command,
+            'application_name': self.application_name
         }
 

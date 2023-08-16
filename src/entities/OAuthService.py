@@ -3,6 +3,7 @@ import json
 import jwt
 from exceptions.PSRExceptions import *
 from entities.OAuthResponse import OAuthResponse
+from OAuthToken import OAuthToken
 import sqlite3
 from argon2 import PasswordHasher
 from uuid import uuid4
@@ -98,6 +99,9 @@ class OAuthService():
             print(e)
             raise InvalidToken('Invalid access token provided.')
     
+    def validate_token(self, token: str) -> OAuthToken:
+        pass
+
     def get_refresh_token(self, cid: int) -> str:
         #Get the refresh token associated with the cid from the db
         db = sqlite3.connect(DATABASE)
@@ -128,7 +132,6 @@ class OAuthService():
         user_actions = [row[0] for row in cursor.fetchall()]
 
         return user_actions
-
 
     def get_access_token(self, cid: str) -> str:
         return jwt.encode(

@@ -21,6 +21,7 @@ REFRESH_TOKEN_TTL = 86400 * 14
 #Constants for how we serve responses
 DEFAULT_DEPTH = CONFIG.get('Response', 'DEFAULT_DEPTH')
 MAX_DEPTH = 100
+TOO_LONG = 0.5
 
 #Constants for the encryption
 SECRET_KEY = '2ed154d0c89362da0e2fc49257c5fb27c01cdfbc85238ea334e84dbc8eccfee3812b41add4149999b2277780b0edbdda4905f46f607fd3ffd8d3601113c1e7ae'
@@ -29,6 +30,7 @@ PUBLIC_KEY = ''
 
 #Constants for the powershell execution
 PS_PROCESSORS =4
+MAX_PROCESSES = 33
 ARBITRARY_COMMANDS = True if ((CONFIG.get('PSExecution', 'ARBITRARY_COMMANDS')).lower() == 'true') else False
 HELP = CONFIG.get('Help', 'HELP')
 MODULES = CONFIG.get('ExposedModules', 'MODULES')
