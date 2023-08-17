@@ -2,7 +2,7 @@
 from falcon.asgi import App
 import uvicorn
 from threading import Thread
-from LogHanlder import LogHanlder
+from LogHandler import LogHandler
 from multiprocessing import Process
 from queue import Queue
 from subprocess import Popen, PIPE

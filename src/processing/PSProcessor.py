@@ -57,7 +57,7 @@ class PSProcessor():
         self.alerts.put(alert)
 
     def kill_processes(self, processor_db: Connection) -> None:
-        #Check the kill queuue for processes that we have been told to kill
+        #Check the kill queue for processes that we have been told to kill
         try:
             pid = self.kill.get(False)
             if(pid):
@@ -140,7 +140,26 @@ class PSProcessor():
             pass
     
     def scale_down_processes(self, processor_db: Connection) -> None:
-        pass
+        #if there is a process that hasn't been seen for a while and it has no tickets assigned to it, kill it
+        try:
+            cursor = processor_db.cursor()
+            cursor.execute("""
+                SELECT pid
+                FROM PSProcess
+                LEFT JOIN PSProcessor ON PSProcess.pid = PSProcessor.pid
+                WHERE PSProcess.last_seen < ?
+                AND PSProcessor.ticket IS NULL
+                """,
+                (datetime.timestamp(datetime.now()) - int(DEFAULT_TTL)/2,)
+            )
+            pids = cursor.fetchall()
+
+            #if the ticket length is greater than 0, and we haven't reached the max number of processes
+            for pid in pids:
+                self.kill.put(pid[0])
+
+        except Exception:
+            pass
 
     def update_process_stats(self, processor_db: Connection) -> None:
         self.processes.get()
@@ -164,8 +183,6 @@ class PSProcessor():
         #get the number of process threads that are running
         self.stats.put({'shells': len(active_children())})
         
-
-
     def start(self):
         '''
         This method is used to track the processes that are running. And what tickets they are processing.

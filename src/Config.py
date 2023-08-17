@@ -15,7 +15,7 @@ PORT = CONFIG.get('Server', 'PORT')
 
 #Constants for the ticketing system
 DEFAULT_TTL = CONFIG.get('TimeOut', 'DEFAULT_TTL')
-MAX_TTL = CONFIG.get('TimeOut', 'MAX_TTL')
+MAX_TTL = int(CONFIG.get('TimeOut', 'MAX_TTL'))
 ACCESS_TOKEN_TTL = 3600
 REFRESH_TOKEN_TTL = 86400 * 14
 #Constants for how we serve responses
@@ -46,7 +46,7 @@ RESPONSE_DIR = TMP_DIR + '/' + 'resp'
 PSRESTQUEUE_PUT = TMP_DIR + '/' + '5a682fbbe1bc487793d55fa09b55c547'
 PSRESTQUEUE_GET = TMP_DIR + '/' + '95b51250d7ef4fcdaea1cf51886b8ba5'
 PSRESTQUEUE_SRV = TMP_DIR + '/' + 'fcf29f8069d646e8bdc75af3eb7f02e4'
-PSRESTQUEUE_WAIT = 250
+PSRESTQUEUE_WAIT = 250 #milliseconds
 
 RESOURCE_DIR = path.abspath("./src/resources/")
 

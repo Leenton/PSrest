@@ -24,6 +24,14 @@ function Start-PSRestProcessor {
                 #Process failed but no command was received, so it doesn't matter just exit
                 exit
             }
+
+            #If we have a response try again, and if we fail again just exit
+            try {
+                Send-PSRestResponse -Ticket $command.Ticket -ResponseDirectory $ResponseDirectory -InputObject $Response -WaitTime $WaitTime
+            }
+            catch {
+                exit
+            }
         }
     
         while($true){

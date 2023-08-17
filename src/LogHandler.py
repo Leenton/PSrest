@@ -1,6 +1,6 @@
 from queue import Queue
 
-class LogHanlder():
+class LogHandler():
     '''
     Log class reads logs from a logging queue, and writes them to a file, and prints them to the console. 
     '''

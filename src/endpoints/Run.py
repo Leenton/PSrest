@@ -31,7 +31,7 @@ class Run(object):
             ttl = req.get_header('TTL')
             if ttl is None:
                 pass
-            elif (ttl) > int(MAX_TTL):
+            elif (ttl) > MAX_TTL:
                 raise InvalidCmdlet(f'TTL is too long. Please use a value less than {MAX_TTL} seconds.')
         except (ValueError, TypeError):
             raise InvalidCmdlet(f'TTL is not a valid number. Please use a value less than {MAX_TTL} seconds.')
