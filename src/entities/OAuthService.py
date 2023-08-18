@@ -1,13 +1,13 @@
-from Config import * 
-import json
 import jwt
-from exceptions.PSRExceptions import *
-from entities.OAuthResponse import OAuthResponse
-from OAuthToken import OAuthToken
 import sqlite3
 from argon2 import PasswordHasher
 from uuid import uuid4
 from datetime import datetime
+
+from configuration.Config import * 
+from exceptions.PSRExceptions import *
+from entities.OAuthResponse import OAuthResponse
+from entities.OAuthToken import OAuthToken
 
 class OAuthService():
     def __init__(self,) -> None:

@@ -3,7 +3,7 @@ import json
 from queue import Queue
 from falcon.status_codes import HTTP_200, HTTP_400, HTTP_401, HTTP_403, HTTP_408, HTTP_500
 from falcon.media.validators import jsonschema
-import os
+from os import unlink
 import asyncio
 import math
 
@@ -15,13 +15,18 @@ from entities.PSRestResponseStream import PSRestResponseStream
 from entities.Schema import RUN_SCHEMA
 from entities.OAuthService import OAuthService
 from processing.PSProcessor import PSProcessor
-from Config import *
+from psrlogging.PSRestLogger import Logger
+from psrlogging.LogMessage import LogMessage
+from psrlogging.LogLevel import LogLevel
+from psrlogging.LogCode import LogCode
+from configuration.Config import *
 
 class Run(object):
-    def __init__(self, kill: Queue, requests: Queue, alerts: Queue, stats: Queue, processes: Queue) -> None:
+    def __init__(self, kill: Queue, requests: Queue, alerts: Queue, stats: Queue, processes: Queue, logger: Logger) -> None:
         self.processor = PSProcessor(kill, requests, alerts, stats, processes)
         self.cmdlet_library = CmdletLibrary()
         self.oauth = OAuthService()
+        self.logger = logger
     
     @jsonschema.validate(RUN_SCHEMA)
     async def on_post(self, req, resp):
@@ -95,22 +100,23 @@ class Run(object):
             ) as e:
             resp.status = HTTP_500
             resp.text = json.dumps({'title': 'Internal Server Error', 'description': e.message})
+            self.logger.log(LogMessage(message=e, level=LogLevel.ERROR, code='500'))
 
         except Exception as e:
             resp.status = HTTP_500
             resp.text = json.dumps({'title': 'Internal Server Error', 'description': 'Something went wrong!'})
-            print(e) 
+            self.logger.log(LogMessage(message=e, level=LogLevel.ERROR, code=LogCode.System))
 
     async def cleanup(self, ticket: PSTicket):
         tries = 1
         backoff = 0.001
         while(tries <= 5):
             try:
-                os.remove(RESPONSE_DIR + f'./{ticket.id}')
+                unlink(RESPONSE_DIR + f'./{self.ticket.id}')
                 break
             except FileNotFoundError:
                 tries += 1
                 await asyncio.sleep(backoff*(math.factorial(tries)))
                 break
         if(tries >= 5):
-            print(f'Failed to delete {ticket.id} after 5 tries.')
+            self.logger.log(LogMessage(message=f'Failed to delete {ticket.id} after 5 tries.', level=LogLevel.ERROR, code=LogCode.SYSTEM))

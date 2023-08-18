@@ -1,22 +1,25 @@
 from multiprocessing import Process, active_children
 import subprocess
 from uuid import uuid4
-from entities.PSTicket import PSTicket
-from entities.Cmdlet import Cmdlet 
-from entities.PSRestQueue import PSRestQueue
 import json 
-from exceptions.PSRExceptions import ProcessorException
-import sqlite3
 from datetime import datetime
-from Config import *
 from threading import Thread
 from queue import Queue
-from processing.PSProcess import PSProcess
 from time import sleep
-from entities.PSRestQueue import PSRQueueException
 from threading import Thread
 from sqlite3.dbapi2 import Connection
+from sqlite3 import connect
 from threading import Lock
+
+#Internal imports
+from configuration.Config import *
+from exceptions.PSRExceptions import ProcessorException
+from processing.PSProcess import PSProcess
+from entities.PSRestQueue import PSRestQueue, PSRQueueException
+from entities.PSTicket import PSTicket
+from entities.Cmdlet import Cmdlet 
+
+
 
 class PSProcessor():
     def __init__(
@@ -162,37 +165,42 @@ class PSProcessor():
             pass
 
     def update_process_stats(self, processor_db: Connection) -> None:
-        self.processes.get()
-        cursor = processor_db.cursor()
-        cursor.execute('SELECT * FROM PSProcessor')
-        processes = cursor.fetchall()
-        processes = map(
-            lambda x: {
-                'ticket': x[0],
-                'pid': x[1],
-                'application': x[2],
-                'command': x[3],
-                'created': x[4],
-                'expires': x[5],
-                'modified': x[6]
-            },
-            processes)
-        self.processes.put(processes)
+        try:
+            self.processes.get()
+            cursor = processor_db.cursor()
+            cursor.execute('SELECT * FROM PSProcessor')
+            processes = cursor.fetchall()
+            processes = map(
+                lambda x: {
+                    'ticket': x[0],
+                    'pid': x[1],
+                    'application': x[2],
+                    'command': x[3],
+                    'created': x[4],
+                    'expires': x[5],
+                    'modified': x[6]
+                },
+                processes)
+            self.processes.put(processes)
 
-        self.stats.get()
-        #get the number of process threads that are running
-        self.stats.put({'shells': len(active_children())})
+            self.stats.get()
+            #get the number of process threads that are running
+            self.stats.put({'shells': len(active_children())})
+        except Exception:
+            pass
         
     def start(self):
         '''
         This method is used to track the processes that are running. And what tickets they are processing.
         It kills processes that are taking too long to process a ticket. And issues a command to start a new one.
         '''
-        db = sqlite3.connect(':memory:')
+        db = connect(':memory:')
         cursor = db.cursor()
         #add a cascade to the schedule table so when a process is deleted, it's ticket is also deleted
-        cursor.execute('CREATE TABLE PSProcessor (ticket TEXT PRIMARY KEY, pid TEXT, application TEXT, command TEXT, created REAL, expires REAL, modified REAL)')
-        cursor.execute('CREATE TABLE PSProcess (pid TEXT PRIMARY KEY, last_seen REAL) FOREIGN KEY(pid) REFERENCES PSProcessor(pid) ON DELETE CASCADE')
+        cursor.executescript('''
+            CREATE TABLE PSProcessor (ticket TEXT PRIMARY KEY, pid TEXT, application TEXT, command TEXT, created REAL, expires REAL, modified REAL);
+            CREATE TABLE PSProcess (pid TEXT PRIMARY KEY, last_seen REAL, FOREIGN KEY(pid) REFERENCES PSProcessor(pid) ON DELETE CASCADE);
+            ''')
         db.commit()
         
         for x in range(self.process_count):
@@ -206,6 +214,8 @@ class PSProcessor():
             self.scale_up_processes(db)
             self.scale_down_processes(db)
             self.update_process_stats(db)
+
+            sleep(0.001)
 
 def start_processor(kill: Queue, requests: Queue, alerts: Queue, stats: Queue, processes: Queue):
     processor = PSProcessor(kill, requests, alerts, stats, processes)

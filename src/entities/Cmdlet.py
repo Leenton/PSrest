@@ -1,6 +1,6 @@
 import json
 import base64
-from Config import *
+from configuration.Config import *
 from entities.CmdletLibrary import CmdletLibrary
 
 class Cmdlet():
@@ -63,7 +63,7 @@ class Cmdlet():
             cmdlet['parameters'] = None
 
         if(cmdlet['cmdlet']):
-            #convert the cmdlet dictionary into a valid poweshell command string.
+            #Convert the cmdlet dictionary into a valid poweshell command string.
             cmdlet_string = cmdlet['cmdlet'].command
             if(cmdlet['parameters']):
                 for parameter in cmdlet['parameters']:

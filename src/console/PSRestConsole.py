@@ -1,5 +1,5 @@
 import sqlite3
-from Config import * 
+from configuration.Config import * 
 import jwt
 from argon2 import PasswordHasher
 import sqlite3

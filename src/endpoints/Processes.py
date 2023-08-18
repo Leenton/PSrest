@@ -1,10 +1,17 @@
 from falcon.status_codes import * 
 import aiofiles
-from Config import *
+from configuration.Config import *
 import json
+from psrlogging.Logger import Logger
+from psrlogging.LogMessage import LogMessage
+from psrlogging.LogLevel import LogLevel
+from psrlogging.LogCode import LogCode
 
 
 class Processes(object):
+    def __init__(self, logger: Logger) -> None:
+        self.logger = logger
+
     def get(self):
         return {"message": "Processes endpoint"}
     

@@ -3,7 +3,7 @@ import subprocess
 import json
 import base64
 import random
-from Config import *
+from configuration.Config import *
 
 class CmdletLibrary():
     def __init__(self) -> None:

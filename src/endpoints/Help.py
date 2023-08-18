@@ -7,11 +7,16 @@ from html import escape
 # import project dependencies
 from entities.CmdletInfo import CmdletInfo
 from entities.CmdletLibrary import CmdletLibrary
-from Config import *
+from psrlogging.Logger import Logger
+from psrlogging.LogMessage import LogMessage
+from psrlogging.LogLevel import LogLevel
+from psrlogging.LogCode import LogCode
+from configuration.Config import *
 
 class Help(object):
-    def __init__(self) -> None:
+    def __init__(self, logger: Logger) -> None:
         self.cmdlet_library = CmdletLibrary()
+        self.logger = logger
 
     async def on_get(self, req, resp, command = None):
         resp.content_type = 'application/json'

@@ -1,13 +1,19 @@
-from entities.PSTicket import PSTicket
-from Config import *
-import socket
-import os
+
 import asyncio
+import socket
+from os import unlink
 from math import factorial
+
+from configuration.Config import *
 from processing.PSProcessor import PSProcessor
+from psrlogging.PSRestLogger import Logger
+from psrlogging.LogMessage import LogMessage
+from psrlogging.LogLevel import LogLevel
+from psrlogging.LogCode import LogCode
+from entities.PSTicket import PSTicket
 
 class PSRestResponseStream():
-    def __init__(self, ticket: PSTicket, processor: PSProcessor) -> None:
+    def __init__(self, ticket: PSTicket, processor: PSProcessor, logger: Logger) -> None:
         self.ticket = ticket
         self.processor = processor
         soc = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -36,7 +42,7 @@ class PSRestResponseStream():
         backoff = 0.001
         while(tries <= 5):
             try:
-                os.remove(RESPONSE_DIR + f'./{self.ticket}')
+                unlink(RESPONSE_DIR + f'./{self.ticket.id}')
                 break
             except FileNotFoundError:
                 tries += 1
@@ -44,4 +50,4 @@ class PSRestResponseStream():
                 break
         
         if(tries >= 5):
-            print(f'Failed to delete {self.ticket} after 5 tries.')
+            self.logger.log(LogMessage(message=f'Failed to delete {self.ticket.id} after 5 tries.', level=LogLevel.ERROR, code=LogCode.System))

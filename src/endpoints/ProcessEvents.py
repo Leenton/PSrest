@@ -1,22 +1,27 @@
 from falcon.status_codes import * 
-import aiofiles
-import os
-from Config import *
 import json
 import asyncio
 from falcon.asgi import SSEvent
-from entities.OAuthService import OAuthService
-from entities.OAuthToken import OAuthToken
 from typing import Generator, List
 from queue import Queue
 
+from configuration.Config import *
+from entities.OAuthService import OAuthService
+from entities.OAuthToken import OAuthToken
+from psrlogging.Logger import Logger
+from psrlogging.LogMessage import LogMessage
+from psrlogging.LogLevel import LogLevel
+from psrlogging.LogCode import LogCode
+
+
 class ProcessEvents(object):
-    def __init__(self, process_events: Queue, traffic_events: Queue) -> None:
+    def __init__(self, process_events: Queue, traffic_events: Queue, logger: Logger) -> None:
         self.process_events = process_events
         self.traffic_events = traffic_events
         self.oauth = OAuthService()
+        self.logger = logger
 
-    async def get_process_events(self, cid: int) -> Generator[List[dict]]:
+    async def get_process_events(self, cid: int) -> Generator[List[dict], None, None]:
         while True:
             asyncio.sleep(0.01)
 
@@ -30,7 +35,7 @@ class ProcessEvents(object):
                 yield SSEvent(event="message", event_id=str(uuid4()), json=(filtered_events), retry=2500)
 
 
-    async def get_traffic_events(self, cid: int) -> Generator[list]:
+    async def get_traffic_events(self, cid: int) -> Generator[dict, None, None]:
         while True:
             asyncio.sleep(1)
 

@@ -4,12 +4,14 @@ import configparser
 from uuid import uuid4
 from os import path
 from secrets import token_bytes
+import platform
+
 
 #OAuth Database
-DATABASE = './data.db'
+DATABASE = str(Path(__file__).parent.parent.parent) + '/data.db'
 
 CONFIG = configparser.ConfigParser()      
-CONFIG.read_file(open((str(Path(__file__).parent.parent) + '/config'), 'r')) 
+CONFIG.read_file(open((str(Path(__file__).parent.parent.parent) + '/config'), 'r')) 
 HOSTNAME = CONFIG.get('Server', 'HOSTNAME')
 PORT = CONFIG.get('Server', 'PORT')
 
@@ -40,15 +42,20 @@ COMPETED = 'completed'
 FAILED = 'failed'
 
 #Constants for storage and socket communication
-
-TMP_DIR = path.abspath("./tmp")
+TMP_DIR = path.abspath('./tmp')
 RESPONSE_DIR = TMP_DIR + '/' + 'resp'
 PSRESTQUEUE_PUT = TMP_DIR + '/' + '5a682fbbe1bc487793d55fa09b55c547'
 PSRESTQUEUE_GET = TMP_DIR + '/' + '95b51250d7ef4fcdaea1cf51886b8ba5'
 PSRESTQUEUE_SRV = TMP_DIR + '/' + 'fcf29f8069d646e8bdc75af3eb7f02e4'
 PSRESTQUEUE_WAIT = 250 #milliseconds
 
-RESOURCE_DIR = path.abspath("./src/resources/")
+RESOURCE_DIR = path.abspath('./src/resources/')
+
+#Logging preferences
+LOG_LEVEL = 'INFO'
+LOG_FILE = './psrest.log'
+#get the os name
+LOG_PLATFORM = platform.system()
 
 #TODO: Sanitise the contents we get from the config file to prevent code injection.
 

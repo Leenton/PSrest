@@ -1,5 +1,5 @@
 import subprocess
-from Config import *
+from configuration.Config import *
 from uuid import uuid4
 
 class PSProcess():

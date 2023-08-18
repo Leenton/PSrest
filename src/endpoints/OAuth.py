@@ -8,11 +8,16 @@ from exceptions.PSRExceptions import *
 from entities.OAuthResponse import OAuthResponse
 from entities.OAuthService import OAuthService
 from entities.Schema import OAUTH_SCHEMA
-from Config import * 
+from psrlogging.Logger import Logger
+from psrlogging.LogMessage import LogMessage
+from psrlogging.LogLevel import LogLevel
+from psrlogging.LogCode import LogCode
+from configuration.Config import * 
 
 class OAuth(object): 
-    def __init__(self,) -> None:
+    def __init__(self, logger: Logger) -> None:
         self.service = OAuthService()
+        self.logger = logger
     
     @jsonschema.validate(OAUTH_SCHEMA)
     async def on_post(self, req, resp):

@@ -2,17 +2,12 @@
 from falcon.asgi import App
 import uvicorn
 from threading import Thread
-from LogHandler import LogHandler
 from multiprocessing import Process
 from queue import Queue
-from subprocess import Popen, PIPE
 from time import sleep
 import os
 import sqlite3
 
-# #import endpoints
-# from endpoints.Kill import Kill
-# from endpoints.Running import Running
 from endpoints.Help import Help
 from endpoints.Run import Run
 from endpoints.OAuth import OAuth
@@ -20,16 +15,18 @@ from endpoints.Home import Home
 from endpoints.Resources import Resources
 from endpoints.Processes import Processes
 from endpoints.ProcessEvents import ProcessEvents
+from psrlogging.Logger import ThreadSafeLogger
 from entities.PSRestQueue import serve_queue
 from processing.PSProcessor import start_processor
-from Config import *
+from psrlogging.PSRestLogger import start_logger
+from configuration.Config import *
 
 
 #import processing entities
 
 if __name__ == '__main__':
 
-    #check if the db exists if not create it
+    #Check if the db exists if not create it
     if(not os.path.exists(DATABASE)):
         db = sqlite3.connect(DATABASE)
         cursor = db.cursor()
@@ -40,35 +37,32 @@ if __name__ == '__main__':
         """
         )
 
-    # process = Popen(['python3', 'src/Queue.py'])
-    #Handle the Python Powershell communication in a separate Process
-    queue = Process(target=serve_queue, name='PSRestQueue')
-    queue.start()
+    #Create queues for communication between threads and processes
+    kill, requests, alerts, stats, processes, logs = Queue(), Queue(), Queue(), Queue(), Queue(), Queue()
+
+    #Create threads and subproceses for processing and psrlogging and queueing
+    processing = Thread(target=start_processor, name='PSProcessor', args=(kill, requests, alerts, stats, processes))
+    psrlogging = Thread(target=start_logger, name='PSRestLogger',args=(logs,))
+    psrest_queue = Process(target=serve_queue, name='PSRestQueue')
+    
+    #Start all the threads
+    psrest_queue.start()
+    psrlogging.start()
     sleep(5)
-
-    kill = Queue()
-    requests = Queue()
-    alerts = Queue()
-    stats = Queue()
-    processes = Queue()
-
-    processing = Thread(
-        target=start_processor,
-        name='PSProcessor',
-        args=(kill, requests, alerts, stats, processes)
-        )
     processing.start()
 
-    #Start the webserver
+    #Define the webserver application and add routes
     PSRest = App()
-
-    PSRest.add_route('/', Home()) #Page to get all running processes
-    PSRest.add_route('/oauth', OAuth()) #Page to get an access token
-    PSRest.add_route('/run', Run(kill, requests, alerts, stats, processes)) #Page to run commands
-    PSRest.add_route('/help', Help()) #Page to show help for PSRest
-    PSRest.add_route('/help/{command}', Help()) #Page to show help for a specific command
-    PSRest.add_route('/resources/{resource}', Resources()) #Page to return static files like images for help page
-    PSRest.add_route('/processes', Processes())
-    PSRest.add_route('/processes/{event_type}', ProcessEvents(stats, processes))
-
+    logger = ThreadSafeLogger(logs)
+    PSRest.add_route('/', Home(logger)) #Page to get all running processes
+    PSRest.add_route('/oauth', OAuth(logger)) #Page to get an access token
+    PSRest.add_route('/run', Run(kill, requests, alerts, stats, processes, logger)) #Page to run commands
+    PSRest.add_route('/help', Help(logger)) #Page to show help for PSRest
+    PSRest.add_route('/help/{command}', Help(logger)) #Page to show help for a specific command
+    PSRest.add_route('/resources/{resource}', Resources(logger)) #Page to return static files like images for help page
+    PSRest.add_route('/processes', Processes(logger))
+    PSRest.add_route('/processes/{event_type}', ProcessEvents(stats, processes, logger))
+    
+    #Start the webserver
+    logger.log('Starting PSRest')
     uvicorn.run(PSRest, host='0.0.0.0', port=PORT, log_level='info')

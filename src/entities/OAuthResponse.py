@@ -1,4 +1,4 @@
-from Config import *
+from configuration.Config import *
 
 class OAuthResponse():
     def __init__(self, access_token: str, refresh_token: str):

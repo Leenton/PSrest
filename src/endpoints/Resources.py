@@ -1,11 +1,18 @@
 from falcon.status_codes import * 
 import aiofiles
 import os
-from Config import *
+from configuration.Config import *
 import json
 
+from psrlogging.Logger import Logger
+from psrlogging.LogMessage import LogMessage
+from psrlogging.LogLevel import LogLevel
+from psrlogging.LogCode import LogCode
 
 class Resources(object):
+    def __init__(self, logger: Logger) -> None:
+        self.logger = logger
+
     async def on_get(self, req, resp, resource):
 
         #check if the file exists
