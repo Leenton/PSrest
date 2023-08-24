@@ -213,3 +213,13 @@ function Invoke-PSRestConsole(){
 
     return $result
 }
+
+
+
+
+
+
+
+
+#TODO: Remove this
+$client = @{client_id='36c9adc3-f9da-4170-b087-a3eaa14e14b3'; client_secret='1c051bd3-ec5d-479c-b777-60e5e92cbf5a'}

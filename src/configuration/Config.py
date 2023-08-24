@@ -73,8 +73,7 @@ def setup_metric_db():
     db = sqlite3.connect(METRIC_DATABASE)
     cursor = db.cursor()
     cursor.executescript("""
-    CREATE TABLE client (cid INTEGER PRIMARY KEY AUTOINCREMENT, client_id TEXT, client_secret TEXT, name TEXT, description TEXT, authentication TEXT);
-    CREATE TABLE refresh_client_map (rid INTEGER PRIMARY KEY AUTOINCREMENT, refresh_token TEXT, expiry REAL, cid INTEGER, FOREIGN KEY(cid) REFERENCES client(cid) ON DELETE CASCADE);
-    CREATE TABLE action_client_map (aid INTEGER PRIMARY KEY AUTOINCREMENT, action TEXT, cid INTEGER, FOREIGN KEY(cid) REFERENCES client(cid) ON DELETE CASCADE);
+    CREATE TABLE metric (metric_id PRIMARY KEY, created REAL);
+    CREATE TABLE label (label_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, metric_id TEXT, FOREIGN KEY(metric_id) REFERENCES metric(metric_id));
     """
     )

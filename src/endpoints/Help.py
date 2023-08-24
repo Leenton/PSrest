@@ -7,9 +7,9 @@ from html import escape
 # import project dependencies
 from entities.CmdletInfo import CmdletInfo
 from entities.CmdletLibrary import CmdletLibrary
-from psrlogging.RecorderLogger import MetricRecorderLogger
-from psrlogging.LogMessage import LogMessage
-from psrlogging.Logger import LogLevel, LogCode
+from psrlogging.LogMessage import LogMessage, LogLevel, LogCode
+from psrlogging.Metric import Metric, MetricLabel
+from psrlogging.MetricRecorderLogger import MetricRecorderLogger
 from configuration.Config import *
 
 class Help(object):
@@ -18,6 +18,7 @@ class Help(object):
         self.logger = logger
 
     async def on_get(self, req, resp, command = None):
+        self.logger.record(Metric(MetricLabel.REQUEST))
         resp.content_type = 'application/json'
 
         if(not HELP):
@@ -39,6 +40,7 @@ class Help(object):
             resp.content_type = 'text/html'
             async with aiofiles.open('./src/html/help.html', 'rb') as f:
                 resp.text = await f.read()
+
 
     def build_help_page(self, info: CmdletInfo) -> str:
         indents, content = self.get_style_and_content(info.help)

@@ -8,9 +8,9 @@ from exceptions.PSRExceptions import *
 from entities.OAuthResponse import OAuthResponse
 from entities.OAuthService import OAuthService
 from entities.Schema import OAUTH_SCHEMA
-from psrlogging.RecorderLogger import MetricRecorderLogger
-from psrlogging.LogMessage import LogMessage
-from psrlogging.Logger import LogLevel, LogCode
+from psrlogging.LogMessage import LogMessage, LogLevel, LogCode
+from psrlogging.Metric import Metric, MetricLabel
+from psrlogging.MetricRecorderLogger import MetricRecorderLogger
 from configuration.Config import * 
 
 class OAuth(object): 
@@ -20,6 +20,7 @@ class OAuth(object):
     
     @jsonschema.validate(OAUTH_SCHEMA)
     async def on_post(self, req, resp):
+        self.logger.record(Metric(MetricLabel.REQUEST))
         resp.content_type = 'application/json'
         credentials: dict = await req.get_media()
 
@@ -40,6 +41,7 @@ class OAuth(object):
         except Exception as e:
             resp.status = HTTP_401
             resp.text = json.dumps({
-                'title': 'Unauthorized',
+                'title': 'Unauthorised',
                 'description':'Invalid credentials.'
                 })
+            self.logger.record(Metric(MetricLabel.INVALID_CREDENTIALS))

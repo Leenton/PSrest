@@ -9,7 +9,7 @@ from typing import List, Tuple
 class PSRestConsole():
     def __init__(self,) -> None:
         self.service = 1
-        self.database = sqlite3.connect(DATABASE)
+        self.database = sqlite3.connect(CREDENTIAL_DATABASE)
 
     def run(self, request: dict) -> dict:
         if request['method'] == 'add':

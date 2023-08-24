@@ -1,19 +1,19 @@
 from falcon.status_codes import * 
 import aiofiles
 import os
-from configuration.Config import *
 import json
 
-from psrlogging.RecorderLogger import MetricRecorderLogger
-from psrlogging.LogMessage import LogMessage
-from psrlogging.Logger import LogLevel, LogCode
+from configuration.Config import *
+from psrlogging.LogMessage import LogMessage, LogLevel, LogCode
+from psrlogging.Metric import Metric, MetricLabel
+from psrlogging.MetricRecorderLogger import MetricRecorderLogger
 
 class Resources(object):
     def __init__(self, logger: MetricRecorderLogger) -> None:
         self.logger = logger
 
     async def on_get(self, req, resp, resource):
-
+        self.logger.record(Metric(MetricLabel.REQUEST))
         #check if the file exists
         if not os.path.isfile(RESOURCE_DIR + '/' + resource):
             resp.status = HTTP_404

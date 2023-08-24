@@ -4,7 +4,6 @@ import uvicorn
 from multiprocessing import Process, Queue as ProcessQueue
 from time import sleep
 import os
-import sqlite3
 
 from endpoints.Help import Help
 from endpoints.Run import Run
@@ -13,7 +12,7 @@ from endpoints.Home import Home
 from endpoints.Resources import Resources
 from endpoints.Processes import Processes
 from endpoints.Events import Events
-from psrlogging.RecorderLogger import MultiProcessSafeRecorderLogger
+from psrlogging.MetricRecorderLogger import MultiProcessSafeRecorderLogger
 from entities.PSRestQueue import serve_queue
 from processing.PSProcessor import start_processor
 from psrlogging.Logger import start_logger

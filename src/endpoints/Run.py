@@ -15,9 +15,9 @@ from entities.PSRestResponseStream import PSRestResponseStream
 from entities.Schema import RUN_SCHEMA
 from entities.OAuthService import OAuthService
 from processing.PSProcessor import PSProcessor
-from psrlogging.RecorderLogger import MetricRecorderLogger
-from psrlogging.LogMessage import LogMessage
-from psrlogging.Logger import LogLevel, LogCode
+from psrlogging.LogMessage import LogMessage, LogLevel, LogCode
+from psrlogging.Metric import Metric, MetricLabel
+from psrlogging.MetricRecorderLogger import MetricRecorderLogger
 from configuration.Config import *
 
 class Run(object):
@@ -27,8 +27,9 @@ class Run(object):
         self.oauth = OAuthService()
         self.logger = logger
     
-    # @jsonschema.validate(RUN_SCHEMA)
+    @jsonschema.validate(RUN_SCHEMA)
     async def on_post(self, req, resp):
+        self.logger.record(Metric(MetricLabel.REQUEST))
         resp.content_type = 'application/json'
        
         try:
@@ -81,10 +82,12 @@ class Run(object):
             resp.text = json.dumps({'title': 'Request data failed validation', 'description': e.message})
 
         except InvalidToken as e:
+            self.logger.record(Metric(MetricLabel.INVALID_CREDENTIALS))
             resp.status = HTTP_401
-            resp.text = json.dumps({'title': 'Unauthorized Request', 'description': e.message})
+            resp.text = json.dumps({'title': 'Unauthorised Request', 'description': e.message})
         
         except UnAuthorised as e:
+            self.logger.record(Metric(MetricLabel.UNAUTHORISED))
             resp.status = HTTP_403
             resp.text = json.dumps({'title': 'Forbidden Request', 'description': e.message})
         

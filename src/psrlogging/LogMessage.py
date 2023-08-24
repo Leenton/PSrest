@@ -1,5 +1,15 @@
-from psrlogging.Logger import LogLevel, LogCode
+from enum import Enum
 from datetime import datetime
+
+class LogCode(Enum):
+    GENERIC = 1
+    SYSTEM = 2
+
+class LogLevel(Enum):
+    INFO = 1
+    WARNING = 2
+    ERROR = 3
+    CRITICAL = 4
 
 class LogMessage():
     def __init__(self, message: str, level: LogLevel = LogLevel.INFO, code: LogCode = LogCode.SYSTEM):
@@ -18,3 +28,4 @@ class LogMessage():
     
     def __str__(self) -> str:
         return f'[{self.timestamp}] [{self.level.name}] [{self.code.name}] {self.message}'
+

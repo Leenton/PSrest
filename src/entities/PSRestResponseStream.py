@@ -71,7 +71,8 @@ class PSRestResponseStream():
             return
 
     async def close(self, failure: bool = False):
-        unlink(self.path)
         self.task.cancel()
+        unlink(self.path)
+
         if(failure):
             await self.processor.send_result({'ticket': self.ticket.id, 'status': FAILED, 'error': 'Stream timed out.'})

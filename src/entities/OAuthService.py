@@ -14,7 +14,7 @@ class OAuthService():
         self.password_hasher = PasswordHasher()
     
     def validate_client_credential(self, client_id: str, client_secret: str) -> OAuthResponse:
-        db = sqlite3.connect(DATABASE)
+        db = sqlite3.connect(CREDENTIAL_DATABASE)
         cursor = db.cursor()
         cursor.execute(
             'SELECT cid, client_secret FROM client WHERE client_id = ?',
@@ -42,7 +42,7 @@ class OAuthService():
         )
 
     def validate_refresh_token(self, refresh_token) -> OAuthResponse:
-        db = sqlite3.connect(DATABASE)
+        db = sqlite3.connect(CREDENTIAL_DATABASE)
         cursor = db.cursor()
         cursor.execute(
             'SELECT cid FROM refresh_client_map WHERE refresh_token = ? AND expiry > ?',
@@ -61,11 +61,11 @@ class OAuthService():
 
     def validate_action(self, header: str, action: str) -> None:
         #Get the access token from the header
-        authorization = header.split(' ')
-        if(not authorization or authorization[0].lower() != 'bearer'):
-            raise UnAuthorised('Authorization scheme not supported or authorization poorly formatted.')
+        authorisation = header.split(' ')
+        if(not authorisation or authorisation[0].lower() != 'bearer'):
+            raise UnAuthorised('Authorisation scheme not supported or authorisation poorly formatted.')
         
-        access_token = authorization[-1]
+        access_token = authorisation[-1]
 
         try:
             token = jwt.decode(access_token, SECRET_KEY, algorithms=['HS512'])
@@ -103,7 +103,7 @@ class OAuthService():
 
     def get_refresh_token(self, cid: int) -> str:
         #Get the refresh token associated with the cid from the db
-        db = sqlite3.connect(DATABASE)
+        db = sqlite3.connect(CREDENTIAL_DATABASE)
 
         #Delete the old refresh token
         cursor = db.cursor()
@@ -125,7 +125,7 @@ class OAuthService():
 
     def get_client_actions(self, cid: str) -> list:
         #Get the actions associated with the cid from the db
-        db = sqlite3.connect(DATABASE)
+        db = sqlite3.connect(CREDENTIAL_DATABASE)
         cursor = db.cursor()
         cursor.execute('SELECT action FROM action_client_map WHERE cid = ?', (cid,))
         user_actions = [row[0] for row in cursor.fetchall()]

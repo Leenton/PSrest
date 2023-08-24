@@ -8,9 +8,9 @@ from multiprocessing import Queue
 from configuration.Config import *
 from entities.OAuthService import OAuthService
 from entities.OAuthToken import OAuthToken
-from psrlogging.RecorderLogger import MetricRecorderLogger
-from psrlogging.LogMessage import LogMessage
-from psrlogging.Logger import LogLevel, LogCode
+from psrlogging.LogMessage import LogMessage, LogLevel, LogCode
+from psrlogging.Metric import Metric, MetricLabel
+from psrlogging.MetricRecorderLogger import MetricRecorderLogger
 
 
 class Events(object):
@@ -49,6 +49,7 @@ class Events(object):
 
 
     async def on_get(self, req, resp, event_type: str = ''):
+        self.logger.record(Metric(MetricLabel.REQUEST))
         token: OAuthToken = self.oauth.validate_token(req.get_header('Authorization') or '')
 
         if event_type.lower() in ['processes', 'traffic']:

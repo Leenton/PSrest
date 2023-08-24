@@ -180,11 +180,6 @@ class PSProcessor():
             
             self.processes.get()
             self.processes.put(processes)
-            # print("Dumped processes to queue")
-
-            # self.stats.get()
-            # #get the number of process threads that are running
-            # self.stats.put({'shells': len(active_children())})
         except Exception:
             return
         
@@ -196,10 +191,10 @@ class PSProcessor():
         db = connect(':memory:')
         cursor = db.cursor()
         #add a cascade to the schedule table so when a process is deleted, it's ticket is also deleted
-        cursor.executescript('''
-            CREATE TABLE PSProcessor (ticket TEXT PRIMARY KEY, pid TEXT, application TEXT, command TEXT, created REAL, expires REAL, modified REAL);
-            CREATE TABLE PSProcess (pid TEXT PRIMARY KEY, last_seen REAL, FOREIGN KEY(pid) REFERENCES PSProcessor(pid) ON DELETE CASCADE);
-            ''')
+        cursor.executescript("""
+        CREATE TABLE PSProcessor (ticket TEXT PRIMARY KEY, pid TEXT, application TEXT, command TEXT, created REAL, expires REAL, modified REAL);
+        CREATE TABLE PSProcess (pid TEXT PRIMARY KEY, last_seen REAL, FOREIGN KEY(pid) REFERENCES PSProcessor(pid) ON DELETE CASCADE);
+        """)
         db.commit()
         
         for x in range(self.process_count):
@@ -215,7 +210,6 @@ class PSProcessor():
             self.update_process_stats(db)
 
             sleep(0.001)
-
 
 def start_processor(kill: Queue, requests: Queue, alerts: Queue, stats: Queue, processes: Queue):
     processor = PSProcessor(kill, requests, alerts, stats, processes)

@@ -2,9 +2,10 @@ from falcon.status_codes import *
 import aiofiles
 from configuration.Config import *
 import json
-from psrlogging.RecorderLogger import MetricRecorderLogger
-from psrlogging.LogMessage import LogMessage
-from psrlogging.Logger import LogLevel, LogCode
+
+from psrlogging.LogMessage import LogMessage, LogLevel, LogCode
+from psrlogging.Metric import Metric, MetricLabel
+from psrlogging.MetricRecorderLogger import MetricRecorderLogger
 
 
 class Processes(object):
@@ -15,6 +16,7 @@ class Processes(object):
         return {"message": "Processes endpoint"}
     
     async def on_get(self, req, resp):
+        self.logger.record(Metric(MetricLabel.REQUEST))
         #check if they are logged in
         #if they are serve the page else serve the login page
         resp.status = HTTP_200
@@ -23,6 +25,7 @@ class Processes(object):
             resp.text = await f.read()
 
     async def on_delete(self, req, resp):
+        self.logger.record(Metric(MetricLabel.REQUEST))
         resp.status = HTTP_200
         resp.content_type = 'application/json'
         resp.text = json.dumps({'title': 'did it!'})
