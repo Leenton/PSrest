@@ -1,12 +1,11 @@
 from falcon.status_codes import * 
 import aiofiles
-from psrlogging.Logger import Logger
+from psrlogging.RecorderLogger import MetricRecorderLogger
 from psrlogging.LogMessage import LogMessage
-from psrlogging.LogLevel import LogLevel
-from psrlogging.LogCode import LogCode
+from psrlogging.Logger import LogLevel, LogCode
 
 class Home(object):
-    def __init__(self, logger: Logger) -> None:
+    def __init__(self, logger: MetricRecorderLogger) -> None:
         self.logger = logger
 
     async def on_get(self, req, resp):

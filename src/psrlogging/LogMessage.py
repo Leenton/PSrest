@@ -1,5 +1,4 @@
-from psrlogging.LogLevel import LogLevel
-from psrlogging.LogCode import LogCode
+from psrlogging.Logger import LogLevel, LogCode
 from datetime import datetime
 
 class LogMessage():

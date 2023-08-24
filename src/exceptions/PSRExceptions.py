@@ -1,4 +1,3 @@
-from entities.Cmdlet import Cmdlet
 from entities.PSTicket import PSTicket
 class InvalidToken(Exception):
     '''
@@ -85,6 +84,17 @@ class PSRQueueException(Exception):
     Exception raised when the PSRQueue encounters an error.
     '''
     def __init__(self, message='PSRQueue failed.'):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.message}'
+    
+class StreamTimeout(Exception):
+    '''
+    Exception raised when the PSResponseStream times out waiting for a response.
+    '''
+    def __init__(self, message='Stream timed out.'):
         self.message = message
         super().__init__(self.message)
 

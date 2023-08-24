@@ -12,7 +12,6 @@ from entities.OAuthToken import OAuthToken
 class OAuthService():
     def __init__(self,) -> None:
         self.password_hasher = PasswordHasher()
-        pass
     
     def validate_client_credential(self, client_id: str, client_secret: str) -> OAuthResponse:
         db = sqlite3.connect(DATABASE)

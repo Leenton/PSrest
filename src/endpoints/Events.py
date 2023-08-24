@@ -3,36 +3,39 @@ import json
 import asyncio
 from falcon.asgi import SSEvent
 from typing import Generator, List
-from queue import Queue
+from multiprocessing import Queue
 
 from configuration.Config import *
 from entities.OAuthService import OAuthService
 from entities.OAuthToken import OAuthToken
-from psrlogging.Logger import Logger
+from psrlogging.RecorderLogger import MetricRecorderLogger
 from psrlogging.LogMessage import LogMessage
-from psrlogging.LogLevel import LogLevel
-from psrlogging.LogCode import LogCode
+from psrlogging.Logger import LogLevel, LogCode
 
 
-class ProcessEvents(object):
-    def __init__(self, process_events: Queue, traffic_events: Queue, logger: Logger) -> None:
+class Events(object):
+    def __init__(self, process_events: Queue, traffic_events: Queue, logger: MetricRecorderLogger) -> None:
         self.process_events = process_events
         self.traffic_events = traffic_events
         self.oauth = OAuthService()
         self.logger = logger
 
-    async def get_process_events(self, cid: int) -> Generator[List[dict], None, None]:
+    async def get_process_events(self, cid: int|str) -> Generator[List[dict], None, None]:
         while True:
-            asyncio.sleep(0.01)
+            await asyncio.sleep(0.01)
 
-            if(not self.process_events.empty()):
-                events = self.process_events[0]
-                filtered_events = []
-                for event in events:            
-                    if(cid == 'admin' or cid == event['cid']):
-                        filtered_events.append(event)
+            yield SSEvent(event="message", event_id=str(uuid4()), json=({'test': 2}), retry=2500)
+
+            # try:
+            #     events = self.process_events.get()
+            #     filtered_events = []
+            #     for event in events:            
+            #         if(cid == 'admin' or cid == event['cid']):
+            #             filtered_events.append(event)
                 
-                yield SSEvent(event="message", event_id=str(uuid4()), json=(filtered_events), retry=2500)
+            #     yield SSEvent(event="message", event_id=str(uuid4()), json=(filtered_events), retry=2500)
+            # except Exception as e:
+            #     print(e)
 
 
     async def get_traffic_events(self, cid: int) -> Generator[dict, None, None]:
@@ -51,7 +54,7 @@ class ProcessEvents(object):
         if event_type.lower() in ['processes', 'traffic']:
             resp.status = HTTP_200
             resp.content_type = 'text/event-stream'
-            resp.sse = self.get_process_events(token.user) if event_type.lower() == 'processes' else self.get_traffic_events()
+            resp.sse = self.get_process_events('admin') if event_type.lower() == 'processes' else self.get_traffic_events()
 
         elif event_type.lower() == 'static':
             resp.status = HTTP_200

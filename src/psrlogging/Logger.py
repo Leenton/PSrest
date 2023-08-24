@@ -1,8 +1,9 @@
 from configuration.Config import *
 from typing import Protocol, List
-from queue import Queue
+from multiprocessing import Queue
 from psrlogging.LogMessage import LogMessage
-import threading
+from enum import Enum
+from time import sleep
 
 class Logger(Protocol):
     def log(self, message: LogMessage) -> None:
@@ -31,14 +32,6 @@ class NullLogger(Logger):
     def log(message: LogMessage):
         pass
 
-class ThreadSafeLogger(Logger):
-    def __init__(self, queue: Queue):
-        self.message_queue = queue
-
-    def log(self, message: LogMessage):
-        with threading.Lock():
-            self.message_queue.put(message)
-
 class MultiLogger(Logger):
     def __init__(self, loggers: List[Logger]):
         self.loggers = loggers
@@ -47,3 +40,44 @@ class MultiLogger(Logger):
         for logger in self.loggers:
             msg = LogMessage(message=message.message, level=message.level, code=message.code)
             logger.log(msg)
+
+class PSRestLogger(Logger):
+    def __init__(self) -> None:
+        self.filename = LOG_FILE
+
+        if LOG_PLATFORM == 'Windows':
+            logger = WindowsLogger()
+        elif LOG_PLATFORM== 'Linux':
+            logger = LinuxLogger()
+        elif LOG_PLATFORM == 'MacOS':
+            logger = MacLogger()
+        else:
+            logger = NullLogger()
+    
+        self.logger = MultiLogger([
+            FileLogger(self.filename),logger])
+
+    def log(self, message: LogMessage) -> None:
+        self.logger.log(message)
+
+    def run(self, messages: Queue) -> None:
+        while True:
+            try:
+                message: LogMessage = messages.get(False)
+                self.log(message)
+            except Exception:
+                sleep(0.1)
+
+def start_logger(queue: Queue) -> None:
+    logger = PSRestLogger()
+    logger.run(queue)
+
+class LogCode(Enum):
+    GENERIC = 1
+    SYSTEM = 2
+
+class LogLevel(Enum):
+    INFO = 1
+    WARNING = 2
+    ERROR = 3
+    CRITICAL = 4

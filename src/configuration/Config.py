@@ -5,15 +5,15 @@ from uuid import uuid4
 from os import path
 from secrets import token_bytes
 import platform
+import sqlite3
 
 
-#OAuth Database
-DATABASE = str(Path(__file__).parent.parent.parent) + '/data.db'
-
+CREDENTIAL_DATABASE = str(Path(__file__).parent.parent.parent) + '/data.db' #OAuth2 credential database
+METRIC_DATABASE = str(Path(__file__).parent.parent.parent) + '/metrics.db' #Metric database
 CONFIG = configparser.ConfigParser()      
 CONFIG.read_file(open((str(Path(__file__).parent.parent.parent) + '/config'), 'r')) 
 HOSTNAME = CONFIG.get('Server', 'HOSTNAME')
-PORT = CONFIG.get('Server', 'PORT')
+PORT = int(CONFIG.get('Server', 'PORT'))
 
 #Constants for the ticketing system
 DEFAULT_TTL = CONFIG.get('TimeOut', 'DEFAULT_TTL')
@@ -59,3 +59,22 @@ LOG_PLATFORM = platform.system()
 
 #TODO: Sanitise the contents we get from the config file to prevent code injection.
 
+def setup_credential_db():
+    db = sqlite3.connect(CREDENTIAL_DATABASE)
+    cursor = db.cursor()
+    cursor.executescript("""
+    CREATE TABLE client (cid INTEGER PRIMARY KEY AUTOINCREMENT, client_id TEXT, client_secret TEXT, name TEXT, description TEXT, authentication TEXT);
+    CREATE TABLE refresh_client_map (rid INTEGER PRIMARY KEY AUTOINCREMENT, refresh_token TEXT, expiry REAL, cid INTEGER, FOREIGN KEY(cid) REFERENCES client(cid) ON DELETE CASCADE);
+    CREATE TABLE action_client_map (aid INTEGER PRIMARY KEY AUTOINCREMENT, action TEXT, cid INTEGER, FOREIGN KEY(cid) REFERENCES client(cid) ON DELETE CASCADE);
+    """
+    )
+
+def setup_metric_db():
+    db = sqlite3.connect(METRIC_DATABASE)
+    cursor = db.cursor()
+    cursor.executescript("""
+    CREATE TABLE client (cid INTEGER PRIMARY KEY AUTOINCREMENT, client_id TEXT, client_secret TEXT, name TEXT, description TEXT, authentication TEXT);
+    CREATE TABLE refresh_client_map (rid INTEGER PRIMARY KEY AUTOINCREMENT, refresh_token TEXT, expiry REAL, cid INTEGER, FOREIGN KEY(cid) REFERENCES client(cid) ON DELETE CASCADE);
+    CREATE TABLE action_client_map (aid INTEGER PRIMARY KEY AUTOINCREMENT, action TEXT, cid INTEGER, FOREIGN KEY(cid) REFERENCES client(cid) ON DELETE CASCADE);
+    """
+    )

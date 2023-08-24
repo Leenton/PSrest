@@ -8,14 +8,13 @@ from exceptions.PSRExceptions import *
 from entities.OAuthResponse import OAuthResponse
 from entities.OAuthService import OAuthService
 from entities.Schema import OAUTH_SCHEMA
-from psrlogging.Logger import Logger
+from psrlogging.RecorderLogger import MetricRecorderLogger
 from psrlogging.LogMessage import LogMessage
-from psrlogging.LogLevel import LogLevel
-from psrlogging.LogCode import LogCode
+from psrlogging.Logger import LogLevel, LogCode
 from configuration.Config import * 
 
 class OAuth(object): 
-    def __init__(self, logger: Logger) -> None:
+    def __init__(self, logger: MetricRecorderLogger) -> None:
         self.service = OAuthService()
         self.logger = logger
     

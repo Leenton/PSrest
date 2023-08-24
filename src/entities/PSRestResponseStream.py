@@ -1,53 +1,77 @@
-
 import asyncio
-import socket
-from os import unlink
-from math import factorial
+from os import unlink, remove
 
 from configuration.Config import *
 from processing.PSProcessor import PSProcessor
-from psrlogging.PSRestLogger import Logger
-from psrlogging.LogMessage import LogMessage
-from psrlogging.LogLevel import LogLevel
-from psrlogging.LogCode import LogCode
 from entities.PSTicket import PSTicket
+from exceptions.PSRExceptions import StreamTimeout
 
 class PSRestResponseStream():
-    def __init__(self, ticket: PSTicket, processor: PSProcessor, logger: Logger) -> None:
+    def __init__(self, ticket: PSTicket, processor: PSProcessor) -> None:
+        self.path: str = RESPONSE_DIR + f'/{ticket.id}'
+        self.length = None
+        self.timeout = ticket.ttl
         self.ticket = ticket
         self.processor = processor
-        soc = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        soc.bind(RESPONSE_DIR + f'/{self.ticket.id}')
-        soc.listen(1)
-        soc.settimeout(ticket.ttl)
-        connection, return_address = soc.accept()
-        data = connection.recv(16)
+        self.reader: asyncio.StreamReader | None = None
+        self.writer: asyncio.StreamWriter | None = None
+        self.task: asyncio.Task
+
+    async def open(self):
+        self.task = asyncio.create_task(self.start())
+
+    async def handle_connection(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
+        data = await reader.read(16)
         self.length = int(data.decode('utf-8'))
-        self.connection = connection
-        self.soc = soc
+        self.reader = reader
+        self.writer = writer
+
+    async def get_length(self):
+        while(self.length == None):
+            await asyncio.sleep(0.001)
+            self.timeout -= 0.001
+
+            if(self.timeout <= 0):
+                await self.close(True)
+                raise StreamTimeout('Timed out waiting for stream length response.')
+
+        return self.length
 
     async def read(self):
+        while(self.length == None):
+            await asyncio.sleep(0.005)
+        
+        while(self.reader == None and self.writer == None):
+            await asyncio.sleep(0.001)
+            self.timeout -= 0.001
+
+            if(self.timeout <= 0):
+                await self.close(True)
+                raise StreamTimeout('Timed out waiting for stream data response.')
+
         while True:
-            data = self.connection.recv(1024)
+            data = await self.reader.read(1024)
+
             if(not data):
                 break
+
             yield data
-        self.connection.close()
-        self.soc.close()
 
-        self.processor.send_result({'ticket':self.ticket.serialise(), 'status': COMPETED})
+        await self.processor.send_result({'ticket':self.ticket.serialise(), 'status': COMPETED})
+        await self.close()
+    
+    async def start(self):
+        try:
+            server = await asyncio.start_unix_server(self.handle_connection, path=self.path, limit=1024*1024)
 
-        #delete the file when we are done with it
-        tries = 1
-        backoff = 0.001
-        while(tries <= 5):
-            try:
-                unlink(RESPONSE_DIR + f'./{self.ticket.id}')
-                break
-            except FileNotFoundError:
-                tries += 1
-                await asyncio.sleep(backoff*(factorial(tries)))
-                break
-        
-        if(tries >= 5):
-            self.logger.log(LogMessage(message=f'Failed to delete {self.ticket.id} after 5 tries.', level=LogLevel.ERROR, code=LogCode.System))
+            async with server:
+                await server.serve_forever()
+
+        except asyncio.CancelledError:
+            return
+
+    async def close(self, failure: bool = False):
+        unlink(self.path)
+        self.task.cancel()
+        if(failure):
+            await self.processor.send_result({'ticket': self.ticket.id, 'status': FAILED, 'error': 'Stream timed out.'})

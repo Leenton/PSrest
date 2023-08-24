@@ -1,10 +1,10 @@
-from multiprocessing import Process, active_children
+from multiprocessing import Process, active_children, Queue
 import subprocess
 from uuid import uuid4
 import json 
 from datetime import datetime
 from threading import Thread
-from queue import Queue
+# from queue import Queue
 from time import sleep
 from threading import Thread
 from sqlite3.dbapi2 import Connection
@@ -18,8 +18,6 @@ from processing.PSProcess import PSProcess
 from entities.PSRestQueue import PSRestQueue, PSRQueueException
 from entities.PSTicket import PSTicket
 from entities.Cmdlet import Cmdlet 
-
-
 
 class PSProcessor():
     def __init__(
@@ -80,7 +78,7 @@ class PSProcessor():
                 processor_db.commit()
         except Exception:
             #TODO: Log this
-            pass
+            return
 
     def accept_requests(self, processor_db: Connection) -> None:
         #Check the requests queue and add them to the database
@@ -94,7 +92,7 @@ class PSProcessor():
                 )
         except Exception:
             #TODO: Log this
-            pass
+            return
 
     def process_alerts(self, processor_db: Connection) -> None:
         #Check the alerts queue and match them to the tickets in the database
@@ -122,7 +120,7 @@ class PSProcessor():
                 )
                 processor_db.commit()
         except Exception:
-            pass
+            return
 
     def scale_up_processes(self, processor_db: Connection) -> None:
         #If there are tickets that have been waiting for too long, spin up a new process to process them
@@ -140,7 +138,7 @@ class PSProcessor():
                 psprocess = PSProcess()
                 Thread(name=(f'PSProcess {psprocess.id}'), target=psprocess.execute).start()
         except Exception:
-            pass
+            return
     
     def scale_down_processes(self, processor_db: Connection) -> None:
         #if there is a process that hasn't been seen for a while and it has no tickets assigned to it, kill it
@@ -162,32 +160,33 @@ class PSProcessor():
                 self.kill.put(pid[0])
 
         except Exception:
-            pass
+            return
 
     def update_process_stats(self, processor_db: Connection) -> None:
         try:
-            self.processes.get()
             cursor = processor_db.cursor()
             cursor.execute('SELECT * FROM PSProcessor')
-            processes = cursor.fetchall()
-            processes = map(
-                lambda x: {
-                    'ticket': x[0],
-                    'pid': x[1],
-                    'application': x[2],
-                    'command': x[3],
-                    'created': x[4],
-                    'expires': x[5],
-                    'modified': x[6]
-                },
-                processes)
+            processes = []
+            for process in cursor.fetchall():
+                processes.append({
+                    'ticket': process[0],
+                    'pid': process[1],
+                    'application': process[2],
+                    'command': process[3],
+                    'created': process[4],
+                    'expires': process[5],
+                    'modified': process[6]
+                })
+            
+            self.processes.get()
             self.processes.put(processes)
+            # print("Dumped processes to queue")
 
-            self.stats.get()
-            #get the number of process threads that are running
-            self.stats.put({'shells': len(active_children())})
+            # self.stats.get()
+            # #get the number of process threads that are running
+            # self.stats.put({'shells': len(active_children())})
         except Exception:
-            pass
+            return
         
     def start(self):
         '''
@@ -216,6 +215,7 @@ class PSProcessor():
             self.update_process_stats(db)
 
             sleep(0.001)
+
 
 def start_processor(kill: Queue, requests: Queue, alerts: Queue, stats: Queue, processes: Queue):
     processor = PSProcessor(kill, requests, alerts, stats, processes)

@@ -7,14 +7,13 @@ from html import escape
 # import project dependencies
 from entities.CmdletInfo import CmdletInfo
 from entities.CmdletLibrary import CmdletLibrary
-from psrlogging.Logger import Logger
+from psrlogging.RecorderLogger import MetricRecorderLogger
 from psrlogging.LogMessage import LogMessage
-from psrlogging.LogLevel import LogLevel
-from psrlogging.LogCode import LogCode
+from psrlogging.Logger import LogLevel, LogCode
 from configuration.Config import *
 
 class Help(object):
-    def __init__(self, logger: Logger) -> None:
+    def __init__(self, logger: MetricRecorderLogger) -> None:
         self.cmdlet_library = CmdletLibrary()
         self.logger = logger
 
