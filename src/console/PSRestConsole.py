@@ -4,7 +4,7 @@ import jwt
 from argon2 import PasswordHasher
 import sqlite3
 from datetime import datetime, timedelta
-from typing import List, Tuple
+from typing import List
 
 class PSRestConsole():
     def __init__(self,) -> None:
@@ -13,22 +13,29 @@ class PSRestConsole():
 
     def run(self, request: dict) -> dict:
         if request['method'] == 'add':
+
             return self.add_application(
                 request['name'],
                 request['description'],
                 request['authentication'],
                 request['actions']
             )
+        
         elif request['method'] == 'remove':
             return self.remove_application(request['id'])
+        
         elif request['method'] == 'get':
             if 'name' in request:
                 return self.get_application(name=request['name'])
+            
             elif 'id' in request:
                 return self.get_application(id=request['id'])
+            
             else:
                 return self.get_application()
+            
         elif request['method'] == 'set':
+
             return self.set_application(
                 request['id'],
                 request.get('description', None),
@@ -39,10 +46,13 @@ class PSRestConsole():
         cursor = self.database.cursor()
         if name is None and  id is None:
             cursor.execute("SELECT cid, name, description FROM client")
+
         elif name is not None and id is None:
             cursor.execute("SELECT cid, name, description FROM client WHERE name LIKE ?", (name,))
+
         elif id is not None and name is None:
             cursor.execute("SELECT cid, name, description FROM client WHERE cid = ?", (id,))
+
         else:
             #Invalid parameters passed
             return 'invalid'
@@ -79,6 +89,7 @@ class PSRestConsole():
         cursor = self.database.cursor()
         cursor.execute("SELECT cid FROM client WHERE name LIKE ?", (name,))
         row = cursor.fetchone()
+
         if(row):
             print("Application already exists.")
             exit(1)
@@ -86,6 +97,7 @@ class PSRestConsole():
         client_id = str(uuid4())
         client_secret = str(uuid4())
         hasher = PasswordHasher()
+        
         if(authentication == 'access_token'):
             expiry = datetime.timestamp(datetime.now() + timedelta(days=360))
 

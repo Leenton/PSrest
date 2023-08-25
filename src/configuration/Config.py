@@ -73,7 +73,7 @@ def setup_metric_db():
     db = sqlite3.connect(METRIC_DATABASE)
     cursor = db.cursor()
     cursor.executescript("""
-    CREATE TABLE metric (metric_id PRIMARY KEY, created REAL);
+    CREATE TABLE metric (metric_id TEXT PRIMARY KEY, created REAL);
     CREATE TABLE label (label_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, metric_id TEXT, FOREIGN KEY(metric_id) REFERENCES metric(metric_id));
     """
     )

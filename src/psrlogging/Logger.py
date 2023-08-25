@@ -38,7 +38,7 @@ class MultiLogger(Logger):
     
     def log(self, message: LogMessage):
         for logger in self.loggers:
-            msg = LogMessage(message=message.message, level=message.level, code=message.code)
+            msg = LogMessage(message.message, message.level, message.code)
             logger.log(msg)
 
 class PSRestLogger(Logger):
@@ -47,15 +47,17 @@ class PSRestLogger(Logger):
 
         if LOG_PLATFORM == 'Windows':
             logger = WindowsLogger()
+
         elif LOG_PLATFORM== 'Linux':
             logger = LinuxLogger()
+
         elif LOG_PLATFORM == 'MacOS':
             logger = MacLogger()
+
         else:
             logger = NullLogger()
     
-        self.logger = MultiLogger([
-            FileLogger(self.filename),logger])
+        self.logger = MultiLogger([FileLogger(self.filename),logger])
 
     def log(self, message: LogMessage) -> None:
         self.logger.log(message)
@@ -65,6 +67,7 @@ class PSRestLogger(Logger):
             try:
                 message: LogMessage = messages.get(False)
                 self.log(message)
+                
             except Exception:
                 sleep(0.1)
 

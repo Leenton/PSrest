@@ -36,6 +36,7 @@ if __name__ == '__main__':
     #Start all the threads
     psrest_queue.start()
     psrlogging.start()
+    metrics.start()
     sleep(5)
     processing.start()
 

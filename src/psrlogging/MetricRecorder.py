@@ -18,7 +18,7 @@ class PSRestMetrics(object):
         self.db = sqlite3.connect(METRIC_DATABASE)
 
     def record(self, metric: Metric) -> None:
-        labels = metric.get_labels()
+        labels: list = metric.get_labels()
         metric_id = uuid4().hex
         cursor = self.db.cursor()
         cursor.execute(
@@ -27,10 +27,12 @@ class PSRestMetrics(object):
         )
         self.db.commit()
 
+        #TODO: Fix this shit
         for label in labels:
+            cursor = self.db.cursor()
             cursor.execute(
-                'INSERT INTO metric_label (metric_id, label) VALUES (?, ?)',
-                (metric_id, label.value)
+                'INSERT INTO label (metric_id, name) VALUES (?, ?)',
+                (metric_id, label)
             )
             self.db.commit()
 
@@ -39,8 +41,8 @@ class PSRestMetrics(object):
             try:
                 metric: Metric = Metric(stats.get(False))
                 self.record(metric)
-            
-            except Exception:
+
+            except Exception as e:
                 sleep(0.1)
 
 def start_metrics(queue: Queue) -> None:
