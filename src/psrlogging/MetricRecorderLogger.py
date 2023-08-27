@@ -16,7 +16,8 @@ class MultiProcessSafeRecorderLogger(MetricRecorderLogger):
         self.stats_queue = stats_queue
 
     def record(self, metric: Metric):
-        self.stats_queue.put(metric)
+        self.stats_queue.put(metric.serialise())
 
     def log(self, message: LogMessage):
-        self.message_queue.put(message)
+        print(message.message)
+        # self.message_queue.put(message.serialise())

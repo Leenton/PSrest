@@ -1,7 +1,8 @@
 from typing import Protocol
-from psrlogging.Metric import Metric
+from psrlogging.Metric import Metric, MetricLabel
 from enum import Enum
 from time import sleep
+from typing import List
 import sqlite3
 from datetime import datetime
 import os
@@ -13,17 +14,17 @@ class MetricRecorder(Protocol):
     def record(self, metric: Metric) -> None:
         ...
 
-class PSRestMetrics(object):
+class PSRestMetrics(MetricRecorder):
     def __init__(self) -> None:
         self.db = sqlite3.connect(METRIC_DATABASE)
 
     def record(self, metric: Metric) -> None:
-        labels: list = metric.get_labels()
+        labels = map((lambda label: (MetricLabel(label)).value), metric.get_labels())
         metric_id = uuid4().hex
         cursor = self.db.cursor()
         cursor.execute(
             'INSERT INTO metric (metric_id, created) VALUES (?, ?)',
-            (metric_id ,datetime.timestamp(datetime.now()))
+            (metric_id ,(int), datetime.timestamp(datetime.now()))
         )
         self.db.commit()
 
@@ -39,7 +40,9 @@ class PSRestMetrics(object):
     def run(self, stats: Queue) -> None:
         while True:
             try:
-                metric: Metric = Metric(stats.get(False))
+                metric = (stats.get(False))
+                labels: List[MetricLabel] = map((lambda label: MetricLabel(label)), metric['labels'])
+                metric = Metric(*labels)
                 self.record(metric)
 
             except Exception as e:

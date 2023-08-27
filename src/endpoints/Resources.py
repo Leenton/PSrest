@@ -41,7 +41,7 @@ class Resources(object):
                     resp.content_type = 'image/ttf'
                 case 'js':
                     resp.content_type = 'text/javascript'
-                case other :
+                case _ :
                     resp.status = HTTP_404
                     resp.content_type = 'application/json'
                     resp.text = json.dumps({'title': '404 Not Found', 'description': 'The page you are looking for does not exist.'})

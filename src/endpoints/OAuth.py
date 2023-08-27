@@ -44,4 +44,4 @@ class OAuth(object):
                 'title': 'Unauthorised',
                 'description':'Invalid credentials.'
                 })
-            self.logger.record(Metric(MetricLabel.INVALID_CREDENTIALS))
+            self.logger.record(Metric(MetricLabel.INVALID_CREDENTIALS_ERROR))

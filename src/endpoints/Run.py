@@ -82,12 +82,12 @@ class Run(object):
             resp.text = json.dumps({'title': 'Request data failed validation', 'description': e.message})
 
         except InvalidToken as e:
-            self.logger.record(Metric(MetricLabel.INVALID_CREDENTIALS))
+            self.logger.record(Metric(MetricLabel.INVALID_CREDENTIALS_ERROR))
             resp.status = HTTP_401
             resp.text = json.dumps({'title': 'Unauthorised Request', 'description': e.message})
         
         except UnAuthorised as e:
-            self.logger.record(Metric(MetricLabel.UNAUTHORISED))
+            self.logger.record(Metric(MetricLabel.UNAUTHORISED_ERROR))
             resp.status = HTTP_403
             resp.text = json.dumps({'title': 'Forbidden Request', 'description': e.message})
         

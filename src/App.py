@@ -15,7 +15,7 @@ from endpoints.Events import Events
 from psrlogging.MetricRecorderLogger import MultiProcessSafeRecorderLogger
 from entities.PSRestQueue import serve_queue
 from processing.PSProcessor import start_processor
-from psrlogging.Logger import start_logger
+from psrlogging.Logger import start_logger, LogMessage
 from psrlogging.MetricRecorder import start_metrics
 from configuration.Config import *
 
@@ -53,5 +53,5 @@ if __name__ == '__main__':
     PSRest.add_route('/events/{event_type}', Events(processes, stats, logger))
     
     #Start the webserver
-    logger.log('Starting PSRest')
+    logger.log(LogMessage("Starting PS Rest"))
     uvicorn.run(PSRest, host='0.0.0.0', port=PORT, log_level='info')

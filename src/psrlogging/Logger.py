@@ -65,8 +65,8 @@ class PSRestLogger(Logger):
     def run(self, messages: Queue) -> None:
         while True:
             try:
-                message: LogMessage = messages.get(False)
-                self.log(message)
+                message: dict = messages.get(False)
+                # self.log(Log)
                 
             except Exception:
                 sleep(0.1)
