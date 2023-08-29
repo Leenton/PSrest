@@ -2,6 +2,7 @@
 from falcon.asgi import App
 import uvicorn
 from multiprocessing import Process, Queue as ProcessQueue
+from subprocess import Popen
 from time import sleep
 import os
 
@@ -34,6 +35,7 @@ if __name__ == '__main__':
     metrics = Process(target=start_metrics, name='PSRestMetrics', args=(stats,))
     
     #Start all the threads
+    # Popen("python3 ./src/Queue.py", shell=True)
     psrest_queue.start()
     psrlogging.start()
     metrics.start()
@@ -54,4 +56,4 @@ if __name__ == '__main__':
     
     #Start the webserver
     logger.log(LogMessage("Starting PS Rest"))
-    uvicorn.run(PSRest, host='0.0.0.0', port=PORT, log_level='info')
+    uvicorn.run(PSRest, host='0.0.0.0', port=PORT, log_level='critical')

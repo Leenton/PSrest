@@ -31,7 +31,7 @@ PRIVATE_KEY = ''
 PUBLIC_KEY = ''
 
 #Constants for the powershell execution
-PS_PROCESSORS =4
+PS_PROCESSORS = 4
 MAX_PROCESSES = 33
 ARBITRARY_COMMANDS = True if ((CONFIG.get('PSExecution', 'ARBITRARY_COMMANDS')).lower() == 'true') else False
 HELP = CONFIG.get('Help', 'HELP')
@@ -74,6 +74,7 @@ def setup_metric_db():
     cursor = db.cursor()
     cursor.executescript("""
     CREATE TABLE metric (metric_id TEXT PRIMARY KEY, created REAL);
-    CREATE TABLE label (label_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, metric_id TEXT, FOREIGN KEY(metric_id) REFERENCES metric(metric_id));
+    CREATE TABLE label (label_id INTEGER PRIMARY KEY AUTOINCREMENT, label TEXT, metric_id TEXT, FOREIGN KEY(metric_id) REFERENCES metric(metric_id));
+    CREATE TABLE resource (resource_id INTEGER PRIMARY KEY AUTOINCREMENT, resource TEXT, value TEXT, created REAL);
     """
     )

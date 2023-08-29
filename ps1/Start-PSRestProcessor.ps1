@@ -22,7 +22,7 @@ function Start-PSRestProcessor {
         trap{
             if(!$command){
                 #Process failed but no command was received, so it doesn't matter just exit
-                exit
+                exit 
             }
 
             #If we have a response try again, and if we fail again just exit

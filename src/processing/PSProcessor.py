@@ -9,7 +9,6 @@ from time import sleep
 from threading import Thread
 from sqlite3.dbapi2 import Connection
 from sqlite3 import connect
-from threading import Lock
 
 #Internal imports
 from configuration.Config import *
