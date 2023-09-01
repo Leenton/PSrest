@@ -2,14 +2,17 @@
 from pathlib import Path
 import configparser
 from uuid import uuid4
-from os import path
+from os import path, remove
 from secrets import token_bytes
 import platform
+import random
 import sqlite3
+from time import sleep
 
 
 CREDENTIAL_DATABASE = str(Path(__file__).parent.parent.parent) + '/data.db' #OAuth2 credential database
 METRIC_DATABASE = str(Path(__file__).parent.parent.parent) + '/metrics.db' #Metric database
+PROCESSOR_DATABASE = str(Path(__file__).parent.parent.parent) + '/processor.db' #Processor database
 CONFIG = configparser.ConfigParser()      
 CONFIG.read_file(open((str(Path(__file__).parent.parent.parent) + '/config'), 'r')) 
 HOSTNAME = CONFIG.get('Server', 'HOSTNAME')
@@ -31,8 +34,10 @@ PRIVATE_KEY = ''
 PUBLIC_KEY = ''
 
 #Constants for the powershell execution
-PS_PROCESSORS = 4
+PS_PROCESSORS = 8
 MAX_PROCESSES = 33
+PROCESSOR_TICK_RATE = 1000
+PROCESSOR_SPIN_UP_PERIOD = 0.25
 ARBITRARY_COMMANDS = True if ((CONFIG.get('PSExecution', 'ARBITRARY_COMMANDS')).lower() == 'true') else False
 HELP = CONFIG.get('Help', 'HELP')
 MODULES = CONFIG.get('ExposedModules', 'MODULES')
@@ -50,6 +55,8 @@ PSRESTQUEUE_SRV = TMP_DIR + '/' + 'fcf29f8069d646e8bdc75af3eb7f02e4'
 PSRESTQUEUE_WAIT = 250 #milliseconds
 
 RESOURCE_DIR = path.abspath('./src/resources/')
+CULL_DIR = TMP_DIR + '/' + 'cull'
+STATS_DIR = TMP_DIR + '/' + 'stats/' + str(uuid4())
 
 #Logging preferences
 LOG_LEVEL = 'INFO'
@@ -74,7 +81,22 @@ def setup_metric_db():
     cursor = db.cursor()
     cursor.executescript("""
     CREATE TABLE metric (metric_id TEXT PRIMARY KEY, created REAL);
-    CREATE TABLE label (label_id INTEGER PRIMARY KEY AUTOINCREMENT, label TEXT, metric_id TEXT, FOREIGN KEY(metric_id) REFERENCES metric(metric_id));
+    CREATE TABLE labels (label_id INTEGER PRIMARY KEY AUTOINCREMENT, label TEXT, metric_id TEXT, FOREIGN KEY(metric_id) REFERENCES metric(metric_id));
     CREATE TABLE resource (resource_id INTEGER PRIMARY KEY AUTOINCREMENT, resource TEXT, value TEXT, created REAL);
+    """
+    )
+
+def setup_processor_db():
+
+    sleep(random.random())
+    if(path.isfile(PROCESSOR_DATABASE)):
+        remove(PROCESSOR_DATABASE)
+    
+    db = sqlite3.connect(PROCESSOR_DATABASE)
+    cursor = db.cursor()
+    #add a cascade to the schedule table so when a process is deleted, it's ticket is also deleted
+    cursor.executescript("""
+    CREATE TABLE PSProcessor (ticket TEXT PRIMARY KEY, pid TEXT, application TEXT, command TEXT, created REAL, expires REAL, modified REAL);
+    CREATE TABLE PSProcess (pid TEXT PRIMARY KEY, last_seen REAL, FOREIGN KEY(pid) REFERENCES PSProcessor(pid) ON DELETE CASCADE);
     """
     )

@@ -10,7 +10,7 @@ REPOSITORY=localPSGallary
 RADIUS=true
 
 [TimeOut]
-DEFAULT_TTL=20
+DEFAULT_TTL=5
 MAX_TTL=900
 
 [PSExecution]

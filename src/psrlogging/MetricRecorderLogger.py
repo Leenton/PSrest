@@ -11,7 +11,7 @@ class MetricRecorderLogger(Logger, MetricRecorder, Protocol):
     ...
 
 class MultiProcessSafeRecorderLogger(MetricRecorderLogger):
-    def __init__(self, message_queue: Queue, stats_queue: Queue) -> None:
+    def __init__(self, message_queue: Queue = Queue(), stats_queue: Queue = Queue()) -> None:
         self.message_queue = message_queue
         self.stats_queue = stats_queue
 

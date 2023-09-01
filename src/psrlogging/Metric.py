@@ -10,6 +10,8 @@ class MetricLabel(Enum):
     UNEXPECTED_ERROR = 5
     CPU_USAGE = 6
     MEMORY_USAGE = 7
+    SHELL_UP = 8
+    SHELL_DOWN = 9
 
 
 class Metric(object):

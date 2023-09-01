@@ -4,16 +4,18 @@ from psrlogging.Metric import MetricLabel
 import psutil
 from enum import Enum
 from time import sleep
+from configuration.Config import METRIC_DATABASE
 
 
 class ResourceMonitor(object):
     def __init__(self) -> None:
-        self.db = sqlite3.connect('resource_monitor.db')
+        self.db = sqlite3.connect(METRIC_DATABASE)
 
     def get_resource_stats(self, time_period: int = 300) -> dict:
         return {
-            'cpu': self.get_cpu_usage(time_period),
-            'memory': self.get_memory_usage(time_period)
+            'CPU_USAGE': self.get_cpu_usage(time_period),
+            'MEMORY_USSAGE': self.get_memory_usage(time_period),
+            'SHELL_SESSIONS': self.get_shell_sessions(time_period)
         }
 
     def get_traffic_stats(self, time_period: int = 300) -> list:
@@ -30,15 +32,28 @@ class ResourceMonitor(object):
         for label in labels:
             cursor = self.db.cursor()
             cursor.execute("""
-                SELECT COUNT(metric.created) FROM labels
+                SELECT COUNT(metric.created), metric.created FROM labels
                 INNER JOIN metric ON labels.metric_id = metric.metric_id
-                GROUP BY metric.created
                 WHERE label = ?
                 AND created > ?
-                AND created =< ?
+                AND created < ?
+                GROUP BY metric.created
                 """,
-                (label.value, now - time_period, now))
-            traffic[label.name] = cursor.fetchall()
+                (label.value, now - time_period - 1, now + 1))
+            traffic[label.name] = {}
+            stats = cursor.fetchall()
+
+            y = 300 
+            for x in range(now - time_period, now):
+                #get the number of requests for this second
+                stat = 0
+                for i in stats:
+                    if i[1] == x + 1:
+                        stat = i[0]
+                        break
+
+                traffic[label.name][y] = stat
+                y -= 1
             
         return traffic
         
@@ -49,9 +64,9 @@ class ResourceMonitor(object):
             SELECT value, created FROM resource
             WHERE resource = ?
             AND created > ?
-            AND created =< ?
+            AND created < ?
             """,
-            (MetricLabel.CPU_USAGE.value, now - time_period, now)
+            (MetricLabel.CPU_USAGE.value, now - time_period - 1, now + 1)
         )
         return cursor.fetchall()
 
@@ -62,11 +77,34 @@ class ResourceMonitor(object):
             SELECT value, created FROM resource
             WHERE resource = ?
             AND created > ?
-            AND created =< ?
+            AND created < ?
             """,
-            (MetricLabel.MEMORY_USAGE.value, now - time_period, now)
+            (MetricLabel.MEMORY_USAGE.value, now - time_period - 1, now + 1)
         )
         return cursor.fetchall()
+
+    def get_shell_sessions(self, time_period: int) -> list:
+        cursor = self.db.cursor()
+        cursor.execute("""
+            SELECT COUNT(label) FROM labels
+            WHERE label = ?
+            """,
+            (MetricLabel.SHELL_UP.value,)
+        )
+        shell_up = cursor.fetchone()[0]
+
+        cursor = self.db.cursor()
+        cursor.execute("""
+            SELECT COUNT(label) FROM labels
+            WHERE label = ?
+            """,
+            (MetricLabel.SHELL_DOWN.value,)
+        )
+        shell_down = cursor.fetchone()[0]
+
+        shells = shell_up - shell_down
+
+        return shells
 
     def start(self):
         while True:

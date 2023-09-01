@@ -1,6 +1,8 @@
 import subprocess
 from configuration.Config import *
 from uuid import uuid4
+from psrlogging.MetricRecorderLogger import MetricRecorderLogger
+from psrlogging.Metric import Metric, MetricLabel
 
 class PSProcess():
     def __init__(self, platform = 'pwsh'):

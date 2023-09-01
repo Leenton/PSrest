@@ -21,8 +21,8 @@ from psrlogging.MetricRecorderLogger import MetricRecorderLogger
 from configuration.Config import *
 
 class Run(object):
-    def __init__(self, kill: Queue, requests: Queue, alerts: Queue, stats: Queue, processes: Queue, logger: MetricRecorderLogger) -> None:
-        self.processor = PSProcessor(kill, requests, alerts, stats, processes)
+    def __init__(self, processor: PSProcessor, logger: MetricRecorderLogger) -> None:
+        self.processor = processor
         self.cmdlet_library = CmdletLibrary()
         self.oauth = OAuthService()
         self.logger = logger
@@ -68,7 +68,6 @@ class Run(object):
                 resp.content_length = await stream.get_length()
                 resp.stream = stream.read()
             except StreamTimeout as e:
-                await stream.close(True)
                 raise ExpiredPSTicket(ticket, 'Time out occurred waiting for PSProcessor to return the response.')
 
         except (
@@ -108,17 +107,3 @@ class Run(object):
             resp.status = HTTP_500
             resp.text = json.dumps({'title': 'Internal Server Error', 'description': 'Something went wrong!'})
             self.logger.log(LogMessage(message=e, level=LogLevel.ERROR, code=LogCode.SYSTEM))
-
-    async def cleanup(self, ticket: PSTicket):
-        tries = 1
-        backoff = 0.001
-        while(tries <= 5):
-            try:
-                unlink(RESPONSE_DIR + f'./{ticket.id}')
-                break
-            except FileNotFoundError:
-                tries += 1
-                await asyncio.sleep(backoff*(math.factorial(tries)))
-                break
-        if(tries >= 5):
-            self.logger.log(LogMessage(message=f'Failed to delete {ticket.id} after 5 tries.', level=LogLevel.ERROR, code=LogCode.SYSTEM))

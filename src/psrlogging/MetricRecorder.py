@@ -22,17 +22,16 @@ class PSRestMetricHandler():
         metric_id = uuid4().hex
         cursor = self.db.cursor()
         cursor.execute(
-            'INSERT INTO metric (metric_id, created) VALUES (?, ?)',
+            "INSERT INTO metric (metric_id, created) VALUES (?, ?)",
             (metric_id , created)
         )
         self.db.commit()
 
-        #TODO: Fix this shit
         for label in labels:
             cursor = self.db.cursor()
             cursor.execute(
-                'INSERT INTO label (metric_id, label) VALUES (?, ?)',
-                (metric_id, label)
+                "INSERT INTO labels (metric_id, label) VALUES (?, ?)",
+                (metric_id, label.value)
             )
             self.db.commit()
 
@@ -46,7 +45,7 @@ class PSRestMetricHandler():
                 )
 
             except Exception as e:
-                sleep(0.0025)
+                sleep(0.1)
 
 def start_metrics(queue: Queue) -> None:
     if(not os.path.exists(METRIC_DATABASE)):

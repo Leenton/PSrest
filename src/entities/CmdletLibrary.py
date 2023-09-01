@@ -26,7 +26,7 @@ class CmdletLibrary():
             shell=True,
             capture_output=True,
             text=True)
-        # -EnabledCommands {ENABLE_COMMANDS} -DisabledCommands {DISABLE_COMMANDS} 
+        #TODO: -EnabledCommands {ENABLE_COMMANDS} -DisabledCommands {DISABLE_COMMANDS} 
 
         result = base64.b64decode(result.stdout.split(str(seperator))[1])
         commands = json.loads(result)

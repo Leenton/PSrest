@@ -10,31 +10,26 @@ class PSRestQueue():
     def __init__(self):
         self.queue = Queue()
         self.associated_queue = Queue()
-        
-    async def put(self, message: str, retry = 6)-> None: 
-        'Put a message on the queue to be distributed to a free PSProcessor.'
-        tries = 1
-        while(retry > tries):
-            try:
-                soc = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-                soc.connect(PSRESTQUEUE_PUT)
-                soc.send(message.encode('utf-8'))
-                soc.close()
-                break
-            except Exception as e:
-                tries += 1
-                await asyncio.sleep(0.01 * retry)
-
-        if(retry == tries):
-            raise PSRQueueException('Unable to issue command. Please try again.')
     
-    async def get(self) -> str:
-        reader, writer = await asyncio.open_unix_connection(PSRESTQUEUE_GET)
-        data = await reader.read()
+    async def put(self, message: str)-> None: 
+        'Put a message on the queue to be distributed to a free PSProcessor.'
+
+        reader, writer = await  asyncio.open_unix_connection(PSRESTQUEUE_PUT)
+        writer.write(message.encode('utf-8'))
+        await writer.drain()
+        writer.close()
+
+    
+    def get(self) -> str: 
+        soc = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        soc.connect(PSRESTQUEUE_GET)
+        data = soc.recv(512).decode('utf-8')
+        soc.close()
+
         if(data):
-            return data.decode('utf-8')
+            return data
         else:
-            raise PSRQueueException('Empty queue.')
+            return dumps({'pid': None, 'ticket': None})
 
     async def receive_commands(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         ''' Listens for commands from PSRESTQUEUE_PUT and puts them on the queue'''
@@ -55,15 +50,18 @@ class PSRestQueue():
         data = await reader.read(32)
         if(data):
             pid = (data.decode('utf-8'))
+
             while(True):
                 try:
                     command: str = self.queue.get(False)
                     break
                 except Empty:
                     await asyncio.sleep(0.001)
+
             self.associated_queue.put(dumps({'pid': pid, 'ticket': loads(command)['Ticket']}))
             command = command.encode('utf-8')
             length = len(command)
+            
             #left pad with 0 until its 16 bytes in length
             writer.write(str(length).zfill(16).encode('utf-8'))
             await writer.drain()

@@ -4,6 +4,7 @@ import asyncio
 from falcon.asgi import SSEvent
 from typing import Generator, List
 from multiprocessing import Queue
+import sqlite3
 
 from configuration.Config import *
 from entities.OAuthService import OAuthService
@@ -23,13 +24,25 @@ class Events(object):
         self.resource_monitor = ResourceMonitor()
 
     async def get_process_events(self, cid: int|str) -> Generator[List[dict], None, None]:
+        db = sqlite3.connect(PROCESSOR_DATABASE)
         while True:
-            await asyncio.sleep(0.01)
+            await asyncio.sleep(0.25)
 
-            event = {
-            }
+            cursor = db.cursor()
+            cursor.execute('SELECT * FROM PSProcessor')
+            processes = []
+            for process in cursor.fetchall():
+                processes.append({
+                    'ticket': process[0],
+                    'pid': process[1],
+                    'application': process[2],
+                    'command': process[3],
+                    'created': process[4],
+                    'expires': process[5],
+                    'modified': process[6]
+                })
 
-            yield SSEvent(event="message", event_id=str(uuid4()), json=(event), retry=2500)
+            yield SSEvent(event="message", event_id=str(uuid4(processes)), json=(), retry=2500)
 
 
     async def get_traffic_events(self, range: int) -> Generator[dict, None, None]:
