@@ -26,6 +26,9 @@ if __name__ == '__main__':
     if(not os.path.exists(CREDENTIAL_DATABASE)):
         setup_credential_db()
 
+    if(not os.path.exists(METRIC_DATABASE)):
+        setup_metric_db()
+
     setup_processor_db()
 
     #Create queues for communication between threads and processes
