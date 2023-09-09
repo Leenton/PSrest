@@ -114,12 +114,14 @@ class ResourceMonitor(object):
             memory_usage = psutil.virtual_memory().used
             cursor = self.db.cursor()
             
-            cursor.execute("INSERT INTO resource (resource, value, created) VALUES (?, ?, ?)",
+            cursor.execute(
+                "INSERT INTO resource (resource, value, created) VALUES (?, ?, ?)",
                 (MetricLabel.CPU_USAGE.value, cpu_usage, now)
             )
             self.db.commit()
 
-            cursor.execute("INSERT INTO resource (resource, value, created) VALUES (?, ?, ?)",
+            cursor.execute(
+                "INSERT INTO resource (resource, value, created) VALUES (?, ?, ?)",
                 (MetricLabel.MEMORY_USAGE.value, memory_usage, now)
             )
             self.db.commit()
