@@ -42,7 +42,7 @@ if __name__ == '__main__':
     metrics = Process(target=start_metrics, name='PSRestMetrics', args=(stats,))
     
     #Start all the threads
-    # Popen("python3 ./src/Queue.py", shell=True)
+    # Popen("python3 ./Queue.py", shell=True)
     # psrest_queue.start()
     resource_monitoring.start()
     psrlogging.start()

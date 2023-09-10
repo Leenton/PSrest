@@ -10,7 +10,7 @@ function Invoke-PSRestConsole(){
         [string]$Command
     )
 
-    $FullCommand = '& python3 ./src/ConsoleApp.py ' + $Command
+    $FullCommand = '& python3 ./ConsoleApp.py ' + $Command
     $result = Invoke-Expression -Command ($FullCommand)
 
     return $result
@@ -365,10 +365,10 @@ function Start-PSRest(){
         Set-Location $Global:InstallPath
         # Start the PSRestqQeue as it's shared between all the processors and workers
         Get-Job -Name $PSRestQueue -ErrorAction SilentlyContinue | Remove-Job -Force -ErrorAction SilentlyContinue
-        $Job = Start-Job -ScriptBlock { &python3 ./src/Queue.py } -Name $PSRestQueue
+        $Job = Start-Job -ScriptBlock { &python3 ./Queue.py } -Name $PSRestQueue
 
         # Start the PSRest Workers
-        &python3 ./src/App.py
+        &python3 ./App.py
     }finally{
         # Stop the Queue as the workers have exited and we don't need it anymore
         Remove-Job -Name $PSRestQueue -Force -ErrorAction SilentlyContinue

@@ -53,7 +53,7 @@ PSRESTQUEUE_GET = TMP_DIR + '/' + '95b51250d7ef4fcdaea1cf51886b8ba5'
 PSRESTQUEUE_SRV = TMP_DIR + '/' + 'fcf29f8069d646e8bdc75af3eb7f02e4'
 PSRESTQUEUE_WAIT = 250 #milliseconds
 
-RESOURCE_DIR = path.abspath('./src/resources/')
+RESOURCE_DIR = path.abspath('./resources/')
 CULL_DIR = TMP_DIR + '/' + 'cull'
 STATS_DIR = TMP_DIR + '/' + 'stats/' + str(uuid4())
 

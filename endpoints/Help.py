@@ -38,7 +38,7 @@ class Help(object):
         else:
             resp.status = HTTP_200
             resp.content_type = 'text/html'
-            async with aiofiles.open('./src/html/help.html', 'rb') as f:
+            async with aiofiles.open('./html/help.html', 'rb') as f:
                 resp.text = await f.read()
 
 
