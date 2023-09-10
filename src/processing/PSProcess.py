@@ -11,16 +11,13 @@ class PSProcess():
 
     def execute(self):
         try:
-            completed = result = subprocess.run(
+            result = subprocess.run(
                 [
                     f'{self.platform}',
                     "-Command",
                     f'Start-PSRestProcessor -ProcessorId "{self.id}" -ResponseDirectory "{RESPONSE_DIR}" -SocketPath "{PSRESTQUEUE_SRV}" -WaitTime {PSRESTQUEUE_WAIT}'
                 ],
                 stdout=subprocess.DEVNULL)
-            print(completed)
         except Exception as e:
             #TODO: Log this error
             print(e)
-
-        print("Fuck this shit we're out")

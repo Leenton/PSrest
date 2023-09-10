@@ -41,6 +41,9 @@ class PSRestConsole():
                 request.get('description', None),
                 request.get('actions', None),
             )
+        
+        elif request['method'] == 'version':
+            return self.get_version()
     
     def get_application(self, name: str|None = None, id: int|None = None) -> dict:
         cursor = self.database.cursor()
@@ -153,3 +156,6 @@ class PSRestConsole():
                 self.database.commit()
 
         return True
+
+    def get_version(self) -> dict:
+        return {'version': VERSION}
