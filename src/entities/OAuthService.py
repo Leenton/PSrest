@@ -17,7 +17,7 @@ class OAuthService():
         db = sqlite3.connect(CREDENTIAL_DATABASE)
         cursor = db.cursor()
         cursor.execute(
-            'SELECT cid, client_secret FROM client WHERE client_id = ?',
+            "SELECT cid, client_secret FROM client WHERE client_id = ?",
             (client_id,)
         )
         row = cursor.fetchone()
@@ -30,7 +30,7 @@ class OAuthService():
         
         if(self.password_hasher.check_needs_rehash(row[1])):
             cursor.execute(
-                'UPDATE client SET client_secret = ? WHERE cid = ?',
+                "UPDATE client SET client_secret = ? WHERE cid = ?",
                 (self.password_hasher.hash(client_secret), row[0])
             )
             db.commit()
@@ -45,7 +45,7 @@ class OAuthService():
         db = sqlite3.connect(CREDENTIAL_DATABASE)
         cursor = db.cursor()
         cursor.execute(
-            'SELECT cid FROM refresh_client_map WHERE refresh_token = ? AND expiry > ?',
+            "SELECT cid FROM refresh_client_map WHERE refresh_token = ? AND expiry > ?",
             (refresh_token, datetime.timestamp(datetime.now()))
         )
         row = cursor.fetchone()
@@ -108,7 +108,7 @@ class OAuthService():
         #Delete the old refresh token
         cursor = db.cursor()
         cursor.execute(
-            'DELETE FROM refresh_client_map WHERE cid = ?',
+            "DELETE FROM refresh_client_map WHERE cid = ?",
             (cid,)
         )
         db.commit()
@@ -116,7 +116,7 @@ class OAuthService():
         #Generate a new refresh token
         refresh_token = str(uuid4())
         cursor.execute(
-            'INSERT INTO refresh_client_map (cid, refresh_token, expiry) VALUES (?, ?, ?)',
+            "INSERT INTO refresh_client_map (cid, refresh_token, expiry) VALUES (?, ?, ?)",
             (cid, refresh_token, datetime.timestamp(datetime.now()) + REFRESH_TOKEN_TTL)
         )
         db.commit()
@@ -127,7 +127,7 @@ class OAuthService():
         #Get the actions associated with the cid from the db
         db = sqlite3.connect(CREDENTIAL_DATABASE)
         cursor = db.cursor()
-        cursor.execute('SELECT action FROM action_client_map WHERE cid = ?', (cid,))
+        cursor.execute("SELECT action FROM action_client_map WHERE cid = ?", (cid,))
         user_actions = [row[0] for row in cursor.fetchall()]
 
         return user_actions

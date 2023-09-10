@@ -5,6 +5,7 @@ from falcon.asgi import SSEvent
 from typing import Generator, List
 from multiprocessing import Queue
 import sqlite3
+import aiosqlite
 
 from configuration.Config import *
 from entities.OAuthService import OAuthService
@@ -24,24 +25,24 @@ class Events(object):
         self.resource_monitor = ResourceMonitor()
 
     async def get_process_events(self, cid: int|str) -> Generator[List[dict], None, None]:
-        db = sqlite3.connect(PROCESSOR_DATABASE)
+        db = await aiosqlite.connect(PROCESSOR_DATABASE)
         while True:
             await asyncio.sleep(0.25)
 
-            cursor = db.cursor()
-            cursor.execute('SELECT * FROM PSProcessor')
+            cursor = db.execute("SELECT * FROM PSProcessor")
             processes = []
-            for process in cursor.fetchall():
-                processes.append({
-                    'ticket': process[0],
-                    'pid': process[1],
-                    'application': process[2],
-                    'command': process[3],
-                    'created': process[4],
-                    'expires': process[5],
-                    'modified': process[6]
-                })
 
+            async with db.execute("SELECT * FROM PSProcessor") as cursor:
+                async for process in cursor:
+                    processes.append({
+                        'ticket': process[0],
+                        'pid': process[1],
+                        'application': process[2],
+                        'command': process[3],
+                        'created': process[4],
+                        'expires': process[5],
+                        'modified': process[6]
+                    })
             yield SSEvent(event="message", event_id=str(uuid4(processes)), json=(), retry=2500)
 
 
@@ -53,8 +54,8 @@ class Events(object):
                 event="message",
                 event_id=str(uuid4()),
                 json=({
-                        'traffic': self.resource_monitor.get_traffic_stats(),
-                        'resources': self.resource_monitor.get_resource_stats(),
+                        'traffic': await self.resource_monitor.get_traffic_stats(),
+                        'resources': await self.resource_monitor.get_resource_stats(),
                     }),
                 retry=5000)
 

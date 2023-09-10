@@ -4,21 +4,20 @@ from psrlogging.Metric import MetricLabel
 import psutil
 from enum import Enum
 from time import sleep
+import aiosqlite
+
 from configuration.Config import METRIC_DATABASE
 
 
 class ResourceMonitor(object):
-    def __init__(self) -> None:
-        self.db = sqlite3.connect(METRIC_DATABASE)
-
-    def get_resource_stats(self, time_period: int = 300) -> dict:
+    async def get_resource_stats(self, time_period: int = 300) -> dict:
         return {
-            'CPU_USAGE': self.get_cpu_usage(time_period),
-            'MEMORY_USSAGE': self.get_memory_usage(time_period),
-            'SHELL_SESSIONS': self.get_shell_sessions(time_period)
+            'CPU_USAGE': await self.get_cpu_usage(time_period),
+            'MEMORY_USSAGE': await self.get_memory_usage(time_period),
+            'SHELL_SESSIONS': await self.get_shell_sessions(time_period)
         }
 
-    def get_traffic_stats(self, time_period: int = 300) -> list:
+    async def get_traffic_stats(self, time_period: int = 300) -> list:
         now = int(datetime.timestamp(datetime.now()))
         labels = [
             MetricLabel.REQUEST,
@@ -29,19 +28,20 @@ class ResourceMonitor(object):
         ]
         traffic = {}
 
+        db = await aiosqlite.connect(METRIC_DATABASE)
+
         for label in labels:
-            cursor = self.db.cursor()
-            cursor.execute("""
+
+            cursor = await db.execute(f"""
                 SELECT COUNT(metric.created), metric.created FROM labels
                 INNER JOIN metric ON labels.metric_id = metric.metric_id
-                WHERE label = ?
-                AND created > ?
-                AND created < ?
+                WHERE label = {label.value}
+                AND created > {now - time_period - 1}
+                AND created < {now + 1}
                 GROUP BY metric.created
-                """,
-                (label.value, now - time_period - 1, now + 1))
+                """)
+            stats = await cursor.fetchall()
             traffic[label.name] = {}
-            stats = cursor.fetchall()
 
             y = 300 
             for x in range(now - time_period, now):
@@ -57,68 +57,71 @@ class ResourceMonitor(object):
             
         return traffic
         
-    def get_cpu_usage(self, time_period: int) -> list:
+    async def get_cpu_usage(self, time_period: int) -> list:
         now = int(datetime.timestamp(datetime.now()))
-        cursor = self.db.cursor()
-        cursor.execute("""
-            SELECT value, created FROM resource
-            WHERE resource = ?
-            AND created > ?
-            AND created < ?
-            """,
-            (MetricLabel.CPU_USAGE.value, now - time_period - 1, now + 1)
-        )
-        return cursor.fetchall()
 
-    def get_memory_usage(self, time_period: int) -> list:
+        db = await aiosqlite.connect(METRIC_DATABASE)
+        cursor = await db.execute(f"""
+            SELECT value, created FROM resource
+            WHERE resource = {MetricLabel.CPU_USAGE.value}
+            AND created > {now - time_period}
+            AND created < {now + 1}
+            """)
+        return await cursor.fetchall()
+    
+    async def get_memory_usage(self, time_period: int) -> list:
         now = int(datetime.timestamp(datetime.now()))
-        cursor = self.db.cursor()
-        cursor.execute("""
+
+        db = await aiosqlite.connect(METRIC_DATABASE)
+        cursor = await db.execute(f"""
             SELECT value, created FROM resource
-            WHERE resource = ?
-            AND created > ?
-            AND created < ?
-            """,
-            (MetricLabel.MEMORY_USAGE.value, now - time_period - 1, now + 1)
-        )
-        return cursor.fetchall()
+            WHERE resource = {MetricLabel.MEMORY_USAGE.value}
+            AND created > {now - time_period}
+            AND created < {now + 1}
+            """)
+        
+        return await cursor.fetchall()
 
-    def get_shell_sessions(self, time_period: int) -> list:
-        cursor = self.db.cursor()
-        cursor.execute("""
-            SELECT COUNT(label) FROM labels
-            WHERE label = ?
-            """,
-            (MetricLabel.SHELL_UP.value,)
-        )
-        shell_up = cursor.fetchone()[0]
+    async def get_shell_sessions(self, time_period: int) -> list:
+        # cursor = self.db.cursor()
+        # cursor.execute("""
+        #     SELECT COUNT(label) FROM labels
+        #     WHERE label = ?
+        #     """,
+        #     (MetricLabel.SHELL_UP.value,)
+        # )
+        # shell_up = cursor.fetchone()[0]
 
-        cursor = self.db.cursor()
-        cursor.execute("""
-            SELECT COUNT(label) FROM labels
-            WHERE label = ?
-            """,
-            (MetricLabel.SHELL_DOWN.value,)
-        )
-        shell_down = cursor.fetchone()[0]
+        # cursor = self.db.cursor()
+        # cursor.execute("""
+        #     SELECT COUNT(label) FROM labels
+        #     WHERE label = ?
+        #     """,
+        #     (MetricLabel.SHELL_DOWN.value,)
+        # )
+        # shell_down = cursor.fetchone()[0]
 
-        shells = shell_up - shell_down
+        # shells = shell_up - shell_down
 
-        return shells
+        return []
 
     def start(self):
+        self.db = sqlite3.connect(METRIC_DATABASE)
+
         while True:
             now = int(datetime.timestamp(datetime.now()))
             cpu_usage = psutil.cpu_percent()
             memory_usage = psutil.virtual_memory().used
             cursor = self.db.cursor()
             
-            cursor.execute("INSERT INTO resource (resource, value, created) VALUES (?, ?, ?)",
+            cursor.execute(
+                "INSERT INTO resource (resource, value, created) VALUES (?, ?, ?)",
                 (MetricLabel.CPU_USAGE.value, cpu_usage, now)
             )
             self.db.commit()
 
-            cursor.execute("INSERT INTO resource (resource, value, created) VALUES (?, ?, ?)",
+            cursor.execute(
+                "INSERT INTO resource (resource, value, created) VALUES (?, ?, ?)",
                 (MetricLabel.MEMORY_USAGE.value, memory_usage, now)
             )
             self.db.commit()
