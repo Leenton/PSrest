@@ -13,7 +13,7 @@ from time import sleep
 VERSION = '0.1.1'
 
 CONFIG = configparser.ConfigParser()      
-CONFIG.read_file(open((str(Path(__file__).parent.parent.parent) + '/config'), 'r')) 
+CONFIG.read_file(open((str(Path(__file__).parent.parent) + '/config'), 'r')) 
 HOSTNAME = CONFIG.get('Server', 'HOSTNAME')
 PORT = int(CONFIG.get('Server', 'PORT'))
 
@@ -65,7 +65,7 @@ LOG_PLATFORM = platform.system()
 
 #These database files and the temp files should live in user space not in the project directory
 
-CREDENTIAL_DATABASE = str(Path(__file__).parent.parent.parent) + '/data.db' #OAuth2 credential database
+CREDENTIAL_DATABASE = str(Path(__file__).parent.parent) + '/data.db' #OAuth2 credential database
 METRIC_DATABASE = TMP_DIR + '/metrics.db' #Metric database
 PROCESSOR_DATABASE = TMP_DIR + '/processor.db' #Processor database
 
