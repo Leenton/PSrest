@@ -1,5 +1,42 @@
 # PSrest
-Powershell Rest
+
+You can run the application by importing the PSRest module and running the Start-PSRestServer command. 
+
+```powershell
+Import-Module .\PSRest.psm1
+Start-PSRestServer
+```
+
+## Configuration
+
+The application can be configured by editing the config.ini file or by using the Set-PSRestConfig command. 
+
+```powershell
+Set-PSRestConfig -PSModules PSRest -DisabledCommands Remove-Item -EnabledCommands Get-Process
+```
+
+```powershell
+Enable-PSRestCommand -Command Get-Process -Disabled
+```
+
+```powershell
+Disable-PSRestCommand -Command Get-Process
+```
+
+```powershell
+Add-PSRestModule -Module ActiveDirectory
+```
+
+```powershell
+Remove-PSRestModule -Module ActiveDirectory
+```
+
+```powershell
+Get-PSRestConfig
+```
+
+## User Management
+
 
 Overall plan, we will go heard for like 2 or 3 hours and speed implement our idea.
 

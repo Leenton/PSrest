@@ -13,6 +13,6 @@ class Home(object):
         self.logger.record(Metric(MetricLabel.REQUEST))
         resp.status = HTTP_200
         resp.content_type = 'text/html'
-        async with aiofiles.open('./html/home.html', 'rb') as f:
+        async with aiofiles.open('./resources/html/home.html', 'rb') as f:
             resp.text = await f.read()
         

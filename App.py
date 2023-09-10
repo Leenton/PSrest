@@ -14,7 +14,7 @@ from endpoints.Resources import Resources
 from endpoints.Processes import Processes
 from endpoints.Events import Events
 from psrlogging.MetricRecorderLogger import MultiProcessSafeRecorderLogger
-from entities.PSRestQueue import serve_queue
+# from entities.PSRestQueue import serve_queue
 from processing.PSProcessor import start_processor, PSProcessor
 from psrlogging.Logger import start_logger, LogMessage
 from psrlogging.MetricRecorder import start_metrics
@@ -47,7 +47,7 @@ if __name__ == '__main__':
     resource_monitoring.start()
     psrlogging.start()
     metrics.start()
-    sleep(2)
+    sleep(5)
     processing.start()
 
     #Define the webserver application and add routes

@@ -45,13 +45,13 @@ class PSRestLogger(Logger):
     def __init__(self) -> None:
         self.filename = LOG_FILE
 
-        if LOG_PLATFORM == 'Windows':
+        if PLATFORM == 'Windows':
             logger = WindowsLogger()
 
-        elif LOG_PLATFORM== 'Linux':
+        elif PLATFORM== 'Linux':
             logger = LinuxLogger()
 
-        elif LOG_PLATFORM == 'MacOS':
+        elif PLATFORM == 'MacOS':
             logger = MacLogger()
 
         else:

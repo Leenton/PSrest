@@ -21,7 +21,7 @@ class Processes(object):
         #if they are serve the page else serve the login page
         resp.status = HTTP_200
         resp.content_type = 'text/html'
-        async with aiofiles.open('./html/processes.html', 'rb') as f:
+        async with aiofiles.open('./resources/html/processes.html', 'rb') as f:
             resp.text = await f.read()
 
     async def on_delete(self, req, resp):

@@ -10,7 +10,7 @@ from threading import Thread
 from sqlite3.dbapi2 import Connection
 from sqlite3 import connect
 
-#Internal imports
+# Internal imports
 from configuration.Config import *
 from exceptions.PSRExceptions import ProcessorException
 from processing.PSProcess import PSProcess
@@ -45,11 +45,11 @@ class PSProcessor():
         '''
         This method is used to request for a powershell job to be executed.
         '''
-        #Create a ticket for the command and put it in the schedule
+        # Create a ticket for the command and put it in the schedule
         ticket = PSTicket(command)
         self.requests.put(ticket.serialise())
 
-        #Put the command on the process_queue
+        # Put the command on the process_queue
         try:
             await self.process_queue.put(
                 json.dumps({'Command': command.value, 'Ticket': ticket.id, 'Depth': command.depth})
@@ -62,15 +62,15 @@ class PSProcessor():
         self.alerts.put(alert)
 
     def kill_processes(self, processor_db: Connection) -> None:
-        #Check the kill queue for processes that we have been told to kill
+        # Check the kill queue for processes that we have been told to kill
         try:
             pid = self.kill_queue.get('1')
             if(pid):
-                #Kill the process and update the database
+                # Kill the process and update the database
                 for child in active_children():
                     if child.name == pid:
-                        #TODO: Log this
-                        #log how long the process was running for before it was killed
+                        # TODO: Log this
+                        # log how long the process was running for before it was killed
                         child.terminate()
 
                 cursor = processor_db.cursor()
@@ -78,11 +78,11 @@ class PSProcessor():
                 cursor.execute("DELETE FROM PSProcess WHERE pid = ?", [pid])
                 processor_db.commit()
         except Exception:
-            #TODO: Log this
+            # TODO: Log this
             return
 
     def accept_requests(self, processor_db: Connection) -> None:
-        #Check the requests queue and add them to the database
+        # Check the requests queue and add them to the database
         try:
             ticket = self.requests.get(False)
             if(ticket):
@@ -98,7 +98,7 @@ class PSProcessor():
             return
 
     async def process_alerts(self, processor_db: Connection) -> None:
-        #Check the alerts queue and alert sources and match them to the tickets in the database
+        # Check the alerts queue and alert sources and match them to the tickets in the database
 
         process_alert:dict = json.loads(self.process_queue.get())
         if(process_alert.get('pid', None)):
@@ -118,7 +118,7 @@ class PSProcessor():
         try:
             process_alert:dict = self.alerts.get(False)
             if(process_alert.get('status', None)):
-                #Delete the ticket from the database
+                # Delete the ticket from the database
                 cursor = processor_db.cursor()
                 cursor.execute(
                     "DELETE FROM PSProcessor WHERE ticket = ?",
@@ -126,7 +126,7 @@ class PSProcessor():
                 processor_db.commit()
 
                 if(process_alert['status'] == FAILED):
-                    #kill the process that was executing the command
+                    # kill the process that was executing the command
                     cursor = processor_db.cursor()
                     cursor.execute(
                         "SELECT pid FROM PSProcessor WHERE ticket = ?",
@@ -139,7 +139,7 @@ class PSProcessor():
             return
 
     def scale_up_processes(self, processor_db: Connection) -> None:
-        #If there are tickets that have been waiting for too long, spin up a new process to process them
+        # If there are tickets that have been waiting for too long, spin up a new process to process them
         try:
             cursor = processor_db.cursor()
             cursor.execute("""--sql
@@ -152,21 +152,21 @@ class PSProcessor():
             )
             tickets = cursor.fetchall()
 
-            #if the ticket length is greater than 0, and we haven't reached the max number of processes
+            # if the ticket length is greater than 0, and we haven't reached the max number of processes
             if(
                 len(tickets) > 0
                 and len(self.processors) < MAX_PROCESSES
                 and self.this_tick  > self.next_spawn
                 and tickets[0][1] < self.this_tick - PROCESSOR_SPIN_UP_PERIOD
             ):
-                #spin up a new process to process the requests
+                # spin up a new process to process the requests
                 self.spawn_psprocess(processor_db)
                 self.next_spawn = self.this_tick + PROCESSOR_SPIN_UP_PERIOD
         except Exception:
             return
     
     def scale_down_processes(self, processor_db: Connection) -> None:
-        #if there is a process that hasn't been seen for a while and it has no tickets assigned to it, kill it
+        # if there is a process that hasn't been seen for a while and it has no tickets assigned to it, kill it
         try:
             cursor = processor_db.cursor()
             cursor.execute("""
@@ -180,7 +180,7 @@ class PSProcessor():
             )
             pids = cursor.fetchall()
 
-            #if the ticket length is greater than 0, and we haven't reached the max number of processes
+            # if the ticket length is greater than 0, and we haven't reached the max number of processes
             for pid in pids:
                 self.kill_queue.kill(pid[0])
 
@@ -201,7 +201,7 @@ class PSProcessor():
 
 
     def sleep(self) -> None:
-        #Calulate the sleep time based on how busy the processor is and how many requests are coming in
+        # Calulate the sleep time based on how busy the processor is and how many requests are coming in
         if(self.accepted_request_this_tick):
             self.accepted_request_this_tick = False
             self.sleep_time = 1 / PROCESSOR_TICK_RATE
