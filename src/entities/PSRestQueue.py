@@ -101,5 +101,8 @@ class PSRestQueue():
         await associated
 
 def serve_queue():
-    queue = PSRestQueue()
-    asyncio.run(queue.start())
+    try:
+        queue = PSRestQueue()
+        asyncio.run(queue.start())
+    except KeyboardInterrupt:
+        exit(0)

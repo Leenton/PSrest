@@ -60,12 +60,7 @@ class ResourceMonitor(object):
     def get_cpu_usage(self, time_period: int) -> list:
         now = int(datetime.timestamp(datetime.now()))
         cursor = self.db.cursor()
-        cursor.execute("""
-            SELECT value, created FROM resource
-            WHERE resource = ?
-            AND created > ?
-            AND created < ?
-            """,
+        cursor.execute("SELECT value, created FROM resource WHERE resource = ? AND created > ? AND created < ?",
             (MetricLabel.CPU_USAGE.value, now - time_period - 1, now + 1)
         )
         return cursor.fetchall()
@@ -73,31 +68,20 @@ class ResourceMonitor(object):
     def get_memory_usage(self, time_period: int) -> list:
         now = int(datetime.timestamp(datetime.now()))
         cursor = self.db.cursor()
-        cursor.execute("""
-            SELECT value, created FROM resource
-            WHERE resource = ?
-            AND created > ?
-            AND created < ?
-            """,
+        cursor.execute("SELECT value, created FROM resource WHERE resource = ? AND created > ? AND created < ?",
             (MetricLabel.MEMORY_USAGE.value, now - time_period - 1, now + 1)
         )
         return cursor.fetchall()
 
     def get_shell_sessions(self, time_period: int) -> list:
         cursor = self.db.cursor()
-        cursor.execute("""
-            SELECT COUNT(label) FROM labels
-            WHERE label = ?
-            """,
+        cursor.execute("SELECT COUNT(label) FROM labels WHERE label = ?",
             (MetricLabel.SHELL_UP.value,)
         )
         shell_up = cursor.fetchone()[0]
 
         cursor = self.db.cursor()
-        cursor.execute("""
-            SELECT COUNT(label) FROM labels
-            WHERE label = ?
-            """,
+        cursor.execute("SELECT COUNT(label) FROM labels WHERE label = ?",
             (MetricLabel.SHELL_DOWN.value,)
         )
         shell_down = cursor.fetchone()[0]
@@ -126,5 +110,8 @@ class ResourceMonitor(object):
             sleep(1)
 
 def start_resource_monitor() -> None:
-    monitor = ResourceMonitor()
-    monitor.start()
+    try:
+        monitor = ResourceMonitor()
+        monitor.start()
+    except KeyboardInterrupt:
+        exit(0)

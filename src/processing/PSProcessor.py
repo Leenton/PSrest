@@ -234,6 +234,9 @@ class PSProcessor():
             self.this_tick = datetime.timestamp(datetime.now())
             
 def start_processor(requests: Queue, alerts: Queue, stats: Queue, processes: Queue):
-    processor = PSProcessor(requests, alerts, stats, processes)
-    processes.put([])
-    processor.start()
+    try:
+        processor = PSProcessor(requests, alerts, stats, processes)
+        processes.put([])
+        processor.start()
+    except KeyboardInterrupt:
+        exit(0)

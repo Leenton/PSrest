@@ -72,5 +72,8 @@ class PSRestLogger(Logger):
                 sleep(0.1)
 
 def start_logger(queue: Queue) -> None:
-    logger = PSRestLogger()
-    logger.run(queue)
+    try:
+        logger = PSRestLogger()
+        logger.run(queue)
+    except KeyboardInterrupt:
+        exit(0)
