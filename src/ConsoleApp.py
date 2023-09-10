@@ -14,8 +14,8 @@ def main(argv):
             sys.exit()
             
         elif opt in ("-x", "--method"):
-            if arg.lower() in ('add', 'remove', 'get', 'set', 'version'):
-                request['method'] = arg.lower()
+            if arg.lower() in ('add', 'remove', 'get', 'set'):
+                request['method'] = arg
             else:
                 print('Invalid method')
                 sys.exit()

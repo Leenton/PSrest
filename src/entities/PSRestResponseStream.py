@@ -39,7 +39,7 @@ class PSRestResponseStream():
 
     async def read(self):
         while(self.length == None):
-            await asyncio.sleep(0.001)
+            await asyncio.sleep(0.005)
         
         while(self.reader == None and self.writer == None):
             await asyncio.sleep(0.001)

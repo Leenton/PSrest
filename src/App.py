@@ -26,9 +26,6 @@ if __name__ == '__main__':
     if(not os.path.exists(CREDENTIAL_DATABASE)):
         setup_credential_db()
 
-    if(not os.path.exists(METRIC_DATABASE)):
-        setup_metric_db()
-
     setup_processor_db()
 
     #Create queues for communication between threads and processes
@@ -38,16 +35,16 @@ if __name__ == '__main__':
     processing = Process(target=start_processor, name='PSProcessor', args=(requests, alerts, stats, processes))
     psrlogging = Process(target=start_logger, name='PSRestLogger',args=(logs,))
     resource_monitoring = Process(target=start_resource_monitor, name='PSRestResourceMonitor')
-    # psrest_queue = Process(target=serve_queue, name='PSRestQueue')
+    psrest_queue = Process(target=serve_queue, name='PSRestQueue')
     metrics = Process(target=start_metrics, name='PSRestMetrics', args=(stats,))
     
     #Start all the threads
     # Popen("python3 ./src/Queue.py", shell=True)
-    # psrest_queue.start()
+    psrest_queue.start()
     resource_monitoring.start()
     psrlogging.start()
     metrics.start()
-    sleep(2)
+    sleep(5)
     processing.start()
 
     #Define the webserver application and add routes

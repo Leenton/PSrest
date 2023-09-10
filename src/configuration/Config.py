@@ -9,9 +9,10 @@ import random
 import sqlite3
 from time import sleep
 
-#PSRestVersion
-VERSION = '0.1.1'
 
+CREDENTIAL_DATABASE = str(Path(__file__).parent.parent.parent) + '/data.db' #OAuth2 credential database
+METRIC_DATABASE = str(Path(__file__).parent.parent.parent) + '/metrics.db' #Metric database
+PROCESSOR_DATABASE = str(Path(__file__).parent.parent.parent) + '/processor.db' #Processor database
 CONFIG = configparser.ConfigParser()      
 CONFIG.read_file(open((str(Path(__file__).parent.parent.parent) + '/config'), 'r')) 
 HOSTNAME = CONFIG.get('Server', 'HOSTNAME')
@@ -62,12 +63,6 @@ LOG_LEVEL = 'INFO'
 LOG_FILE = './psrest.log'
 #get the os name
 LOG_PLATFORM = platform.system()
-
-#These database files and the temp files should live in user space not in the project directory
-
-CREDENTIAL_DATABASE = str(Path(__file__).parent.parent.parent) + '/data.db' #OAuth2 credential database
-METRIC_DATABASE = TMP_DIR + '/metrics.db' #Metric database
-PROCESSOR_DATABASE = TMP_DIR + '/processor.db' #Processor database
 
 #TODO: Sanitise the contents we get from the config file to prevent code injection.
 

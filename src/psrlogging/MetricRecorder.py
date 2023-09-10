@@ -48,8 +48,8 @@ class PSRestMetricHandler():
                 sleep(0.1)
 
 def start_metrics(queue: Queue) -> None:
-    try:
-        metrics = PSRestMetricHandler()
-        metrics.run(queue)
-    except KeyboardInterrupt:
-        exit(0)
+    if(not os.path.exists(METRIC_DATABASE)):
+        setup_metric_db()
+
+    metrics = PSRestMetricHandler()
+    metrics.run(queue)
