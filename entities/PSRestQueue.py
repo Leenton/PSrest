@@ -1,10 +1,12 @@
+# Import system libraries
 from queue import Queue, Empty
 import asyncio
-from exceptions.PSRExceptions import PSRQueueException
 from json import dumps,loads
 from configuration.Config import *
-from time import sleep
 import socket
+
+# Internal imports
+from exceptions.PSRExceptions import PSRQueueException
 class PSRestQueue():
 
     def __init__(self):
@@ -12,12 +14,13 @@ class PSRestQueue():
         self.associated_queue = Queue()
     
     async def put(self, message: str)-> None: 
-        'Put a message on the queue to be distributed to a free PSProcessor.'
-
-        reader, writer = await  asyncio.open_unix_connection(PSRESTQUEUE_PUT)
-        writer.write(message.encode('utf-8'))
-        await writer.drain()
-        writer.close()
+        try:
+            reader, writer = await  asyncio.open_unix_connection(PSRESTQUEUE_PUT)
+            writer.write(message.encode('utf-8'))
+            await writer.drain()
+            writer.close()
+        except ConnectionRefusedError:
+            raise PSRQueueException('PSRestQueue is not running.')
 
     
     def get(self) -> str: 
@@ -32,7 +35,6 @@ class PSRestQueue():
             return dumps({'pid': None, 'ticket': None})
 
     async def receive_commands(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
-        ''' Listens for commands from PSRESTQUEUE_PUT and puts them on the queue'''
         data = await reader.read()
         if(data):
             self.queue.put(data.decode('utf-8'))

@@ -13,11 +13,10 @@ from endpoints.Home import Home
 from endpoints.Resources import Resources
 from endpoints.Processes import Processes
 from endpoints.Events import Events
-from psrlogging.MetricRecorderLogger import MultiProcessSafeRecorderLogger
-# from entities.PSRestQueue import serve_queue
+from log.MetricRecorderLogger import MultiProcessSafeRecorderLogger
 from processing.PSProcessor import start_processor, PSProcessor
-from psrlogging.Logger import start_logger, LogMessage
-from psrlogging.MetricRecorder import start_metrics
+from log.Logger import start_logger, LogMessage
+from log.MetricRecorder import start_metrics
 from entities.ResourceMonitor import start_resource_monitor
 from configuration.Config import *
 
@@ -34,18 +33,19 @@ if __name__ == '__main__':
     #Create queues for communication between threads and processes
     requests, alerts, stats, processes, logs = ProcessQueue(), ProcessQueue(), ProcessQueue(), ProcessQueue(), ProcessQueue()
 
-    #Create threads and subproceses for processing and psrlogging and queueing
+    #Create threads and subproceses for processing and log and queueing
     processing = Process(target=start_processor, name='PSProcessor', args=(requests, alerts, stats, processes))
-    psrlogging = Process(target=start_logger, name='PSRestLogger',args=(logs,))
+    log = Process(target=start_logger, name='PSRestLogger',args=(logs,))
     resource_monitoring = Process(target=start_resource_monitor, name='PSRestResourceMonitor')
-    # psrest_queue = Process(target=serve_queue, name='PSRestQueue')
     metrics = Process(target=start_metrics, name='PSRestMetrics', args=(stats,))
     
     #Start all the threads
-    # Popen("python3 ./Queue.py", shell=True)
-    # psrest_queue.start()
+    from entities.PSRestQueue import serve_queue
+    psrest_queue = Process(target=serve_queue, name='PSRestQueue')
+    psrest_queue.start()
+
     resource_monitoring.start()
-    psrlogging.start()
+    log.start()
     metrics.start()
     sleep(5)
     processing.start()

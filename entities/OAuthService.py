@@ -73,7 +73,7 @@ class OAuthService():
             if(token['expiry'] > datetime.timestamp(datetime.now())):
                 raise InvalidToken('Access token has expired.')
             
-            if action.lower() in self.get_client_actions(token['reference']):
+            if ARBITRARY_COMMANDS or action.lower() in self.get_client_actions(token['reference']):
                 return
             
             else:

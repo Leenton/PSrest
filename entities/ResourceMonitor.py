@@ -1,6 +1,6 @@
 import sqlite3
 from datetime import datetime
-from psrlogging.Metric import MetricLabel
+from log.Metric import MetricLabel
 import psutil
 from enum import Enum
 from time import sleep

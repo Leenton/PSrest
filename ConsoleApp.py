@@ -1,7 +1,7 @@
 
 import sys, getopt
 import json
-from console.PSRestConsole import PSRestConsole
+from entities.PSRestConsole import PSRestConsole
 
 def main(argv):
 
@@ -14,7 +14,7 @@ def main(argv):
             sys.exit()
             
         elif opt in ("-x", "--method"):
-            if arg.lower() in ('add', 'remove', 'get', 'set', 'version'):
+            if arg.lower() in ('add', 'remove', 'get', 'set', 'version', 'config'):
                 request['method'] = arg.lower()
             else:
                 print('Invalid method')

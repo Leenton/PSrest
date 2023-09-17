@@ -1,9 +1,9 @@
 from falcon.status_codes import * 
 import aiofiles
 
-from psrlogging.LogMessage import LogMessage, LogLevel, LogCode
-from psrlogging.Metric import Metric, MetricLabel
-from psrlogging.MetricRecorderLogger import MetricRecorderLogger
+from log.LogMessage import LogMessage, LogLevel, LogCode
+from log.Metric import Metric, MetricLabel
+from log.MetricRecorderLogger import MetricRecorderLogger
 
 class Home(object):
     def __init__(self, logger: MetricRecorderLogger) -> None:

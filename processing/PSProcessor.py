@@ -9,6 +9,8 @@ from time import sleep
 from threading import Thread
 from sqlite3.dbapi2 import Connection
 from sqlite3 import connect
+import aiosqlite
+from aiosqlite import Connection as AioConnection
 
 # Internal imports
 from configuration.Config import *
@@ -40,6 +42,7 @@ class PSProcessor():
         self.processors = {}
         self.this_tick = datetime.timestamp(datetime.now())
         self.next_spawn = self.this_tick + PROCESSOR_SPIN_UP_PERIOD
+        self.is_main = False
 
     async def request(self, command: Cmdlet) -> PSTicket: 
         '''
@@ -47,6 +50,12 @@ class PSProcessor():
         '''
         # Create a ticket for the command and put it in the schedule
         ticket = PSTicket(command)
+        # db = await aiosqlite.connect(PROCESSOR_DATABASE)
+
+        # #Check if we have the capacity to process the request if not raise an exception
+        # if((await self.get_process_count(db)) == MAX_PROCESSES and (await self.async_should_scale_up(db))):
+        #     raise ProcessorException('Too busy.')
+
         self.requests.put(ticket.serialise())
 
         # Put the command on the process_queue
@@ -137,29 +146,52 @@ class PSProcessor():
 
         except Exception:
             return
+        
+    async def async_should_scale_up(self, processor_db: AioConnection) -> bool:
+        # If there are tickets that have been waiting for too long, spin up a new process to process them
+        cursor = await processor_db.execute("""--sql
+            SELECT ticket, created, pid
+            FROM PSProcessor
+            WHERE pid IS NULL AND created < ?
+            ORDER BY created ASC
+            """,
+            [self.this_tick - TOO_LONG]
+        )
+        tickets = await cursor.fetchall()
+
+        try:
+
+            return len(tickets) > 0 and self.this_tick  > self.next_spawn and tickets[0][1] < self.this_tick - PROCESSOR_SPIN_UP_PERIOD
+        except Exception as e:
+            print("CULPRIT")
+            raise e
+
+    def should_scale_up(self, processor_db: Connection) -> bool:
+        # If there are tickets that have been waiting for too long, spin up a new process to process them
+        cursor = processor_db.cursor()
+        cursor.execute("""--sql
+            SELECT ticket, created, pid
+            FROM PSProcessor
+            WHERE pid IS NULL AND created < ?
+            ORDER BY created ASC
+            """,
+            [self.this_tick - TOO_LONG]
+        )
+        tickets = cursor.fetchall()
+
+        return len(tickets) > 0 and self.this_tick  > self.next_spawn and tickets[0][1] < self.this_tick - PROCESSOR_SPIN_UP_PERIOD
+
+    async def get_process_count(self, processor_db: AioConnection) -> int:
+        self.this_tick = datetime.timestamp(datetime.now())
+
+        cursor = await processor_db.execute("SELECT COUNT(pid) FROM PSProcess")
+        process_count = await cursor.fetchone()
+
+        return process_count[0]
 
     def scale_up_processes(self, processor_db: Connection) -> None:
-        # If there are tickets that have been waiting for too long, spin up a new process to process them
         try:
-            cursor = processor_db.cursor()
-            cursor.execute("""--sql
-                SELECT ticket, created, pid
-                FROM PSProcessor
-                WHERE pid IS NULL AND created < ?
-                ORDER BY created ASC
-                """,
-                [self.this_tick - TOO_LONG]
-            )
-            tickets = cursor.fetchall()
-
-            # if the ticket length is greater than 0, and we haven't reached the max number of processes
-            if(
-                len(tickets) > 0
-                and len(self.processors) < MAX_PROCESSES
-                and self.this_tick  > self.next_spawn
-                and tickets[0][1] < self.this_tick - PROCESSOR_SPIN_UP_PERIOD
-            ):
-                # spin up a new process to process the requests
+            if(len(self.processors) < MAX_PROCESSES and self.should_scale_up()):
                 self.spawn_psprocess(processor_db)
                 self.next_spawn = self.this_tick + PROCESSOR_SPIN_UP_PERIOD
         except Exception:
@@ -169,7 +201,7 @@ class PSProcessor():
         # if there is a process that hasn't been seen for a while and it has no tickets assigned to it, kill it
         try:
             cursor = processor_db.cursor()
-            cursor.execute("""
+            cursor.execute("""--sqls
                 SELECT pid
                 FROM PSProcess
                 LEFT JOIN PSProcessor ON PSProcess.pid = PSProcessor.pid
@@ -199,7 +231,6 @@ class PSProcessor():
         process.start()
         self.processors[psprocess.id] = process
 
-
     def sleep(self) -> None:
         # Calulate the sleep time based on how busy the processor is and how many requests are coming in
         if(self.accepted_request_this_tick):
@@ -222,6 +253,8 @@ class PSProcessor():
         
         for x in range(self.process_count):
             self.spawn_psprocess(db)
+        
+        self.is_main = True
 
         while(True):
             self.kill_processes(db)
@@ -232,7 +265,7 @@ class PSProcessor():
 
             self.sleep()
             self.this_tick = datetime.timestamp(datetime.now())
-            
+
 def start_processor(requests: Queue, alerts: Queue, stats: Queue, processes: Queue):
     try:
         processor = PSProcessor(requests, alerts, stats, processes)

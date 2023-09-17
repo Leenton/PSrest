@@ -33,3 +33,36 @@ OAUTH_SCHEMA = {
         "required": ["client_id", "client_secret"]
     }
 }
+
+CONFIG_SCHEMA = {
+    "type" : "object",
+    "properties" : {
+        "Hostname" : {"type" : "string"},
+        "Port" : {"type" : "integer"},
+        "Cert" : {"type" : "string"},
+        "Repository" : {"type" : "string"},
+        "DefaultTTL" : {"type" : "integer"},
+        "MaxTTL" : {"type" : "integer"},
+        "ArbitraryCommands" : {"type" : "boolean"},
+        "Modules" : {"type" : "array", 'uniqueItems': True, "items": {"type": "string"}},
+        "Enabled" : {"type" : "array", 'uniqueItems': True, "items": {"type": "string"}},
+        "Disabled" : {"type" : "array", 'uniqueItems': True, "items": {"type": "string"}},
+        "Help" : {"type" : "boolean"},
+        "DefaultDepth" : {"type" : "integer"},
+    },
+    "required": [
+        "Hostname",
+        "Port",
+        "Cert",
+        "Repository",
+        "DefaultTTL",
+        "MaxTTL",
+        "ArbitraryCommands",
+        "Modules",
+        "Enabled",
+        "Disabled",
+        "Help",
+        "DefaultDepth"
+        ],
+    "additionalProperties": False
+}

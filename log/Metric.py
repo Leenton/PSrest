@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import List, Tuple
 from datetime import datetime
 
 class MetricLabel(Enum):
@@ -12,6 +11,7 @@ class MetricLabel(Enum):
     MEMORY_USAGE = 7
     SHELL_UP = 8
     SHELL_DOWN = 9
+    DROPPED_REQUEST = 10
 
 
 class Metric(object):

@@ -1,0 +1,19 @@
+{
+    "Hostname": "localhost",
+    "Port": 80,
+    "Cert": "na",
+    "Repository": "",
+    "DefaultTTL": 60,
+    "MaxTTL": 900,
+    "ArbitraryCommands": false,
+    "Modules": ["*"],
+    "Enabled": [
+        "Write-Host"
+    ],
+    "Disabled": [
+        "Invoke-Expression",
+        "Get-Help"
+    ],
+    "Help": true,
+    "DefaultDepth": 4
+}

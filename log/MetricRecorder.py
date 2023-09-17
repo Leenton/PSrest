@@ -1,12 +1,9 @@
 from typing import Protocol
-from psrlogging.Metric import Metric, MetricLabel
-from enum import Enum
+from log.Metric import Metric, MetricLabel
 from time import sleep
 from typing import List
 import sqlite3
-from datetime import datetime
-import os
-from configuration.Config import METRIC_DATABASE, setup_metric_db
+from configuration.Config import METRIC_DATABASE
 from multiprocessing import Queue
 from uuid import uuid4
 

@@ -8,6 +8,11 @@ from secrets import token_bytes
 from pathlib import Path
 from time import sleep
 from shutil import copyfile
+from jsonschema import validate
+from jsonschema.exceptions import ValidationError
+from json import load
+from entities.Schema import CONFIG_SCHEMA
+
 
 # PSRestVersion
 VERSION = '0.1.1'
@@ -28,35 +33,48 @@ if(not path.isdir(APP_DATA)):
     mkdir(APP_DATA)
 
 # Load the config file and inject the values into the constants
-if(not path.isfile(APP_DATA + '/config')):
-    copyfile(str(Path(__file__).parent) + '/config', APP_DATA + '/config')
+if(not path.isfile(APP_DATA + '/config.json')):
+    copyfile(str(Path(__file__).parent) + '/config.json', APP_DATA + '/config.json')
 
-CONFIG = configparser.ConfigParser()      
-CONFIG.read_file(open((APP_DATA + '/config'), 'r')) 
-HOSTNAME = CONFIG.get('Server', 'HOSTNAME')
-PORT = int(CONFIG.get('Server', 'PORT'))
+CONFIG: dict = load(open(APP_DATA + '/config.json', 'r'))
+try:
+    validate(
+        instance=CONFIG,
+        schema=CONFIG_SCHEMA
+    )
+except ValidationError:
+    raise Exception('Invalid config file. Please check the config file against the schema.')
+
+HOSTNAME = CONFIG['Hostname']
+PORT = CONFIG['Port']
 
 # Constants for the ticketing system
-DEFAULT_TTL = CONFIG.get('TimeOut', 'DEFAULT_TTL')
-MAX_TTL = int(CONFIG.get('TimeOut', 'MAX_TTL'))
+DEFAULT_TTL = CONFIG['DefaultTTL']
+MAX_TTL =CONFIG['MaxTTL']
 ACCESS_TOKEN_TTL = 3600
 REFRESH_TOKEN_TTL = 86400 * 14
 
 # Constants for how we serve responses
-DEFAULT_DEPTH = CONFIG.get('Response', 'DEFAULT_DEPTH')
+DEFAULT_DEPTH = CONFIG['DefaultDepth']
 MAX_DEPTH = 100
 TOO_LONG = 0.25
 
 # Constants for the powershell execution
 PS_PROCESSORS = 8
 MAX_PROCESSES = 33
-PROCESSOR_TICK_RATE = 1000
+PROCESSOR_TICK_RATE = 5000
 PROCESSOR_SPIN_UP_PERIOD = 0.25
-ARBITRARY_COMMANDS = True if ((CONFIG.get('PSExecution', 'ARBITRARY_COMMANDS')).lower() == 'true') else False
-HELP = CONFIG.get('Help', 'HELP')
-MODULES = CONFIG.get('ExposedModules', 'MODULES')
-DISABLE_COMMANDS = CONFIG.get('DisableCmdlets', 'CMDLETS')
-ENABLE_COMMANDS = CONFIG.get('EnableCmdlets', 'CMDLETS')
+ARBITRARY_COMMANDS = CONFIG['ArbitraryCommands']
+HELP = CONFIG['Help']
+modules = CONFIG['Modules']
+
+if(modules == ['*']):
+    MODULES = '*'
+else:
+    MODULES = modules
+
+DISABLE_COMMANDS = CONFIG['Disabled']
+ENABLE_COMMANDS = CONFIG['Enabled']
 COMPETED = 'completed'
 FAILED = 'failed'
 

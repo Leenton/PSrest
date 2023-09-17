@@ -6,14 +6,15 @@ from typing import Generator, List
 from multiprocessing import Queue
 import sqlite3
 import aiosqlite
+from uuid import uuid4
 
 from configuration.Config import *
 from entities.OAuthService import OAuthService
 from entities.OAuthToken import OAuthToken
 from entities.ResourceMonitor import ResourceMonitor
-from psrlogging.LogMessage import LogMessage, LogLevel, LogCode
-from psrlogging.Metric import Metric, MetricLabel
-from psrlogging.MetricRecorderLogger import MetricRecorderLogger
+from log.LogMessage import LogMessage, LogLevel, LogCode
+from log.Metric import Metric, MetricLabel
+from log.MetricRecorderLogger import MetricRecorderLogger
 
 
 class Events(object):

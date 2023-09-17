@@ -1,7 +1,7 @@
 from configuration.Config import *
 from typing import Protocol, List
 from multiprocessing import Queue
-from psrlogging.LogMessage import LogMessage
+from log.LogMessage import LogMessage
 from enum import Enum
 from time import sleep
 

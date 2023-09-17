@@ -2,10 +2,10 @@
 from multiprocessing import Queue
 from typing import Protocol
 
-from psrlogging.Logger import Logger
-from psrlogging.LogMessage import LogMessage
-from psrlogging.MetricRecorder import MetricRecorder
-from psrlogging.Metric import Metric
+from log.Logger import Logger
+from log.LogMessage import LogMessage
+from log.MetricRecorder import MetricRecorder
+from log.Metric import Metric
 
 class MetricRecorderLogger(Logger, MetricRecorder, Protocol):
     ...

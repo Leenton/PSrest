@@ -7,9 +7,9 @@ from html import escape
 # import project dependencies
 from entities.CmdletInfo import CmdletInfo
 from entities.CmdletLibrary import CmdletLibrary
-from psrlogging.LogMessage import LogMessage, LogLevel, LogCode
-from psrlogging.Metric import Metric, MetricLabel
-from psrlogging.MetricRecorderLogger import MetricRecorderLogger
+from log.LogMessage import LogMessage, LogLevel, LogCode
+from log.Metric import Metric, MetricLabel
+from log.MetricRecorderLogger import MetricRecorderLogger
 from configuration.Config import *
 
 class Help(object):

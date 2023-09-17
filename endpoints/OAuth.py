@@ -8,9 +8,9 @@ from exceptions.PSRExceptions import *
 from entities.OAuthResponse import OAuthResponse
 from entities.OAuthService import OAuthService
 from entities.Schema import OAUTH_SCHEMA
-from psrlogging.LogMessage import LogMessage, LogLevel, LogCode
-from psrlogging.Metric import Metric, MetricLabel
-from psrlogging.MetricRecorderLogger import MetricRecorderLogger
+from log.LogMessage import LogMessage, LogLevel, LogCode
+from log.Metric import Metric, MetricLabel
+from log.MetricRecorderLogger import MetricRecorderLogger
 from configuration.Config import * 
 
 class OAuth(object): 
