@@ -71,7 +71,6 @@ class Run(object):
 
             ticket = await self.processor.request(command)
             stream = PSRestResponseStream(ticket, self.processor)
-        
             await stream.open()
 
             resp.status = HTTP_200

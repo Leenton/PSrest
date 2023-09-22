@@ -11,6 +11,7 @@ class PSProcess():
 
     def execute(self):
         try:
+            print(f'Start-PSRestProcessor -ProcessorId "{self.id}" -ResponseDirectory "{RESPONSE_DIR}" -SocketPath "{PSRESTQUEUE_SRV}" -WaitTime {PSRESTQUEUE_WAIT}')
             result = subprocess.run(
                 [
                     f'{self.platform}',
