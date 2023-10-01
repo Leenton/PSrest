@@ -9,9 +9,9 @@ import aiosqlite
 from uuid import uuid4
 
 from configuration.Config import *
-from entities.OAuthService import OAuthService
+from processing.OAuthService import OAuthService
 from entities.OAuthToken import OAuthToken
-from entities.ResourceMonitor import ResourceMonitor
+from processing.ResourceMonitor import ResourceMonitor
 from log.LogMessage import LogMessage, LogLevel, LogCode
 from log.Metric import Metric, MetricLabel
 from log.MetricRecorderLogger import MetricRecorderLogger

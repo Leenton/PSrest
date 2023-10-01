@@ -1,15 +1,16 @@
 import json
 import base64
 from configuration.Config import *
-from entities.CmdletLibrary import CmdletLibrary
-
+from entities.CmdletInfoLibrary import CmdletInfoLibrary
+from entities.CmdletResponse import CmdletResponse
 class Cmdlet():
     def __init__(
             self,
-            cmdlet_library: CmdletLibrary,
+            cmdlet_library: CmdletInfoLibrary,
             command: dict,
             ttl: float,
             depth: int,
+            application_name: str = '', 
             platform = None,
             psversion = None
             ) -> None:
@@ -17,6 +18,7 @@ class Cmdlet():
         self.function = None
         self.ttl = ttl
         self.depth = depth
+        self.application_name = application_name
         self.platform = platform
         self.psversion = psversion
         self.cmdlet_library = cmdlet_library
@@ -112,7 +114,22 @@ class Cmdlet():
             return f'(([System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String("{string}")) | ConvertFrom-Json).string)'
         else:
             return '$null'
-        
+
+    def serialise(self) -> dict:
+        return {
+            'function': self.function,
+            'ttl': self.ttl,
+            'depth': self.depth,
+            'platform': self.platform,
+            'psversion': self.psversion,
+            'command': self.value,
+            'ticket': None,
+            'application_name': self.application_name
+        }
+
+    def invoke(self) -> CmdletResponse:
+        return CmdletResponse(self.serialise())
+            
 class InvalidCmdlet(Exception):
     '''
     Exception raised when the cmdlet requested is invalid

@@ -6,7 +6,7 @@ from falcon.status_codes import HTTP_200, HTTP_401
 # import project dependencies
 from exceptions.PSRExceptions import *
 from entities.OAuthResponse import OAuthResponse
-from entities.OAuthService import OAuthService
+from processing.OAuthService import OAuthService
 from entities.Schema import OAUTH_SCHEMA
 from log.LogMessage import LogMessage, LogLevel, LogCode
 from log.Metric import Metric, MetricLabel

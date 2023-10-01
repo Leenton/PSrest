@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from typing import List
 from uuid import uuid4
 
-class PSRestConsole():
+class Console():
     def __init__(self,) -> None:
         self.service = 1
         self.database = sqlite3.connect(CREDENTIAL_DATABASE)

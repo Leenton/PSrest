@@ -222,27 +222,20 @@ function Set-PSRestApplication()
 
 }
 
-# Processor that executes the commands recieved by the API
-function Start-PSRestProcessor {
+# Process that executes the commands recieved by the API
+function Start-PSRestProcess {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
         [string]$ProcessorId,
         [Parameter(Mandatory = $true)]
-        [string]$SocketPath,
+        [string]$CmdletSourceSocket,
         [Parameter(Mandatory = $true)]
-        [string]$ResponseDirectory,
-        [Parameter(Mandatory = $true)]
-        [int]$WaitTime = 250
+        [string]$ResponseSocket
     )
 
-
-    begin{
-        
-    }
-
     process{
-        import-Module '/Users/leenton/c#/PSRestModule/PSRestModule/bin/Debug/net7.0/PSRestModule.dll'
+        import-Module '/Users/leenton/python/PSrest/PSRest/PSRestModule.dll'
         
         trap{
             if(!$command){
@@ -252,7 +245,7 @@ function Start-PSRestProcessor {
 
             #If we have a response try again, and if we fail again just exit
             try {
-                Send-PSRestResponse -Ticket $command.Ticket -ResponseDirectory $ResponseDirectory -InputObject $Response -WaitTime $WaitTime
+                Send-PSRestResponse -Ticket $command.Ticket -ResponseDirectory $ResponseDirectory -InputObject $Response
             }
             catch {
                 exit
@@ -261,7 +254,7 @@ function Start-PSRestProcessor {
     
         while($true){
             #Get the command to execute
-            $Command = Receive-PSRestCommand -SocketPath $SocketPath -ProcessorId $ProcessorId
+            $Command = Receive-PSRestCommand -CmdletSourceSocket $CmdletSourceSocket -ProcessorId $ProcessorId
 
             #Try and execute the command and send the result back
             try{
@@ -278,7 +271,7 @@ function Start-PSRestProcessor {
             } | ConvertTo-Json -Depth $command.Depth
 
             #Send the response over the wire
-            Send-PSRestResponse -Ticket $command.Ticket -ResponseDirectory $ResponseDirectory -InputObject $Response -WaitTime $WaitTime
+            Send-PSRestResponse -Ticket $command.Ticket -ResponseSocket $ResponseSocket -InputObject $Response
             $Command = $null
         }
     }
@@ -353,7 +346,7 @@ function Start-PSRest(){
         [string]$LogLevel
     )
 
-    $PSRestQueue = "PSRestQueue"
+    $PSRestDistributor = "PSRestDistributor"
 
     # Do any database patches if the version has changed
     Update-PSRest -WarningAction SilentlyContinue
@@ -364,14 +357,14 @@ function Start-PSRest(){
     try{
         Set-Location $Global:InstallPath
         # Start the PSRestqQeue as it's shared between all the processors and workers
-        Get-Job -Name $PSRestQueue -ErrorAction SilentlyContinue | Remove-Job -Force -ErrorAction SilentlyContinue
-        $Job = Start-Job -ScriptBlock { &python3 ./Queue.py } -Name $PSRestQueue
+        Get-Job -Name $PSRestDistributor -ErrorAction SilentlyContinue | Remove-Job -Force -ErrorAction SilentlyContinue
+        $Job = Start-Job -ScriptBlock { &python3 ./Queue.py } -Name $PSRestDistributor
 
         # Start the PSRest Workers
         &python3 ./App.py
     }finally{
         # Stop the Queue as the workers have exited and we don't need it anymore
-        Remove-Job -Name $PSRestQueue -Force -ErrorAction SilentlyContinue
+        Remove-Job -Name $Job -Force -ErrorAction SilentlyContinue
 
         # Return to the original directory
         Set-Location $CurrentDirectory
