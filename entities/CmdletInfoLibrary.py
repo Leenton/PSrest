@@ -5,7 +5,7 @@ import base64
 import random
 from configuration.Config import *
 
-class CmdletLibrary():
+class CmdletInfoLibrary():
     def __init__(self) -> None:
         self.cmdlets = {}
         #create a temporary database to store the cmdlets in memory

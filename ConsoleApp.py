@@ -1,7 +1,7 @@
 
 import sys, getopt
 import json
-from entities.PSRestConsole import PSRestConsole
+from configuration.Console import Console
 
 def main(argv):
 
@@ -56,7 +56,7 @@ def main(argv):
             sys.exit()
     
     #run the request
-    console = PSRestConsole()
+    console = Console()
     result = console.run(request)
 
     print(json.dumps({'data': result}))

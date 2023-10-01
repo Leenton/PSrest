@@ -12,10 +12,10 @@ from entities.OAuthToken import OAuthToken
 class OAuthService():
     def __init__(self,) -> None:
         self.password_hasher = PasswordHasher()
+        self.db = sqlite3.connect(CREDENTIAL_DATABASE)
     
     def validate_client_credential(self, client_id: str, client_secret: str) -> OAuthResponse:
-        db = sqlite3.connect(CREDENTIAL_DATABASE)
-        cursor = db.cursor()
+        cursor = self.db.cursor()
         cursor.execute(
             "SELECT cid, client_secret FROM client WHERE client_id = ?",
             (client_id,)
@@ -33,7 +33,7 @@ class OAuthService():
                 "UPDATE client SET client_secret = ? WHERE cid = ?",
                 (self.password_hasher.hash(client_secret), row[0])
             )
-            db.commit()
+            self.db.commit()
 
         #Generate the access token 
         return OAuthResponse(
@@ -42,8 +42,8 @@ class OAuthService():
         )
 
     def validate_refresh_token(self, refresh_token) -> OAuthResponse:
-        db = sqlite3.connect(CREDENTIAL_DATABASE)
-        cursor = db.cursor()
+
+        cursor = self.db.cursor()
         cursor.execute(
             "SELECT cid FROM refresh_client_map WHERE refresh_token = ? AND expiry > ?",
             (refresh_token, datetime.timestamp(datetime.now()))
@@ -59,7 +59,7 @@ class OAuthService():
             self.get_refresh_token(row[0])
         )
 
-    def validate_action(self, header: str, action: str) -> None:
+    def get_authorized_application_name(self, header: str, action: str) -> str:
         #Get the access token from the header
         authorisation = header.split(' ')
         if(not authorisation or authorisation[0].lower() != 'bearer'):
@@ -74,7 +74,7 @@ class OAuthService():
                 raise InvalidToken('Access token has expired.')
             
             if ARBITRARY_COMMANDS or action.lower() in self.get_client_actions(token['reference']):
-                return
+                return self.get_client_name(token['reference'])
             
             else:
                 raise UnAuthorised('You do not have permission to perform this action.')
@@ -102,16 +102,13 @@ class OAuthService():
         pass
 
     def get_refresh_token(self, cid: int) -> str:
-        #Get the refresh token associated with the cid from the db
-        db = sqlite3.connect(CREDENTIAL_DATABASE)
-
         #Delete the old refresh token
-        cursor = db.cursor()
+        cursor = self.db.cursor()
         cursor.execute(
             "DELETE FROM refresh_client_map WHERE cid = ?",
             (cid,)
         )
-        db.commit()
+        self.db.commit()
 
         #Generate a new refresh token
         refresh_token = str(uuid4())
@@ -119,18 +116,24 @@ class OAuthService():
             "INSERT INTO refresh_client_map (cid, refresh_token, expiry) VALUES (?, ?, ?)",
             (cid, refresh_token, datetime.timestamp(datetime.now()) + REFRESH_TOKEN_TTL)
         )
-        db.commit()
+        self.db.commit()
 
         return refresh_token
 
     def get_client_actions(self, cid: str) -> list:
         #Get the actions associated with the cid from the db
-        db = sqlite3.connect(CREDENTIAL_DATABASE)
-        cursor = db.cursor()
+        cursor = self.db.cursor()
         cursor.execute("SELECT action FROM action_client_map WHERE cid = ?", (cid,))
         user_actions = [row[0] for row in cursor.fetchall()]
 
         return user_actions
+    
+    def get_client_name(self, cid: str) -> str:
+        cursor = self.db.cursor()
+        cursor.execute("SELECT name FROM client WHERE cid = ?", (cid,))
+        name = cursor.fetchone()[0]
+
+        return name
 
     def get_access_token(self, cid: str) -> str:
         return jwt.encode(

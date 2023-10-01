@@ -14,10 +14,10 @@ from endpoints.Resources import Resources
 from endpoints.Processes import Processes
 from endpoints.Events import Events
 from log.MetricRecorderLogger import MultiProcessSafeRecorderLogger
-from processing.PSProcessor import start_processor, PSProcessor
 from log.Logger import start_logger, LogMessage
 from log.MetricRecorder import start_metrics
-from entities.ResourceMonitor import start_resource_monitor
+from processing.ResourceMonitor import start_resource_monitor
+from processing.Processor import start_processor
 from configuration.Config import *
 
 if __name__ == '__main__':
@@ -33,16 +33,11 @@ if __name__ == '__main__':
     #Create queues for communication between threads and processes
     requests, alerts, stats, processes, logs = ProcessQueue(), ProcessQueue(), ProcessQueue(), ProcessQueue(), ProcessQueue()
 
-    #Create threads and subproceses for processing and log and queueing
-    processing = Process(target=start_processor, name='PSProcessor', args=(requests, alerts, stats, processes))
-    log = Process(target=start_logger, name='PSRestLogger',args=(logs,))
-    resource_monitoring = Process(target=start_resource_monitor, name='PSRestResourceMonitor')
-    metrics = Process(target=start_metrics, name='PSRestMetrics', args=(stats,))
-    
-    #Start all the threads
-    from entities.PSRestQueue import serve_queue
-    psrest_queue = Process(target=serve_queue, name='PSRestQueue')
-    psrest_queue.start()
+    #Create threads and subproceses for processing and log and queueing56
+    processing = Process(target=start_processor, name='Cmdlet Processor')
+    log = Process(target=start_logger, name='Logger',args=(logs,))
+    resource_monitoring = Process(target=start_resource_monitor, name='Resource Monitor')
+    metrics = Process(target=start_metrics, name='Metrics', args=(stats,))
 
     resource_monitoring.start()
     log.start()
@@ -53,10 +48,10 @@ if __name__ == '__main__':
     #Define the webserver application and add routes
     PSRest = App()
     logger = MultiProcessSafeRecorderLogger(logs, stats)
-    processor = PSProcessor(requests, alerts, stats, processes)
+    # processor = PSProcessor(requests, alerts, stats, processes)
     PSRest.add_route('/', Home(logger)) #Page to get all running processes
     PSRest.add_route('/oauth', OAuth(logger)) #Page to get an access token
-    PSRest.add_route('/run', Run(processor, logger)) #Page to run commands
+    PSRest.add_route('/run', Run(logger)) #Page to run commands
     PSRest.add_route('/help', Help(logger)) #Page to show help for PSRest
     PSRest.add_route('/help/{command}', Help(logger)) #Page to show help for a specific command
     PSRest.add_route('/resources/{resource}', Resources(logger)) #Page to return static files like images for help page
@@ -65,4 +60,4 @@ if __name__ == '__main__':
     
     #Start the webserver
     logger.log(LogMessage("Starting PS Rest"))
-    uvicorn.run(PSRest, host='0.0.0.0', port=PORT, log_level='info')
+    uvicorn.run(PSRest, host='0.0.0.0', port=PORT, log_level='critical')

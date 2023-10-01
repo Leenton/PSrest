@@ -3,25 +3,23 @@ import json
 from multiprocessing import Queue
 from falcon.status_codes import HTTP_200, HTTP_400, HTTP_401, HTTP_403, HTTP_408, HTTP_500, HTTP_503
 from falcon.media.validators import jsonschema
+import traceback
 
 # import project dependencies
 from exceptions.PSRExceptions import *
 from entities.Cmdlet import *
-from entities.CmdletLibrary import CmdletLibrary
-from entities.PSRestResponseStream import PSRestResponseStream
+from entities.CmdletInfoLibrary import CmdletInfoLibrary
+from entities.CmdletResponse import CmdletResponse
 from entities.Schema import RUN_SCHEMA
-from entities.OAuthService import OAuthService
-from processing.PSProcessor import PSProcessor
+from processing.OAuthService import OAuthService
 from log.LogMessage import LogMessage, LogLevel, LogCode
 from log.Metric import Metric, MetricLabel
 from log.MetricRecorderLogger import MetricRecorderLogger
 from configuration.Config import *
-import traceback
 
 class Run(object):
-    def __init__(self, processor: PSProcessor, logger: MetricRecorderLogger) -> None:
-        self.processor = processor
-        self.cmdlet_library = CmdletLibrary()
+    def __init__(self, logger: MetricRecorderLogger) -> None:
+        self.cmdlet_library = CmdletInfoLibrary()
         self.oauth = OAuthService()
         self.logger = logger
 
@@ -47,6 +45,9 @@ class Run(object):
             elif depth > int(MAX_DEPTH):
                 raise InvalidCmdlet(f'Depth is too long. Please use a value less than {MAX_DEPTH}.')
             
+            elif depth <= 0:
+                raise InvalidCmdlet(f'Depth must be greater than 0.')
+
         except (ValueError, TypeError):
             raise InvalidCmdlet(f'Depth is not a valid number. Please use a value less than {MAX_DEPTH}.')
         
@@ -67,16 +68,14 @@ class Run(object):
             ttl, depth, header = self.validate_headers(req)
             command = Cmdlet( self.cmdlet_library, (await req.get_media()), ttl, depth)
 
-            # self.oauth.validate_action(header, command.function)
+            # command.application_name = self.oauth.get_authorized_application_name(header, command.function)
 
-            ticket = await self.processor.request(command)
-            stream = PSRestResponseStream(ticket, self.processor)
-            await stream.open()
+            response = command.invoke()
+            await response.validate()
 
-            resp.status = HTTP_200
-            resp.content_length = await stream.get_length()
-            resp.stream = stream.read()
-
+            resp.status =  HTTP_200
+            resp.content_length = await response.get_length()
+            resp.stream = response.get_content()
 
         except (
             UnSuppotedPSVersion,

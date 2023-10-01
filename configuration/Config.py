@@ -1,5 +1,4 @@
 # import dependecies for reading the config file. 
-import configparser
 import platform
 import random
 import sqlite3
@@ -13,9 +12,8 @@ from jsonschema.exceptions import ValidationError
 from json import load
 from entities.Schema import CONFIG_SCHEMA
 
-
 # PSRestVersion
-VERSION = '0.1.1'
+VERSION = '0.1.2'
 
 # Constants for the platform
 PLATFORM = platform.system()
@@ -50,7 +48,7 @@ PORT = CONFIG['Port']
 
 # Constants for the ticketing system
 DEFAULT_TTL = CONFIG['DefaultTTL']
-MAX_TTL =CONFIG['MaxTTL']
+MAX_TTL = CONFIG['MaxTTL']
 ACCESS_TOKEN_TTL = 3600
 REFRESH_TOKEN_TTL = 86400 * 14
 
@@ -60,10 +58,11 @@ MAX_DEPTH = 100
 TOO_LONG = 0.25
 
 # Constants for the powershell execution
-PS_PROCESSORS = 8
-MAX_PROCESSES = 33
+PS_PROCESSORS = 16
+MAX_PROCESSES = 32
 PROCESSOR_TICK_RATE = 5000
 PROCESSOR_SPIN_UP_PERIOD = 0.25
+PROCESSOR_SPIN_DOWN_PERIOD = 5
 ARBITRARY_COMMANDS = CONFIG['ArbitraryCommands']
 HELP = CONFIG['Help']
 modules = CONFIG['Modules']
@@ -87,14 +86,15 @@ RESPONSE_DIR = TMP_DIR + '/' + 'r'
 if(not path.isdir(RESPONSE_DIR)):
     mkdir(RESPONSE_DIR)
 
-CULL_DIR = TMP_DIR + '/' + 'c'
-if(not path.isdir(CULL_DIR)):
-    mkdir(CULL_DIR)
-
-PSRESTQUEUE_PUT = TMP_DIR + '/' + '5a682fbbe1bc487793d55fa09b55c547'
-PSRESTQUEUE_GET = TMP_DIR + '/' + '95b51250d7ef4fcdaea1cf51886b8ba5'
-PSRESTQUEUE_SRV = TMP_DIR + '/' + 'fcf29f8069d646e8bdc75af3eb7f02e4'
-PSRESTQUEUE_WAIT = 250 # milliseconds
+PROCESSOR_HOST = '127.0.0.1'
+PSREST_PORT = 27500
+RESPONDER_ADDRESS = f"{PROCESSOR_HOST}:{PSREST_PORT + 1}"
+RESPONDER_UNIX_ADDRESS = TMP_DIR + '/' + '5a682fbbe1bc487793d55fa09b55c547'
+INGESTER_ADDRESS = f"{PROCESSOR_HOST}:{PSREST_PORT + 2}"
+INGESTER_UNIX_ADDRESS = TMP_DIR + '/' + '95b51250d7ef4fcdaea1cf51886b8ba5'
+DISTRIBUTOR_ADDRESS = f"{PROCESSOR_HOST}:{PSREST_PORT + 3}"
+DISTRIBUTOR_UNIX_ADDRESS = TMP_DIR + '/' + 'fcf29f8069d646e8bdc75af3eb7f02e4'
+DISTRIBUTOR_WAIT = 250 # milliseconds
 RESOURCE_DIR = str(Path(__file__).parent.parent) + '/resources'
 
 # Logging preferences
@@ -105,8 +105,7 @@ LOG_FILE = APP_DATA + '/PSRest.log'
 # Read the secret file for the encryption key
 if(not path.isfile(APP_DATA + '/zvakavanzika')):
     with open(APP_DATA + '/zvakavanzika', 'wb') as f:
-        #  f.write(token_bytes(32))
-        f.write('2ed154d0c89362da0e2fc49257c5fb27c01cdfbc85238ea334e84dbc8eccfee3812b41add4149999b2277780b0edbdda4905f46f607fd3ffd8d3601113c1e7ae'.encode())
+        f.write(token_bytes(32))
 
 with open(APP_DATA + '/zvakavanzika', 'rb') as f:
     SECRET_KEY = (f.read()).decode()
@@ -121,25 +120,26 @@ PROCESSOR_DATABASE = TMP_DIR + '/processor.db' # Processor database
 def setup_credential_db():
     db = sqlite3.connect(CREDENTIAL_DATABASE)
     cursor = db.cursor()
-    cursor.executescript("""
-    CREATE TABLE client (cid INTEGER PRIMARY KEY AUTOINCREMENT, client_id TEXT, client_secret TEXT, name TEXT, description TEXT, authentication TEXT);
-    CREATE TABLE refresh_client_map (rid INTEGER PRIMARY KEY AUTOINCREMENT, refresh_token TEXT, expiry REAL, cid INTEGER, FOREIGN KEY(cid) REFERENCES client(cid) ON DELETE CASCADE);
-    CREATE TABLE action_client_map (aid INTEGER PRIMARY KEY AUTOINCREMENT, action TEXT, cid INTEGER, FOREIGN KEY(cid) REFERENCES client(cid) ON DELETE CASCADE);
-    """
+    cursor.executescript(
+        """--sql
+        CREATE TABLE client (cid INTEGER PRIMARY KEY AUTOINCREMENT, client_id TEXT, client_secret TEXT, name TEXT, description TEXT, authentication TEXT);
+        CREATE TABLE refresh_client_map (rid INTEGER PRIMARY KEY AUTOINCREMENT, refresh_token TEXT, expiry REAL, cid INTEGER, FOREIGN KEY(cid) REFERENCES client(cid) ON DELETE CASCADE);
+        CREATE TABLE action_client_map (aid INTEGER PRIMARY KEY AUTOINCREMENT, action TEXT, cid INTEGER, FOREIGN KEY(cid) REFERENCES client(cid) ON DELETE CASCADE);
+        """
     )
 
 def setup_metric_db():
     db = sqlite3.connect(METRIC_DATABASE)
     cursor = db.cursor()
-    cursor.executescript("""
-    CREATE TABLE metric (metric_id TEXT PRIMARY KEY, created REAL);
-    CREATE TABLE labels (label_id INTEGER PRIMARY KEY AUTOINCREMENT, label TEXT, metric_id TEXT, FOREIGN KEY(metric_id) REFERENCES metric(metric_id));
-    CREATE TABLE resource (resource_id INTEGER PRIMARY KEY AUTOINCREMENT, resource TEXT, value TEXT, created REAL);
-    """
+    cursor.executescript(
+        """--sql
+        CREATE TABLE metric (metric_id TEXT PRIMARY KEY, created REAL);
+        CREATE TABLE labels (label_id INTEGER PRIMARY KEY AUTOINCREMENT, label TEXT, metric_id TEXT, FOREIGN KEY(metric_id) REFERENCES metric(metric_id));
+        CREATE TABLE resource (resource_id INTEGER PRIMARY KEY AUTOINCREMENT, resource TEXT, value TEXT, created REAL);
+        """
     )
 
 def setup_processor_db():
-
     sleep(random.random())
     if(path.isfile(PROCESSOR_DATABASE)):
         remove(PROCESSOR_DATABASE)
@@ -147,8 +147,9 @@ def setup_processor_db():
     db = sqlite3.connect(PROCESSOR_DATABASE)
     cursor = db.cursor()
     # add a cascade to the schedule table so when a process is deleted, it's ticket is also deleted
-    cursor.executescript("""
-    CREATE TABLE PSProcessor (ticket TEXT PRIMARY KEY, pid TEXT, application TEXT, command TEXT, created REAL, expires REAL, modified REAL);
-    CREATE TABLE PSProcess (pid TEXT PRIMARY KEY, last_seen REAL, FOREIGN KEY(pid) REFERENCES PSProcessor(pid) ON DELETE CASCADE);
-    """
+    cursor.executescript(
+        """--sql
+        CREATE TABLE schedule (ticket TEXT PRIMARY KEY, pid TEXT, application TEXT, cmdlet TEXT, command TEXT, depth INTEGER, status TEXT, created REAL, expiry REAL, modified REAL);
+        CREATE TABLE processes (pid TEXT PRIMARY KEY, kill INTEGER,  last_seen REAL, FOREIGN KEY(pid) REFERENCES schedule(pid) ON DELETE CASCADE);
+        """
     )
