@@ -1,13 +1,34 @@
-import jwt
 import sqlite3
 from argon2 import PasswordHasher
 from uuid import uuid4
 from datetime import datetime
-
-from configuration.Config import * 
-from exceptions.PSRExceptions import *
-from entities.OAuthResponse import OAuthResponse
-from entities.OAuthToken import OAuthToken
+from jwt import (
+    DecodeError,
+    ExpiredSignatureError,
+    ImmatureSignatureError,
+    InvalidAlgorithmError,
+    InvalidAudienceError,
+    InvalidIssuedAtError,
+    InvalidIssuerError,
+    InvalidKeyError,
+    InvalidSignatureError,
+    InvalidTokenError,
+    MissingRequiredClaimError,
+    PyJWKClientError,
+    PyJWKError,
+    PyJWKSetError,
+    decode,
+    encode
+)
+from configuration import (
+    CREDENTIAL_DATABASE,
+    SECRET_KEY,
+    ACCESS_TOKEN_TTL,
+    REFRESH_TOKEN_TTL,
+    ARBITRARY_COMMANDS
+)
+from entities import OAuthToken, OAuthResponse
+from errors import UnAuthorised, InvalidToken 
 
 class OAuthService():
     def __init__(self,) -> None:
@@ -68,7 +89,7 @@ class OAuthService():
         access_token = authorisation[-1]
 
         try:
-            token = jwt.decode(access_token, SECRET_KEY, algorithms=['HS512'])
+            token = decode(access_token, SECRET_KEY, algorithms=['HS512'])
             #Check if the action is in the list of actions for the user in the returned token
             if(token['expiry'] > datetime.timestamp(datetime.now())):
                 raise InvalidToken('Access token has expired.')
@@ -79,22 +100,23 @@ class OAuthService():
             else:
                 raise UnAuthorised('You do not have permission to perform this action.')
             
-        except (jwt.DecodeError,
-                jwt.ExpiredSignatureError,
-                jwt.ImmatureSignatureError,
-                jwt.InvalidAlgorithmError,
-                jwt.InvalidAudienceError,
-                jwt.InvalidIssuedAtError,
-                jwt.InvalidIssuerError,
-                jwt.InvalidKeyError,
-                jwt.InvalidSignatureError,
-                jwt.InvalidTokenError,
-                jwt.MissingRequiredClaimError,
-                jwt.PyJWKClientError,
-                jwt.PyJWKError,
-                jwt.PyJWKSetError,
-                jwt.PyJWTError,
-                InvalidToken) as e:
+        except (
+            DecodeError,
+            ExpiredSignatureError,
+            ImmatureSignatureError,
+            InvalidAlgorithmError,
+            InvalidAudienceError,
+            InvalidIssuedAtError,
+            InvalidIssuerError,
+            InvalidKeyError,
+            InvalidSignatureError,
+            InvalidTokenError,
+            MissingRequiredClaimError,
+            PyJWKClientError,
+            PyJWKError,
+            PyJWKSetError,
+            InvalidToken
+        ) as e:
             print(e)
             raise InvalidToken('Invalid access token provided.')
     
@@ -136,7 +158,7 @@ class OAuthService():
         return name
 
     def get_access_token(self, cid: str) -> str:
-        return jwt.encode(
+        return encode(
             {
                 'reference': cid, 
                 'expiry': datetime.timestamp(datetime.now()) + ACCESS_TOKEN_TTL,

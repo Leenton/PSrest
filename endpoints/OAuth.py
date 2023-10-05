@@ -1,26 +1,19 @@
-# import python dependencies and 3rd party modules
 import json
 from falcon.media.validators import jsonschema
 from falcon.status_codes import HTTP_200, HTTP_401
-
-# import project dependencies
-from exceptions.PSRExceptions import *
-from entities.OAuthResponse import OAuthResponse
-from processing.OAuthService import OAuthService
-from entities.Schema import OAUTH_SCHEMA
-from log.LogMessage import LogMessage, LogLevel, LogCode
-from log.Metric import Metric, MetricLabel
-from log.MetricRecorderLogger import MetricRecorderLogger
-from configuration.Config import * 
+from log import LogClient, Message, Level, Code, Metric, Label
+from processing import OAuthService
+from configuration import OAUTH_SCHEMA
+from entities import OAuthResponse
 
 class OAuth(object): 
-    def __init__(self, logger: MetricRecorderLogger) -> None:
+    def __init__(self, logger: LogClient) -> None:
         self.service = OAuthService()
         self.logger = logger
     
     @jsonschema.validate(OAUTH_SCHEMA)
     async def on_post(self, req, resp):
-        self.logger.record(Metric(MetricLabel.REQUEST))
+        self.logger.record(Metric(Label.REQUEST))
         resp.content_type = 'application/json'
         credentials: dict = await req.get_media()
 
@@ -38,10 +31,10 @@ class OAuth(object):
             resp.status = HTTP_200
             resp.text = json.dumps(response_token.serialise())
 
-        except Exception as e:
+        except Exception:
             resp.status = HTTP_401
             resp.text = json.dumps({
                 'title': 'Unauthorised',
                 'description':'Invalid credentials.'
                 })
-            self.logger.record(Metric(MetricLabel.INVALID_CREDENTIALS_ERROR))
+            self.logger.record(Metric(Label.INVALID_CREDENTIALS_ERROR))

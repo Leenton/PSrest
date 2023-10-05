@@ -1,24 +1,18 @@
-# import python dependencies and 3rd party modules
 import aiofiles
-from falcon.status_codes import HTTP_200, HTTP_403, HTTP_404, HTTP_500
+from falcon.status_codes import HTTP_200, HTTP_403, HTTP_404
 import json 
 from html import escape
-
-# import project dependencies
-from entities.CmdletInfo import CmdletInfo
-from entities.CmdletInfoLibrary import CmdletInfoLibrary
-from log.LogMessage import LogMessage, LogLevel, LogCode
-from log.Metric import Metric, MetricLabel
-from log.MetricRecorderLogger import MetricRecorderLogger
-from configuration.Config import *
+from log import LogClient, Message, Level, Code, Metric, Label
+from entities import CmdletInfo, CmdletInfoLibrary
+from configuration import HELP
 
 class Help(object):
-    def __init__(self, logger: MetricRecorderLogger) -> None:
+    def __init__(self, logger: LogClient) -> None:
         self.cmdlet_library = CmdletInfoLibrary()
         self.logger = logger
 
-    async def on_get(self, req, resp, command = None):
-        self.logger.record(Metric(MetricLabel.REQUEST))
+    async def on_get(self, req, resp, command: str | None = None):
+        self.logger.record(Metric(Label.REQUEST))
         resp.content_type = 'application/json'
 
         if(not HELP):

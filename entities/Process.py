@@ -1,9 +1,8 @@
 from datetime import datetime
 from enum import Enum
 import asyncio
-import subprocess
-
-from configuration.Config import *
+from configuration import INGESTER_ADDRESS, INGESTER_UNIX_ADDRESS, PLATFORM
+from entities import Ticket
 
 class ProcessStatus(Enum):
     FREE = 0
@@ -16,8 +15,7 @@ class Process():
         self.created = created
         self.last_seen = last_seen
         self.status = ProcessStatus.FREE
-        self.current_ticket: str = None
-        self.current_ticket_expiry: float = None
+        self.current_ticket: Ticket | None = None
         self.platform = platform
         self.task: asyncio.Task = self.start()
 
@@ -28,13 +26,11 @@ class Process():
         self.task.cancel()
 
     async def execute(self):
-        print('Starting process')
         if(PLATFORM == 'Windows'):
-            cmd = f'{self.platform} -c \'Start-PSRestProcess -ProcessorId "{self.pid}" -ResponseSocket "{RESPONDER_ADDRESS}" -CmdletSourceSocket"{DISTRIBUTOR_ADDRESS}"\''
+            cmd = f'{self.platform} -c \'Start-PSRestProcess -ProcessorId "{self.pid}" -Socket "{INGESTER_ADDRESS}"\''
         else:
-            cmd = f'{self.platform} -c \'Start-PSRestProcess -ProcessorId "{self.pid}" -ResponseSocket "{RESPONDER_UNIX_ADDRESS}" -CmdletSourceSocket "{DISTRIBUTOR_UNIX_ADDRESS}"\''
+            cmd = f'{self.platform} -c \'Start-PSRestProcess -ProcessorId "{self.pid}" -Socket "{INGESTER_UNIX_ADDRESS}"\''
         
-        print(cmd)
         proc = await asyncio.create_subprocess_shell(
             cmd,
             stdout=asyncio.subprocess.DEVNULL,

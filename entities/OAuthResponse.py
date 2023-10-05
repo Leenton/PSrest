@@ -1,4 +1,4 @@
-from configuration.Config import *
+from configuration import ACCESS_TOKEN_TTL
 
 class OAuthResponse():
     def __init__(self, access_token: str, refresh_token: str):

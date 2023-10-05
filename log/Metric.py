@@ -1,7 +1,7 @@
 from enum import Enum
 from datetime import datetime
 
-class MetricLabel(Enum):
+class Label(Enum):
     REQUEST = 1
     INVALID_CREDENTIALS_ERROR = 2
     UNAUTHORISED_ERROR = 3
@@ -9,13 +9,12 @@ class MetricLabel(Enum):
     UNEXPECTED_ERROR = 5
     CPU_USAGE = 6
     MEMORY_USAGE = 7
-    SHELL_UP = 8
-    SHELL_DOWN = 9
-    DROPPED_REQUEST = 10
+    SHELLS = 8
+    DROPPED_REQUEST = 9
 
 
 class Metric(object):
-    def __init__(self, *labels: MetricLabel) -> None:
+    def __init__(self, *labels: Label) -> None:
         self.created = int(datetime.timestamp(datetime.now()))
         self.labels = []
 

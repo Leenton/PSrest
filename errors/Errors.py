@@ -1,3 +1,36 @@
+class UnkownCmdlet(Exception):
+    '''
+    Exception raised when the cmdlet requested does not exist in the current environment
+    '''
+    def __init__(self, message='Cmdlet is not supported.'):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return self.message 
+
+class InvalidCmdlet(Exception):
+    '''
+    Exception raised when the cmdlet requested is invalid
+    '''
+    def __init__(self, message='Cmdlet is invalid.'):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return self.message
+
+class InvalidCmdletParameter(Exception):
+    '''
+    Exception raised when the cmdlet parameters are invalid
+    '''
+    def __init__(self, message='Cmdlet parameters are invalid.'):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return self.message 
+
 class InvalidToken(Exception):
     '''
     Exception raised when supplied an invalid token

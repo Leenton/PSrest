@@ -1,16 +1,16 @@
 # import dependecies for reading the config file. 
 import platform
-import random
 import sqlite3
-from os import path, remove, mkdir
+from os import path, mkdir
 from secrets import token_bytes
 from pathlib import Path
-from time import sleep
 from shutil import copyfile
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 from json import load
-from entities.Schema import CONFIG_SCHEMA
+from configuration.Schema import CONFIG_SCHEMA
+
+# TODO: Add cert support in APP.py and cert verfication in Config.py
 
 # PSRestVersion
 VERSION = '0.1.2'
@@ -82,19 +82,10 @@ TMP_DIR = APP_DATA + '/temp'
 if(not path.isdir(TMP_DIR)):
     mkdir(TMP_DIR)
 
-RESPONSE_DIR = TMP_DIR + '/' + 'r'
-if(not path.isdir(RESPONSE_DIR)):
-    mkdir(RESPONSE_DIR)
-
 PROCESSOR_HOST = '127.0.0.1'
 PSREST_PORT = 27500
-RESPONDER_ADDRESS = f"{PROCESSOR_HOST}:{PSREST_PORT + 1}"
-RESPONDER_UNIX_ADDRESS = TMP_DIR + '/' + '5a682fbbe1bc487793d55fa09b55c547'
-INGESTER_ADDRESS = f"{PROCESSOR_HOST}:{PSREST_PORT + 2}"
+INGESTER_ADDRESS = f"{PROCESSOR_HOST}:{PSREST_PORT}"
 INGESTER_UNIX_ADDRESS = TMP_DIR + '/' + '95b51250d7ef4fcdaea1cf51886b8ba5'
-DISTRIBUTOR_ADDRESS = f"{PROCESSOR_HOST}:{PSREST_PORT + 3}"
-DISTRIBUTOR_UNIX_ADDRESS = TMP_DIR + '/' + 'fcf29f8069d646e8bdc75af3eb7f02e4'
-DISTRIBUTOR_WAIT = 250 # milliseconds
 RESOURCE_DIR = str(Path(__file__).parent.parent) + '/resources'
 
 # Logging preferences
@@ -133,23 +124,8 @@ def setup_metric_db():
     cursor = db.cursor()
     cursor.executescript(
         """--sql
-        CREATE TABLE metric (metric_id TEXT PRIMARY KEY, created REAL);
+        CREATE TABLE metric (metric_id TEXT PRIMARY KEY, created INTEGER);
         CREATE TABLE labels (label_id INTEGER PRIMARY KEY AUTOINCREMENT, label TEXT, metric_id TEXT, FOREIGN KEY(metric_id) REFERENCES metric(metric_id));
         CREATE TABLE resource (resource_id INTEGER PRIMARY KEY AUTOINCREMENT, resource TEXT, value TEXT, created REAL);
-        """
-    )
-
-def setup_processor_db():
-    sleep(random.random())
-    if(path.isfile(PROCESSOR_DATABASE)):
-        remove(PROCESSOR_DATABASE)
-    
-    db = sqlite3.connect(PROCESSOR_DATABASE)
-    cursor = db.cursor()
-    # add a cascade to the schedule table so when a process is deleted, it's ticket is also deleted
-    cursor.executescript(
-        """--sql
-        CREATE TABLE schedule (ticket TEXT PRIMARY KEY, pid TEXT, application TEXT, cmdlet TEXT, command TEXT, depth INTEGER, status TEXT, created REAL, expiry REAL, modified REAL);
-        CREATE TABLE processes (pid TEXT PRIMARY KEY, kill INTEGER,  last_seen REAL, FOREIGN KEY(pid) REFERENCES schedule(pid) ON DELETE CASCADE);
         """
     )

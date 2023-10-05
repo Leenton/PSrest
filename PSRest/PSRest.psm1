@@ -1,6 +1,8 @@
 $Global:InstallPath = '/Users/leenton/python/PSrest'
 $Global:CheckForUpdates = $true
 
+# TODO: FIX INVOKE COMMAND WE MOVED THE DIRECTORY FOR EVERYTTRHING 3 commits ago 
+
 # Command to invoke the PSRest console to run a command in the console.
 function Invoke-PSRestConsole(){
     [CmdletBinding()]
@@ -229,9 +231,7 @@ function Start-PSRestProcess {
         [Parameter(Mandatory = $true)]
         [string]$ProcessorId,
         [Parameter(Mandatory = $true)]
-        [string]$CmdletSourceSocket,
-        [Parameter(Mandatory = $true)]
-        [string]$ResponseSocket
+        [string]$Socket
     )
 
     process{
@@ -245,7 +245,7 @@ function Start-PSRestProcess {
 
             #If we have a response try again, and if we fail again just exit
             try {
-                Send-PSRestResponse -Ticket $command.Ticket -ResponseDirectory $ResponseDirectory -InputObject $Response
+                Send-PSRestResponse -Ticket $command.Ticket -Socket $Socket -InputObject $Response
             }
             catch {
                 exit
@@ -254,7 +254,7 @@ function Start-PSRestProcess {
     
         while($true){
             #Get the command to execute
-            $Command = Receive-PSRestCommand -CmdletSourceSocket $CmdletSourceSocket -ProcessorId $ProcessorId
+            $Command = Receive-PSRestCommand -Socket $Socket -ProcessorId $ProcessorId
 
             #Try and execute the command and send the result back
             try{
@@ -271,7 +271,7 @@ function Start-PSRestProcess {
             } | ConvertTo-Json -Depth $command.Depth
 
             #Send the response over the wire
-            Send-PSRestResponse -Ticket $command.Ticket -ResponseSocket $ResponseSocket -InputObject $Response
+            Send-PSRestResponse -Ticket $command.Ticket -Socket $Socket -InputObject $Response
             $Command = $null
         }
     }
