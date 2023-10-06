@@ -8,7 +8,7 @@ from shutil import copyfile
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 from json import load
-from configuration.Schema import CONFIG_SCHEMA
+from .Schema import CONFIG_SCHEMA
 
 # TODO: Add cert support in APP.py and cert verfication in Config.py
 

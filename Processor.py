@@ -1,3 +1,3 @@
-from processing.Processor import start_processor
+from processing import start_processor
 
 start_processor()

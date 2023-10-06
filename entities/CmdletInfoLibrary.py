@@ -3,7 +3,7 @@ import json
 import base64
 import random
 from configuration import MODULES
-from entities import CmdletInfo
+from .CmdletInfo import CmdletInfo
 
 class CmdletInfoLibrary():
     def __init__(self) -> None:

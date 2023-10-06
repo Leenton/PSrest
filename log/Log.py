@@ -55,7 +55,7 @@ class Log():
                 sleep(0.01)
 
 
-def start_logging(messages: Queue[str], metrics: Queue[str]) -> None:
+def start_logging(messages: Queue, metrics: Queue) -> None:
     try:
         log = Log(messages, metrics)
         log.run()

@@ -1,7 +1,6 @@
 import asyncio
 from json import dumps
-from entities.ProcessorConnection import ProcessorConnection
-from entities import CmdletResponse, ProcessorConnection
+from .ProcessorConnection import ProcessorConnection
 from errors import StreamTimeout, ProcessorException
 
 class CmdletResponse():
@@ -26,7 +25,7 @@ class CmdletResponse():
 
         self.writer.close()
 
-    async def execute(self) -> CmdletResponse:
+    async def execute(self):
         self.reader, self.writer = await (ProcessorConnection()).connect()
             
         message = dumps(self.command).encode('utf-8')

@@ -4,6 +4,7 @@ from entities import Clock, Process, ProcessResponse, Ticket, Schedule
 from .IORouter import IORouter
 from .ControlUnit import ControlUnit
 from .SnapshotInterupter import *
+
 class Processor():
     def __init__(self):
         self.queue: Queue[Ticket] = Queue()

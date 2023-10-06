@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 import asyncio
 from configuration import INGESTER_ADDRESS, INGESTER_UNIX_ADDRESS, PLATFORM
-from entities import Ticket
+from .Ticket import Ticket
 
 class ProcessStatus(Enum):
     FREE = 0

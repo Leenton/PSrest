@@ -1,7 +1,7 @@
 
 import sys, getopt
 import json
-from configuration.Console import Console
+from configuration import Console
 
 def main(argv):
 

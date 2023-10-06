@@ -1,8 +1,8 @@
 import json
 import base64
 from configuration import ARBITRARY_COMMANDS
-from entities.CmdletInfoLibrary import CmdletInfoLibrary
-from entities.CmdletResponse import CmdletResponse
+from .CmdletInfoLibrary import CmdletInfoLibrary
+from .CmdletResponse import CmdletResponse
 from errors import UnkownCmdlet, InvalidCmdlet, InvalidCmdletParameter
 
 class Cmdlet():

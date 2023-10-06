@@ -12,7 +12,6 @@ class Label(Enum):
     SHELLS = 8
     DROPPED_REQUEST = 9
 
-
 class Metric(object):
     def __init__(self, *labels: Label) -> None:
         self.created = int(datetime.timestamp(datetime.now()))

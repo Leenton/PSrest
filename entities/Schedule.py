@@ -1,6 +1,6 @@
 from queue import Queue
 from typing import Callable
-from entities.Ticket import Ticket
+from .Ticket import Ticket
 
 class Schedule():
     def __init__(self) -> None:
