@@ -3,6 +3,7 @@ from falcon.status_codes import HTTP_200, HTTP_400, HTTP_401, HTTP_403, HTTP_408
 from falcon.media.validators import jsonschema
 import traceback
 from configuration import (
+    Authorisation,
     DEFAULT_TTL,
     DEFAULT_DEPTH,
     MAX_TTL,
@@ -22,16 +23,15 @@ from errors import (
     InvalidCmdletParameter
 )
 from entities.Cmdlet import Cmdlet, CmdletInfoLibrary
-from processing import OAuthService
 from log import LogClient, Message, Level, Code, Metric, Label
 
 class Run(object):
     def __init__(self, logger: LogClient) -> None:
         self.cmdlet_library = CmdletInfoLibrary()
-        self.oauth = OAuthService()
+        self.authorisation = Authorisation()
         self.logger = logger
 
-    def validate_headers(self, req):
+    async def validate_headers(self, req):
         try:
             ttl = req.get_header('TTL')
 
@@ -59,13 +59,9 @@ class Run(object):
         except (ValueError, TypeError):
             raise InvalidCmdlet(f'Depth is not a valid number. Please use a value less than {MAX_DEPTH}.')
         
-        header = req.get_header('Authorization')
-        if header == None:
-            header = ''
-        elif not isinstance(header, str):
-            header = 'true'
+        token = self.authorisation.get_token(req)
 
-        return ttl, depth, header
+        return ttl, depth, token
 
     @jsonschema.validate(RUN_SCHEMA)
     async def on_post(self, req, resp):
@@ -73,12 +69,16 @@ class Run(object):
         resp.content_type = 'application/json'
         
         try:
-            ttl, depth, header = self.validate_headers(req)
-            command = Cmdlet( self.cmdlet_library, (await req.get_media()), ttl, depth)
+            ttl, depth, token = self.validate_headers(req)
 
-            # command.application_name = self.oauth.get_authorized_application_name(header, command.function)
-
-            response = await command.invoke()
+            response = await (Cmdlet(
+                self.cmdlet_library,
+                self.authorisation,
+                (await req.get_media()),
+                ttl,
+                depth,
+                token
+            )).invoke()
 
             resp.status =  HTTP_200
             resp.content_length = await response.get_length()

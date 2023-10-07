@@ -1,30 +1,34 @@
 import json
 import base64
-from configuration import ARBITRARY_COMMANDS
+from configuration import ARBITRARY_COMMANDS, Authorisation
 from .CmdletInfoLibrary import CmdletInfoLibrary
 from .CmdletResponse import CmdletResponse
 from errors import UnkownCmdlet, InvalidCmdlet, InvalidCmdletParameter
+from configuration import AuthorisationToken, AuthorisationSchema
 
 class Cmdlet():
     def __init__(
             self,
             cmdlet_library: CmdletInfoLibrary,
+            authorisation: Authorisation,
             command: dict,
             ttl: float,
             depth: int,
-            application_name: str = '', 
+            token: AuthorisationToken,
             platform = None,
             psversion = None
-            ) -> None:
-        
+        ) -> None:
+
         self.function = None
         self.ttl = ttl
         self.depth = depth
-        self.application_name = application_name
         self.platform = platform
         self.psversion = psversion
         self.cmdlet_library = cmdlet_library
         self.value = self.parse(command)
+        self.application_name =  authorisation.get_user(token) if authorisation.is_authorised(token, self.function, AuthorisationSchema.BEARER) else None
+        if(self.application_name == None):
+            raise UnkownCmdlet('Cmdlet does not exist in the current environment, or you do not have permission to run it.')
 
     def parse(self, command: dict) -> str:
         cmdlet = {}

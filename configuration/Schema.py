@@ -1,3 +1,16 @@
+PROCESS_SCHEMA = {
+    "type" : "object",
+    "properties" : {
+        "ticket" : {
+            "type" : "string",
+            'minLength': 32,
+            'maxLength': 32 # TODO : Make this a 4 byte integer with a max value of 2^32
+        }
+    },
+    "required": ["ticket"],
+    "additionalProperties": False
+}
+
 RUN_SCHEMA = {
     "type" : "object",
     "properties" : {    

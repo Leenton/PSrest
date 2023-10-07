@@ -8,15 +8,15 @@ from entities import ProcessorConnection
 from configuration import METRIC_DATABASE
 
 class ResourceMonitor(object):
-    async def get_usage(self, start: int, end: int) -> dict:
-        db = connect(METRIC_DATABASE)
+    async def get_utilisation(self, start: int, end: int) -> dict:
+        db = await connect(METRIC_DATABASE)
         usage = {
             'cpu': await self.get_cpu_usage(start, end, db),
             'memory': await self.get_memory_usage(start, end, db),
             'shells': await self.get_shell_sessions(start, end, db),
             'traffic': await self.get_traffic(start, end, db)
         }
-        db.close()
+        await db.close()
 
         return usage
 

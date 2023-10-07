@@ -42,6 +42,17 @@ class InvalidToken(Exception):
     def __str__(self):
         return f'{self.message}'
 
+class InvalidCredentials(Exception):
+    '''
+    Exception raised when supplied invalid credentials
+    '''
+    def __init__(self, message='Credentials are invalid.'):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.message}'
+
 class UnAuthorised(Exception):
     '''
     Exception raised for users who are not authorised to perform an action

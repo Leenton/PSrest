@@ -1,15 +1,16 @@
 import json
+import sqlite3
 from falcon.media.validators import jsonschema
 from falcon.status_codes import HTTP_200, HTTP_401
 from log import LogClient, Message, Level, Code, Metric, Label
-from processing import OAuthService
-from configuration import OAUTH_SCHEMA
-from entities import OAuthResponse
+from auth import BearerTokenGenerator, BearerToken
+from configuration import OAUTH_SCHEMA, CREDENTIAL_DATABASE
 
 class OAuth(object): 
     def __init__(self, logger: LogClient) -> None:
-        self.service = OAuthService()
+        self.token_generator = BearerTokenGenerator()
         self.logger = logger
+        self.db = sqlite3.connect(CREDENTIAL_DATABASE)
     
     @jsonschema.validate(OAUTH_SCHEMA)
     async def on_post(self, req, resp):
@@ -20,16 +21,16 @@ class OAuth(object):
         try:
             if(credentials['grant_type'] == 'client_credential'):
                 #Check if the client id and secret are valid
-                response_token: OAuthResponse = self.service.validate_client_credential(
+                bearer_token: BearerToken = self.token_generator.validate_client_credential(
                     credentials['client_id'],
                     credentials['client_secret'])
             else:
                 #Check if the refresh token is valid, if so return OAuthResponse
-                response_token: OAuthResponse = self.service.validate_refresh_token(
+                bearer_token: BearerToken = self.token_generator.validate_refresh_token(
                     credentials['refresh_token'])
 
             resp.status = HTTP_200
-            resp.text = json.dumps(response_token.serialise())
+            resp.text = json.dumps(bearer_token.serialise())
 
         except Exception:
             resp.status = HTTP_401

@@ -61,7 +61,6 @@ def main(argv):
 
     print(json.dumps({'data': result}))
 
-
 if __name__ == "__main__":
    main(sys.argv[1:])
 
