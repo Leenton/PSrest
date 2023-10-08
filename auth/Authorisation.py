@@ -17,9 +17,9 @@ class Authorisation():
             raise InvalidToken('Authorisation header must be a string.')
         
         schema = token.split(' ', 1)[0].lower()
-        if(type == AuthorisationSchema.BASIC.value.lower()):
+        if(schema == AuthorisationSchema.BASIC.value.lower()):
             schema =  AuthorisationSchema.BASIC
-        elif(type == AuthorisationSchema.BEARER.value.lower()):
+        elif(schema == AuthorisationSchema.BEARER.value.lower()):
             schema = AuthorisationSchema.BEARER
         else:
             raise InvalidToken('Authorisation scheme not supported.')

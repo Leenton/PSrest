@@ -66,6 +66,7 @@ PROCESSOR_SPIN_DOWN_PERIOD = 5
 ARBITRARY_COMMANDS = CONFIG['ArbitraryCommands']
 HELP = CONFIG['Help']
 modules = CONFIG['Modules']
+SCRIPTS = CONFIG.get('Scripts', '')
 
 if(modules == ['*']):
     MODULES = '*'

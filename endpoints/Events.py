@@ -37,24 +37,25 @@ class Events(object):
 
             yield SSEvent(event="message", event_id=str(uuid4()), json=(metrics), retry=5000)
 
-    async def on_get(self, req, resp, event_type: str = ''):
+    async def on_get(self, req, resp):
         self.logger.record(Metric(Label.REQUEST))
 
         try:
             auth_token = self.auth.get_token(req)
             self.auth.is_authorised(auth_token, 'view', AuthorisationSchema.BASIC)
-            
+            event_type = req.params.get('t', None)
+
             match event_type:
                 case 'processes':
-                    strean = self.get_processes()
+                    stream = self.get_processes()
                 case 'utilisation':
-                    strean = self.get_utilisation()
+                    stream = self.get_utilisation()
                 case _:
                     raise Exception('Invalid event type.')
 
             resp.status = HTTP_200
             resp.content_type = 'text/event-stream'
-            resp.stream = strean
+            resp.sse = stream
         
         except (
             InvalidToken,

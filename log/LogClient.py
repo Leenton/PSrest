@@ -12,5 +12,5 @@ class LogClient():
         self.messages.put(dumps(message.serialise()))
 
     def record(self, metric: Metric) -> None:
-        self.messages.put(dumps(metric.serialise()))
+        self.metrics.put(dumps(metric.serialise()))
  

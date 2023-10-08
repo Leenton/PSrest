@@ -22,7 +22,7 @@ class BasicAuth():
             # check if the user is in the database
             cursor = self.db.cursor()
             cursor.execute(
-                "SELECT hash,role, uid, name FROM user WHERE name LIKE ?",
+                "SELECT hash, role, uid, name FROM user WHERE name LIKE ?",
                 (user.lower(),)
             )
             row = cursor.fetchone()

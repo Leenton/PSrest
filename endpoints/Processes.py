@@ -6,7 +6,7 @@ from configuration import PROCESS_SCHEMA
 from log import LogClient, Message, Level, Code, Metric, Label
 from auth import Authorisation, AuthorisationSchema
 from entities import ProcessorConnection
-from errors import InvalidToken, UnAuthorised, InvalidCredentials, ProcessorException
+from errors import InvalidToken, UnAuthorised, InvalidCredentials, ProcessorException, InvalidTicket
 
 class Processes(object):
     def __init__(self, logger: LogClient) -> None:
@@ -36,6 +36,7 @@ class Processes(object):
             resp.status = HTTP_401
             resp.content_type = 'application/json'
             resp.text = dumps({'title': 'Unauthorised Request', 'description': e.message})
+            resp.append_header('WWW-Authenticate', 'Basic realm=<realm>, charset="UTF-8"')
         
         except Exception as e:
             self.logger.record(Metric(Label.UNEXPECTED_ERROR))
@@ -43,8 +44,7 @@ class Processes(object):
             resp.content_type = 'application/json'
             resp.text = dumps({'title': 'Internal Server Error', 'description': 'Something went wrong!'})
             self.logger.log(Message(message=e, level=Level.ERROR, code=Code.SYSTEM))
-
-    @jsonschema.validate(PROCESS_SCHEMA)    
+ 
     async def on_delete(self, req, resp):
         self.logger.record(Metric(Label.REQUEST))
         resp.content_type = 'application/json'
@@ -52,18 +52,25 @@ class Processes(object):
         try:
             auth_token = self.auth.get_token(req)
             self.auth.is_authorised(auth_token, 'kill', AuthorisationSchema.BASIC)
-            ticket: str = (await req.get_media()).pop('ticket')
+            ticket = req.params.get('ticket', None)
+            if(ticket == None or not isinstance(ticket, str) or len(ticket) != 32):
+                raise InvalidTicket('The ticket provided is invalid.')
 
             reader, writer = await (ProcessorConnection()).connect()
             writer.write(b'k' + ticket.encode("utf-8"))
             await writer.drain()
             if(await reader.read(1) != b'0'):
                 writer.close()
-                raise ProcessorException('Failed to cancel requested command. Either it doesn\'t exists or it has already completed.')
+                raise ProcessorException('Failed to cancel requested command. Either it doesn\'t exist or it has already completed.')
 
             resp.status = HTTP_200
             resp.text = dumps({'title': 'Success', 'description': 'Cmdlet execution cancelled.'})
 
+        except InvalidTicket as e:
+            self.logger.record(Metric(Label.BAD_REQUEST_ERROR))
+            resp.status = HTTP_400
+            resp.text = dumps({'title': 'Bad Request', 'description': e.message})
+        
         except (
             InvalidToken,
             UnAuthorised,

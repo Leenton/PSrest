@@ -1,10 +1,10 @@
 import json
 import base64
-from configuration import ARBITRARY_COMMANDS, Authorisation
+from configuration import ARBITRARY_COMMANDS
 from .CmdletInfoLibrary import CmdletInfoLibrary
 from .CmdletResponse import CmdletResponse
 from errors import UnkownCmdlet, InvalidCmdlet, InvalidCmdletParameter
-from configuration import AuthorisationToken, AuthorisationSchema
+from auth import Authorisation, AuthorisationSchema, AuthorisationToken
 
 class Cmdlet():
     def __init__(

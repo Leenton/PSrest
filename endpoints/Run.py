@@ -3,7 +3,6 @@ from falcon.status_codes import HTTP_200, HTTP_400, HTTP_401, HTTP_403, HTTP_408
 from falcon.media.validators import jsonschema
 import traceback
 from configuration import (
-    Authorisation,
     DEFAULT_TTL,
     DEFAULT_DEPTH,
     MAX_TTL,
@@ -24,6 +23,7 @@ from errors import (
 )
 from entities.Cmdlet import Cmdlet, CmdletInfoLibrary
 from log import LogClient, Message, Level, Code, Metric, Label
+from auth import Authorisation
 
 class Run(object):
     def __init__(self, logger: LogClient) -> None:

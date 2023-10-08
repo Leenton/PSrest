@@ -56,7 +56,7 @@ if __name__ == '__main__':
     PSRest.add_route('/help/{command}', Help(logger)) #Page to show help for a specific command
     PSRest.add_route('/resources/{resource}', Resources(logger)) #Page to return static files like images for help page
     PSRest.add_route('/processes', Processes(logger))
-    PSRest.add_route('/events/{event_type}', Events(logger))
+    PSRest.add_route('/events', Events(logger))
     
     #Start the webserver
     logger.log(Message("Starting PS Rest"))

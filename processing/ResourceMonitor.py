@@ -43,6 +43,7 @@ class ResourceMonitor(object):
             WHERE resource = {Label.CPU_USAGE.value}
             AND created <= {start}
             AND created >= {end}
+            ORDER BY created DESC
             """)
         
         data = await cursor.fetchall()
@@ -55,6 +56,7 @@ class ResourceMonitor(object):
             WHERE resource = {Label.MEMORY_USAGE.value}
             AND created <= {start}
             AND created >= {end}
+            ORDER BY created DESC
             """)
   
         data = await cursor.fetchall()
@@ -67,6 +69,7 @@ class ResourceMonitor(object):
             WHERE resource = {Label.SHELLS.value}
             AND created <= {start}
             AND created >= {end}
+            ORDER BY created DESC
             """)
         
         data = await cursor.fetchall()

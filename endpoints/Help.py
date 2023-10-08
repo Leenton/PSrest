@@ -35,7 +35,6 @@ class Help(object):
             async with aiofiles.open('./resources/html/help.html', 'rb') as f:
                 resp.text = await f.read()
 
-
     def build_help_page(self, info: CmdletInfo) -> str:
         indents, content = self.get_style_and_content(info.help)
         

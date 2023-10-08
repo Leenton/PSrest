@@ -96,7 +96,7 @@
     </div>
 </body>
 <script>
-    const traffic_events = new EventSource("./events/utilisation");
+    const traffic_events = new EventSource("./events?t=utilisation");
 
     traffic_events.onmessage = (event) => {
         event = JSON.parse(event.data)
