@@ -4,6 +4,14 @@
     <meta charset="utf-8">
     <title>Processes</title>
     <style>
+        :root{
+            --primary: rgb(255,204,92);
+            --secondary: rgb(248, 195, 83);
+            --tertiary: rgb(245, 187, 60);
+            --quaternary: rgb(230, 78, 78);
+            --quinary: rgb(161, 161, 161);
+        }
+
         @font-face {
             font-family: 'OpenSans';
             src: url('resources/OpenSans-VariableFont_wdth,wght.ttf')  format('truetype');
@@ -14,28 +22,67 @@
             src: url('resources/OpenSans-Italic-VariableFont_wdth,wght.ttf')  format('truetype');
         }
 
+        /* @media (prefers-color-scheme: dark) {
+            body {
+                background-color: black;
+                color: white;
+            }
+        }
+
+        @media (prefers-color-scheme: light) {
+            body {
+                background-color: white;
+                color: black;
+            }
+        } */
+
         .center{
-            width: 80%;
+            max-width: 80%;
             margin: auto;
+            width: 60rem;
         }
 
-        .title{
+        nav{
+            display: grid;
+            grid-template-columns: 70% 15% 15%;
+            padding: 1rem;
+        }
+
+        .options{
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            margin-top: 1rem;
+            background-color: var(--primary);
+        }
+
+        .metric-option{
+            background-color: rgb(255,204,92);
+            border: none;
             text-align: center;
-            font-family: 'OpenSans';
+            font-size: large;
+            text-decoration: none;
+            padding: 1rem;
         }
 
-        .stats{
-            padding-top: 1rem;
-            padding-bottom: 1rem;
-            width: 95%;
-            max-width: 95%;
-            margin: auto;
-            display: flex;
-            justify-content: space-around;
+        .metric-option.displayed-graph{
+            background-image: repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.25) 2px, transparent 2px, transparent 12px);
+            background-size: 8px 8px;
+            background-color: rgb(248, 195, 83);
         }
 
-        .stats .graph{
-            width: 100%
+        .metric-option:hover{
+            background-color: rgb(245, 187, 60);
+        }
+
+        .graphs{
+            margin-top: 2rem;
+            background-color: var(--primary);
+            height: 15rem;
+            width: 100%;
+        }
+
+        .options{
+            display: grid;
         }
 
         .processes{
@@ -45,106 +92,222 @@
         }
 
         .process{
+            background-color: rgb(232, 232, 232);
             display: grid;
-            width: 100%;
-            grid-template-columns: 40% 30% 15% 15%;
+            grid-template-columns: 25% 25% 10% 15% 25%;
+            text-align: center;
+            min-width: 100%;
+            font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif
+        }
+
+        .headline{
+            background-color: white;
+            border: 1px solid black;
+        }
+
+        .process:nth-of-type(odd) {
+            background-color: rgb(245, 245, 245);
+        }
+        
+        .process:hover{
+            background-color: rgb(161, 161, 161);
+        }
+
+        .process .status:hover{
+            background-color: rgb(230, 78, 78);
         }
 
     </style>
 </head>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
 <body>
-    <div class="title center">
-        <h1>Processes</h1>
-    </div>
-    <div class="stats">
+    <!-- <div class="stats">
         <canvas id="overall-traffic" class="graph"></canvas>
         <canvas id="error-rate" class="graph"></canvas>
+    </div> -->
+    <nav class="center">
+        <a href="./">Home</a>
+        <a href="./help">Help</a>
+        <a href="https://psrest.com">PSRest</a>
+    </nav>
+    <div class="metrics center">
+        <div class="graphs">
+            <canvas id="resources" class="graph hidden"></canvas>
+            <canvas id="traffic" class="graph hidden"></canvas>
+        </div>
+        <div class="options">
+            <button id="resources_button" class="displayed-graph metric-option" onclick="render_resources()">Resources</button>
+            <button id="traffic_button" onclick="render_traffic()" class="metric-option">Traffic</button>
+            <select id="time_range_select" class="metric-option" onchange="updateGraph()">
+                <option value="60">Last Minute</option>
+                <option value="300" selected>Last 5 Minutes</option>
+                <option value="600">Last 10 Minutes</option>
+                <option value="900">Last 15 Minutes</option>
+                <option value="1800">Last 30 Minutes</option>
+                <option value="3600">Last Hour</option>
+                <option value="7200">Last 2 Hours</option>
+                <option value="14400">Last 4 Hours</option>
+                <option value="28800">Last 8 Hours</option>
+                <option value="43200">Last 12 Hours</option>
+                <option value="86400">Last 24 Hours</option>
+                <option value="172800">Last 48 Hours</option>
+            </select>
+        </div>
     </div>
-    <div class="processes center">
-        <div class="process">
-            <p>Leenton Application</p>
-            <p>Write-Host</p>
-            <p>TTL</p>
-            <p>Kill</p>
-        </div>
-        <div class="process">
-            <p>Leenton Application</p>
-            <p>Write-Host</p>
-            <p>TTL</p>
-            <p>Kill</p>
-        </div>
-        <div class="process">
-            <p>Leenton Application</p>
-            <p>Write-Host</p>
-            <p>TTL</p>
-            <p>Kill</p>
-        </div>
-        <div class="process">
-            <p>Leenton Application</p>
-            <p>Write-Host</p>
-            <p>TTL</p>
-            <p>Kill</p>
-        </div>
-        <div class="process">
-            <p>Leenton Application</p>
-            <p>Write-Host</p>
-            <p>TTL</p>
-            <p>Kill</p>
-        </div>
-
+    <div id='processes' class="processes center">
     </div>
 </body>
 <script>
-    const traffic_events = new EventSource("./events?t=utilisation");
-
-    traffic_events.onmessage = (event) => {
-        event = JSON.parse(event.data)
-        console.log(event)
-
-
-        // let width = event.position * 100
-        // progress.style.width = width.toString() + "%"
-        // currently_playing.setAttribute("onClick",("javascript: load_info_modal('" + event.media_id + "');"))
-        // currently_playing.innerHTML = event.media_name
-        // volume.value = event.volume
-
-        //update the play pause button directly form our events. So that we can keep the button in sync between multiple tabs and client connections
+    var graph_data
+    var utilisation_events = new EventSource("./events?t=utilisation&r" + time_range_select.value);
+    const scheudle_events = new EventSource("./events?t=processes");
+    scheudle_events.onmessage = (event) => {
+        process_elements = JSON.parse(event.data).map(
+            (process) => {
+                return `
+                <div class='process'>
+                    <p>${process.application_name}</p>
+                    <p>${process.function}</p>
+                    <p>${process.ttl}</p>
+                    <p>${get_relative_time_ago(process.created)}</p>
+                    <p class="status" onclick='kill_process("${process.id}")'>${(process.pid ? 'Running' : 'Waiting to run')}</p>
+                </div>`
+            }
+        )
+        process_elements.unshift(`
+                <div class='process headline'>
+                    <p>Owner</p>
+                    <p>Command</p>
+                    <p>Time out</p>
+                    <p>Issued</p>
+                    <p>Status</p>
+                </div>`
+        )
+        processes.innerHTML = process_elements.join("")
     }
 
+    function render_resources(){
+
+        console.log(parseInt(time_range_select.value))
+    }
+
+    function render_traffic(){
+        console.log(parseInt(time_range_select.value))
+    }
+
+    function update_graph(){
+        utilisation_events.close()
+        utilisation_events = new EventSource("./events?t=utilisation&r=" + time_range_select.value);
+        utilisation_events.onmessage = (event) => {
+            graph_data = JSON.parse(event.data)
+            console.log(graph_data)
+        }
+
+        current_graph = document.getElementsByClassName("displayed-graph")[0].id
+        switch(current_graph){
+            case "utilisationButton":
+                render_resources()
+                break;
+            case "trafficButton":
+                render_traffic()
+                break;
+        }
+    }
+
+    function kill_process(type, id){
+        if(type = 'prcoess'){
+            fetch("./processes?process=" + id, {
+                method: "DELETE",
+            }).then((response) => {
+                if (response.status == 200){
+                    message_alert("Process killed successfully")
+                }
+                else{
+                    message_alert("Failed to kill process")
+                }
+            }) 
+        }else if(type = 'ticket'){
+            fetch("./processes?ticket=" + id, {
+                method: "DELETE",
+            }).then((response) => {
+                if (response.status == 200){
+                    message_alert("Process killed successfully")
+                }
+                else{
+                    message_alert("Failed to kill process")
+                }
+            })
+        }
+    }
+
+    function message_alert(message){
+        alert(message)
+    }
+
+    function get_relative_time_ago(timestamp){
+        difference = Math.floor((Date.now() - (timestamp * 1000)) / 1000)
+        if (difference < 60) {
+            // Less than a minute has passed:
+            relative_time = `${difference}s ago`;
+        } else if (difference < 3600) {
+            // Less than an hour has passed:
+            relative_time = `${Math.floor(difference / 60)}m ago`;
+        } else {
+            // Less than a day has passed:
+            relative_time = `${Math.floor(difference / 3600)} hours ago`;
+        }
+
+        return relative_time;
+    }
+
+    update_graph()
+    
+
     //Make a stepped line graph using graph.js depicting overall requests and errors
-    const traffic = new Chart(
-        'overall-traffic',
+
+    new Chart(
+        resources,
         {
             type: 'line',
             data: {
                 labels: ['300', '290', '280', '270','260', '250', '240', '230', '220','210', '200', '190', '180', '170', '160', '150', '140', '130', '120', '110', '100', '90', '70','60', '50', '40', '30', '20', '10', '0'],
-                datasets: [
-                    {
-                        label: 'Requests',
-                        data: [0, 10, 5, 2, 20, 30, 450, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300 ,1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100 ,2200, 2300, 2400, 2500, 2600, 2700],
-                        borderColor: '#3e95cd',
-                        fill: true,
-                        stepped: 'after'
-                    },
-                    {
-                        label: 'Failed Requests',
-                        data: [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50 ,55, 60, 65, 70, 75, 80, 85, 90, 95, 100 ,105, 110, 115, 120, 125, 130, 135, 140, 145, 150],
-                        borderColor: '#8e5ea2',
-                        fill: true,
-                        stepped: 'after'
-                    },
+                datasets: [{
+                    label: 'CPU',
+                    data: [0, 10, 5, 2, 20, 30, 450, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300 ,1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100 ,2200, 2300, 2400, 2500, 2600, 2700],
+                    borderColor: '#3e95cd',
+                    fill: true,
+                    stepped: 'after'
+                }, {
+                    label: 'Memory',
+                    data: [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50 ,55, 60, 65, 70, 75, 80, 85, 90, 95, 100 ,105, 110, 115, 120, 125, 130, 135, 140, 145, 150],
+                    borderColor: '#8e5ea2',
+                    fill: true,
+                    stepped: 'after'
+                }, {
+                    label: 'Powershell Sessions',
+                    data: [16, 16, 20, 30, 40, 50, 60, 70, 80, 90 ,100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200 ,210, 220, 230, 240, 250, 260, 270, 280, 290, 300],
+                    borderColor: '#3cba9f',
+                    fill: true,
+                    stepped: 'after'
+                }
                 ]
+
             },
             options: {
                 title: {
                     display: true,
-                    text: 'Cmdlet Traffic'
+                    text: 'Resources'
                 },
                 scales: {
                     yAxes: [{
                         ticks: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            display: false
+                        }
+                    }],
+                    xAxes: [{
+                        ticks: {
+                            display: false
                         }
                     }]
                 },
@@ -152,7 +315,6 @@
                     duration: 0
                 }
             }
-        }
-    );
+        })
 </script>
 </html>

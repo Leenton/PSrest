@@ -145,7 +145,7 @@ class IORouter():
         try:   
             self.snapshot_interupter.state = SnapshotState.REQUESTING
             writer.write((await self.snapshot_buffer.get()))
-            writer.drain()
+            await writer.drain()
             writer.close()
         except:
             pass

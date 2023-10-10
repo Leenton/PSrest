@@ -64,6 +64,27 @@ class InvalidCredentials(Exception):
     def __str__(self):
         return f'{self.message}'
 
+class InvalidTimeRange(Exception):
+    '''
+    Exception raised when supplied an invalid time range
+    '''
+    def __init__(self, message='Time range specified is invalid.'):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.message}'
+    
+class InvalidEventType(Exception):
+    '''
+    Exception raised when supplied an unknown event type
+    '''
+    def __init__(self, message='Event type specified is invalid.'):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.message}'
 class UnAuthorised(Exception):
     '''
     Exception raised for users who are not authorised to perform an action
