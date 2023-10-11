@@ -108,6 +108,11 @@ CREDENTIAL_DATABASE = APP_DATA + '/data.db' # OAuth2 credential database
 METRIC_DATABASE = TMP_DIR + '/metrics.db' # Metric database
 PROCESSOR_DATABASE = TMP_DIR + '/processor.db' # Processor database
 
+# Constants for generating metric data
+METRIC_INTERVAL = 1
+MAX_METRIC_WAVE_LENGTH = 900
+METRIC_DOWN_SAMPLE = 1
+
 # TODO: Sanitise the contents we get from the config file to prevent code injection.
 
 def setup_credential_db():
@@ -129,6 +134,6 @@ def setup_metric_db():
         """--sql
         CREATE TABLE metric (metric_id TEXT PRIMARY KEY, created INTEGER);
         CREATE TABLE labels (label_id INTEGER PRIMARY KEY AUTOINCREMENT, label TEXT, metric_id TEXT, FOREIGN KEY(metric_id) REFERENCES metric(metric_id));
-        CREATE TABLE resource (resource_id INTEGER PRIMARY KEY AUTOINCREMENT, resource TEXT, value TEXT, created REAL);
+        CREATE TABLE resource (resource_id INTEGER PRIMARY KEY AUTOINCREMENT, resource TEXT, value REAL, created REAL);
         """
     )

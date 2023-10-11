@@ -24,14 +24,28 @@ from errors import (
 from entities.Cmdlet import Cmdlet, CmdletInfoLibrary
 from log import LogClient, Message, Level, Code, Metric, Label
 from auth import Authorisation
+from auth import AuthorisationToken
 
 class Run(object):
+    """
+    Handles HTTP POST requests to execute PowerShell cmdlets.
+
+    Attributes:
+        cmdlet_library (CmdletInfoLibrary): A library of PowerShell cmdlet information.
+        authorisation (Authorisation): An object that handles authentication and authorization.
+        logger (LogClient): A client for logging messages and metrics.
+
+    Methods:
+        validate_headers: Validates the request headers and returns the TTL and depth parameters.
+        on_post: Handles HTTP POST requests to execute PowerShell cmdlets.
+    """
+    
     def __init__(self, logger: LogClient) -> None:
         self.cmdlet_library = CmdletInfoLibrary()
         self.authorisation = Authorisation()
         self.logger = logger
 
-    async def validate_headers(self, req):
+    async def validate_headers(self, req) -> tuple[int, int, AuthorisationToken]:
         try:
             ttl = req.get_header('TTL')
 

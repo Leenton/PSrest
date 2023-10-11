@@ -6,6 +6,16 @@ from configuration import RESOURCE_DIR
 from log import LogClient, Message, Level, Code, Metric, Label
 
 class Resources(object):
+    """
+    Handles HTTP GET requests for static resources.
+
+    Attributes:
+        logger (LogClient): A client for logging messages and metrics.
+
+    Methods:
+        on_get: Handles HTTP GET requests for static resources.
+    """
+    
     def __init__(self, logger: LogClient) -> None:
         self.logger = logger
 

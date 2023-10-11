@@ -75,9 +75,7 @@
         }
 
         .graphs{
-            margin-top: 2rem;
-            background-color: var(--primary);
-            height: 15rem;
+            height: 17.5rem;
             width: 100%;
         }
 
@@ -119,12 +117,7 @@
 
     </style>
 </head>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
 <body>
-    <!-- <div class="stats">
-        <canvas id="overall-traffic" class="graph"></canvas>
-        <canvas id="error-rate" class="graph"></canvas>
-    </div> -->
     <nav class="center">
         <a href="./">Home</a>
         <a href="./help">Help</a>
@@ -138,7 +131,7 @@
         <div class="options">
             <button id="resources_button" class="displayed-graph metric-option" onclick="render_resources()">Resources</button>
             <button id="traffic_button" onclick="render_traffic()" class="metric-option">Traffic</button>
-            <select id="time_range_select" class="metric-option" onchange="updateGraph()">
+            <select id="time_range_select" class="metric-option" onchange="update_graph()">
                 <option value="60">Last Minute</option>
                 <option value="300" selected>Last 5 Minutes</option>
                 <option value="600">Last 10 Minutes</option>
@@ -157,11 +150,15 @@
     <div id='processes' class="processes center">
     </div>
 </body>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script> -->
+<script src="resources/chart.js"></script>
 <script>
-    var graph_data
-    var utilisation_events = new EventSource("./events?t=utilisation&r" + time_range_select.value);
-    const scheudle_events = new EventSource("./events?t=processes");
-    scheudle_events.onmessage = (event) => {
+    var graph_data = {}
+
+    var utilisation_events
+
+    const schedule_events = new EventSource("./events?t=processes");
+    schedule_events.onmessage = (event) => {
         process_elements = JSON.parse(event.data).map(
             (process) => {
                 return `
@@ -186,36 +183,196 @@
         processes.innerHTML = process_elements.join("")
     }
 
-    function render_resources(){
+    var resources_chart = new Chart(resources, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: 'CPU Usage',
+                    data: [],
+                    borderWidth: 2,
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    fill: true,
+                    pointRadius: 1,
+                    stepped : 'middle'
+                }, {
+                    label: 'Memory Usage',
+                    data: [],
+                    borderWidth: 2,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    fill: true,
+                    pointRadius: 1,
+                    stepped : 'middle'
+                }, {
+                    label: 'PS Sessions',
+                    data: [],
+                    borderWidth: 2,
+                    backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                    borderColor: 'rgba(255, 206, 86, 1)',
+                    fill: true,
+                    pointRadius: 1,
+                    stepped : 'middle'
+                }
+            ]
+        },
+        options: {
+            bezierCurve : false,
+            responsive: true,
+            maintainAspectRatio: false,
+            aspectRatio: 4,
+            scales: {
+                x: {
+                    reverse: true,
+                    
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        reverse: true,
+                        display: true,
+                        stepSize: 10,
+                    }
+                },
+                y: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        display: false
+                    }
+                }
+            },
+            animation: false
+        }
+    });
+    // var traffic_chart=  new Chart(traffic, {
+    //     data : {
+    //         style : 'line',
+    //         labels: [],
+    //         datasets: [{
+    //             label: 'Total Requests',
+    //             data: [],
+    //             borderColor: '#3e95cd',
+    //             fill: true,
+    //             stepped: 'after'
+    //         }, {
+    //             label: 'Dropped Requests',
+    //             data: [],
+    //             borderColor: '#8e5ea2',
+    //             fill: true,
+    //             stepped: 'after'
+    //         }, {
+    //             label: 'Unexpected Errors',
+    //             data: [],
+    //             borderColor: '#3cba9f',
+    //             fill: true,
+    //             stepped: 'after'
+    //         },
+    //         {
+    //             label: 'Bad Requests',
+    //             data: [],
+    //             borderColor: '#e8c3b9',
+    //             fill: true,
+    //             stepped: 'after'
+    //         },
+    //         {
+    //             label: 'Unauthorised Requests',
+    //             data: [],
+    //             borderColor: '#c45850',
+    //             fill: true,
+    //             stepped: 'after'
+    //         },
+    //         {
+    //             label: 'Invalid Credentials Errors',
+    //             data: [],
+    //             borderColor: '#d4d4d4',
+    //             fill: true,
+    //             stepped: 'after'
+    //         }
+    //         ]
+    //     },
 
-        console.log(parseInt(time_range_select.value))
+    //     options: {
+    //         responsive: true,
+    //         maintainAspectRatio: false,
+    //         aspectRatio: 4,
+    //         title: {
+    //             display: true,
+    //             text: 'Resources'
+    //         },
+    //         scales: {
+    //             yAxes: [{
+    //                 ticks: {
+    //                     beginAtZero: true,
+    //                     display: false
+    //                 }
+    //             }],
+    //             xAxes: [{
+    //                 ticks: {
+    //                     display: false
+    //                 }
+    //             }]
+    //         },
+    //         animation: {
+    //             duration: 0
+    //         }
+    //     }
+    // });
+
+    function render_resources(graph_data){
+
+        resources_chart.data.datasets[0].data = graph_data.cpu
+        resources_chart.data.datasets[1].data = graph_data.memory
+        resources_chart.data.datasets[2].data = graph_data.shells
+
+        resources_chart.data.labels = graph_data.labels
+        resources_chart.update()
     }
 
-    function render_traffic(){
-        console.log(parseInt(time_range_select.value))
+    
+    // function render_traffic(){
+    //     traffic_chart.data.datasets[0].data = graph_data.total_requests
+    //     traffic_chart.data.datasets[1].data = graph_data.dropped_requests
+    //     traffic_chart.data.datasets[2].data = graph_data.unexpected_errors
+    //     traffic_chart.data.datasets[3].data = graph_data.bad_requests
+    //     traffic_chart.data.datasets[4].data = graph_data.unauthorised_requests
+    //     traffic_chart.data.datasets[5].data = graph_data.invalid_credentials_errors
+
+    //     traffic_chart.data.labels = graph_data.labels
+    // }
+
+    function normalize_data(data){
+        now = Date.now()
+        let graph_data = {}
+        graph_data.cpu = data.cpu.map((data_point) => parseFloat(data_point[0]))
+        graph_data.memory = data.memory.map((data_point) => (parseInt(data_point[0]) / (1024 * 1024 * 1024)).toFixed(1))
+        graph_data.shells = data.shells.map((data_point) => parseInt(data_point[0]))
+
+        graph_data.labels = data.cpu.map((data_point) => get_relative_time_ago(data_point[1], now))
+        
+        return graph_data
     }
 
     function update_graph(){
-        utilisation_events.close()
-        utilisation_events = new EventSource("./events?t=utilisation&r=" + time_range_select.value);
-        utilisation_events.onmessage = (event) => {
-            graph_data = JSON.parse(event.data)
-            console.log(graph_data)
+        if(typeof utilisation_events != 'undefined'){
+            utilisation_events.close()
         }
 
-        current_graph = document.getElementsByClassName("displayed-graph")[0].id
-        switch(current_graph){
-            case "utilisationButton":
-                render_resources()
-                break;
-            case "trafficButton":
-                render_traffic()
-                break;
+        utilisation_events = new EventSource("./events?t=utilisation&r=" + time_range_select.value);
+        utilisation_events.onmessage = (event) => {
+            let data = normalize_data(JSON.parse(event.data))
+            render_resources(data)
+            // render_traffic()
         }
     }
 
+
+    
     function kill_process(type, id){
-        if(type = 'prcoess'){
+        if(type = 'process'){
             fetch("./processes?process=" + id, {
                 method: "DELETE",
             }).then((response) => {
@@ -244,14 +401,14 @@
         alert(message)
     }
 
-    function get_relative_time_ago(timestamp){
+    function get_relative_time_ago(timestamp, now = Date.now()){
         difference = Math.floor((Date.now() - (timestamp * 1000)) / 1000)
         if (difference < 60) {
             // Less than a minute has passed:
-            relative_time = `${difference}s ago`;
+            relative_time = `${difference} secs ago`;
         } else if (difference < 3600) {
             // Less than an hour has passed:
-            relative_time = `${Math.floor(difference / 60)}m ago`;
+            relative_time = `${Math.floor(difference / 60)} mins ago`;
         } else {
             // Less than a day has passed:
             relative_time = `${Math.floor(difference / 3600)} hours ago`;
@@ -261,60 +418,7 @@
     }
 
     update_graph()
-    
 
-    //Make a stepped line graph using graph.js depicting overall requests and errors
-
-    new Chart(
-        resources,
-        {
-            type: 'line',
-            data: {
-                labels: ['300', '290', '280', '270','260', '250', '240', '230', '220','210', '200', '190', '180', '170', '160', '150', '140', '130', '120', '110', '100', '90', '70','60', '50', '40', '30', '20', '10', '0'],
-                datasets: [{
-                    label: 'CPU',
-                    data: [0, 10, 5, 2, 20, 30, 450, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300 ,1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100 ,2200, 2300, 2400, 2500, 2600, 2700],
-                    borderColor: '#3e95cd',
-                    fill: true,
-                    stepped: 'after'
-                }, {
-                    label: 'Memory',
-                    data: [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50 ,55, 60, 65, 70, 75, 80, 85, 90, 95, 100 ,105, 110, 115, 120, 125, 130, 135, 140, 145, 150],
-                    borderColor: '#8e5ea2',
-                    fill: true,
-                    stepped: 'after'
-                }, {
-                    label: 'Powershell Sessions',
-                    data: [16, 16, 20, 30, 40, 50, 60, 70, 80, 90 ,100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200 ,210, 220, 230, 240, 250, 260, 270, 280, 290, 300],
-                    borderColor: '#3cba9f',
-                    fill: true,
-                    stepped: 'after'
-                }
-                ]
-
-            },
-            options: {
-                title: {
-                    display: true,
-                    text: 'Resources'
-                },
-                scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true,
-                            display: false
-                        }
-                    }],
-                    xAxes: [{
-                        ticks: {
-                            display: false
-                        }
-                    }]
-                },
-                animation: {
-                    duration: 0
-                }
-            }
-        })
+    console.log("Loaded processes page")
 </script>
 </html>

@@ -19,6 +19,18 @@ from errors import (
 )
 
 class Events(object):
+    """
+    Generates streams of events related to running processes and resource utilization data.
+
+    Attributes:
+        logger (LogClient): A client for logging messages and metrics.
+        resource_monitor (ResourceMonitor): A monitor for resource utilization data.
+        auth (Authorisation): An object that handles authentication and authorization.
+
+    Methods:
+        get_processes: Generates a stream of events that represent running processes.
+        get_utilisation: Generates a stream of resource utilization data.
+    """
     def __init__(self, logger: LogClient) -> None:
         self.logger = logger
         self.resource_monitor = ResourceMonitor()
@@ -70,15 +82,31 @@ class Events(object):
             await sleep(0.25)
 
     async def get_utilisation(self, time_range: int) -> Generator[dict, None, None]:
-        while True:
-            start = int(datetime.timestamp(datetime.now()))
-            end = start - time_range
-            metrics = await self.resource_monitor.get_utilisation(start, end)
-            metrics['created'] = start
-            metrics['range'] = time_range
+        for metric in (await self.resource_monitor.get_utilisation(time_range)):
+            yield SSEvent(event="message", event_id=str(uuid4()), json=(metric), retry=5000)
+            
 
-            yield SSEvent(event="message", event_id=str(uuid4()), json=(metrics), retry=5000)
-            await sleep(1)
+    # async def get_utilisation(self, time_range: int) -> Generator[dict, None, None]:
+    #     batch = True
+    #     while True:
+    #         start = int(datetime.timestamp(datetime.now()))
+
+    #         if(batch):
+    #             end = start
+    #             resolution = 900
+    #             sleep_for = 900
+    #         else:
+    #             end = start - time_range
+    #             resolution = 1
+            
+    #         metrics = await self.resource_monitor.get_utilisation(start, end, resolution)
+    #         metrics['created'] = start
+    #         metrics['range'] = time_range
+    #         batch = False
+
+    #         yield SSEvent(event="message", event_id=str(uuid4()), json=(metrics), retry=5000)
+        
+    #         await sleep(1)
 
     async def on_get(self, req, resp):
         self.logger.record(Metric(Label.REQUEST))

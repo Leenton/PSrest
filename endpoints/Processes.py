@@ -9,6 +9,20 @@ from entities import ProcessorConnection
 from errors import InvalidToken, UnAuthorised, InvalidCredentials, ProcessorException, InvalidTicket
 
 class Processes(object):
+    """
+    Handles HTTP GET and DELETE requests for the processes endpoint. This endpoint
+    provided a task manager like interface for viewing and killing running cmdlets.
+
+    Attributes:
+        logger (LogClient): A client for logging messages and metrics.
+        auth (Authorisation): An object that handles authentication and authorization.
+
+    Methods:
+        on_get: Serves the processes.html page if the user is authorized to view it.
+        on_delete: When a HTTP DELETE request is received, it issues a command to the
+            processor to cancel the cmdlet execution.
+    """
+
     def __init__(self, logger: LogClient) -> None:
         self.logger = logger
         self.auth = Authorisation()
