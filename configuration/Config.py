@@ -13,7 +13,7 @@ from .Schema import CONFIG_SCHEMA
 # TODO: Add cert support in APP.py and cert verfication in Config.py
 
 # PSRestVersion
-VERSION = '0.1.2'
+VERSION = '0.2.0'
 
 # Constants for the platform
 PLATFORM = platform.system()
@@ -111,7 +111,6 @@ PROCESSOR_DATABASE = TMP_DIR + '/processor.db' # Processor database
 # Constants for generating metric data
 METRIC_INTERVAL = 1
 MAX_METRIC_WAVE_LENGTH = 900
-METRIC_DOWN_SAMPLE = 1
 
 # TODO: Sanitise the contents we get from the config file to prevent code injection.
 
