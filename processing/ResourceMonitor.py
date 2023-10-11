@@ -9,9 +9,6 @@ from entities import ProcessorConnection
 from configuration import METRIC_DATABASE, METRIC_INTERVAL, MAX_METRIC_WAVE_LENGTH
 
 class ResourceMonitor(object):
-    def __init__(self) -> None:
-        self.db: AioConnection = None
-
     async def get_utilisation(self, time_range: int) -> Generator[dict, None, None]:
         time_to_wave_length_ratio = time_range / MAX_METRIC_WAVE_LENGTH
         if(time_range < 60 or not isinstance(time_to_wave_length_ratio, int)):

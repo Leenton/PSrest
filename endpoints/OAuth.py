@@ -7,6 +7,18 @@ from auth import BearerTokenGenerator, BearerToken
 from configuration import OAUTH_SCHEMA, CREDENTIAL_DATABASE
 
 class OAuth(object): 
+    """
+    A Falcon resource class that handles OAuth authentication requests.
+
+    Attributes:
+        token_generator (BearerTokenGenerator): A generator for creating and validating bearer tokens.
+        logger (LogClient): A client for logging metrics and events.
+        db (sqlite3.Connection): A connection to the credential database.
+
+    Methods:
+        on_post: Handles POST requests for OAuth authentication. By validating the credentials
+            provided in the request body, it returns an Bearer token if the credentials are valid.
+    """
     def __init__(self, logger: LogClient) -> None:
         self.token_generator = BearerTokenGenerator()
         self.logger = logger

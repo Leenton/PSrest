@@ -7,6 +7,18 @@ from entities import CmdletInfo, CmdletInfoLibrary
 from configuration import HELP
 
 class Help(object):
+    """
+    A Falcon resource class that handles GET requests for the help page.
+
+    Attributes:
+        cmdlet_library (CmdletInfoLibrary): A library of cmdlet information.
+        logger (LogClient): A client for logging metrics and events.
+
+    Methods:
+        on_get: Handles GET requests for the help page. If a cmdlet is specified in the URL, it
+            builds a help page for that cmdlet. Otherwise, it returns the default help page.
+        build_help_page: Builds an HTML help page for a given cmdlet.
+    """
     def __init__(self, logger: LogClient) -> None:
         self.cmdlet_library = CmdletInfoLibrary()
         self.logger = logger
