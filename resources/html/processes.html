@@ -150,14 +150,8 @@
     <div id='processes' class="processes center">
     </div>
 </body>
-<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script> -->
-<script src="resources/chart.js"></script>
 <script>
-    var graph_data = {}
-
-    var utilisation_events
-
-    const schedule_events = new EventSource("./events?t=processes");
+        const schedule_events = new EventSource("./events?t=processes");
     schedule_events.onmessage = (event) => {
         process_elements = JSON.parse(event.data).map(
             (process) => {
@@ -182,6 +176,18 @@
         )
         processes.innerHTML = process_elements.join("")
     }
+</script>
+<script src="resources/chart.js"></script>
+<script>
+    class PSRestGraphData{
+        constructor(type, data){
+            this.type = type
+            this.data = data
+        }
+    }
+
+    var utilisation_events
+    let labels = []
 
     var resources_chart = new Chart(resources, {
         type: 'line',
@@ -225,18 +231,18 @@
             aspectRatio: 4,
             scales: {
                 x: {
-                    reverse: true,
+                    reverse: false,
                     
                     grid: {
                         display: false
                     },
                     ticks: {
-                        reverse: true,
-                        display: true,
+                        display: false,
                         stepSize: 10,
                     }
                 },
                 y: {
+                    beginAtZero: true,
                     grid: {
                         display: false
                     },
@@ -322,17 +328,28 @@
     //     }
     // });
 
-    function render_resources(graph_data){
+    function render_resources(data){
+        if (data.type == 'batch'){
+            resources_chart.data.datasets[0].data = data.data.cpu
+            resources_chart.data.datasets[1].data = data.data.memory
+            resources_chart.data.datasets[2].data = data.data.shells
+            labels = data.data.labels
+        } else if (data.type == 'point'){
+            resources_chart.data.datasets[0].data.push(data.data.cpu)
+            resources_chart.data.datasets[0].data.shift()
+            resources_chart.data.datasets[1].data.push(data.data.memory)
+            resources_chart.data.datasets[1].data.shift()
+            resources_chart.data.datasets[2].data.push(data.data.shells)
+            resources_chart.data.datasets[2].data.shift()
+            labels.push(data.data.timestamp)
+            labels.shift()
+        }
 
-        resources_chart.data.datasets[0].data = graph_data.cpu
-        resources_chart.data.datasets[1].data = graph_data.memory
-        resources_chart.data.datasets[2].data = graph_data.shells
-
-        resources_chart.data.labels = graph_data.labels
+        // Update the lavbels to be relative to the current time
+        resources_chart.data.labels = labels.map((label) => get_relative_time_ago(label))
         resources_chart.update()
     }
 
-    
     // function render_traffic(){
     //     traffic_chart.data.datasets[0].data = graph_data.total_requests
     //     traffic_chart.data.datasets[1].data = graph_data.dropped_requests
@@ -345,15 +362,28 @@
     // }
 
     function normalize_data(data){
-        now = Date.now()
-        let graph_data = {}
-        graph_data.cpu = data.cpu.map((data_point) => parseFloat(data_point[0]))
-        graph_data.memory = data.memory.map((data_point) => (parseInt(data_point[0]) / (1024 * 1024 * 1024)).toFixed(1))
-        graph_data.shells = data.shells.map((data_point) => parseInt(data_point[0]))
+        if(data.range != 1){
+            // Data is a batch of data points, not a single data point
+            return new PSRestGraphData('batch', {
+                cpu: data.cpu.map((data_point) => parseFloat(data_point[0])),
+                memory: data.memory.map((data_point) => (parseInt(data_point[0]) / (1024 * 1024 * 1024)).toFixed(1)),
+                shells: data.shells.map((data_point) => parseInt(data_point[0])),
+                labels: data.cpu.map((data_point) => (data_point[1]))
+            })
 
-        graph_data.labels = data.cpu.map((data_point) => get_relative_time_ago(data_point[1], now))
-        
-        return graph_data
+        }else{
+            // Data is a single data point
+            // if (!data.cpu[0]){
+            //     console.log(data)
+            // }
+
+            return new PSRestGraphData('point', {
+                cpu: data.cpu,
+                memory: parseFloat((data.memory / (1024 * 1024 * 1024)).toFixed(1)),
+                shells: data.shells,
+                timestamp: data.created
+            })
+        }
     }
 
     function update_graph(){
@@ -365,6 +395,7 @@
         utilisation_events.onmessage = (event) => {
             let data = normalize_data(JSON.parse(event.data))
             render_resources(data)
+            // console.log(data)
             // render_traffic()
         }
     }

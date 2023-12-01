@@ -45,7 +45,7 @@ class Events(object):
             # writer.close()
             snapshot = [
                 {
-                    'application_name': 'Leenton Service Desk',
+                    'application_name': 'Leenton',
                     'function': "Write-Host",
                     'ttl': randint(15, 101),
                     'created': 1696811259,
@@ -53,7 +53,7 @@ class Events(object):
                     'ticket': '12345678901234567890123456789012'
                 },
                 {
-                    'application_name': 'Leenton Service Desk',
+                    'application_name': 'Leenton',
                     'function': "Get-Help",
                     'ttl': randint(15, 101),
                     'created': 1696815642,
@@ -61,7 +61,7 @@ class Events(object):
                     'Ticket': '123456789012mmmmmmmmmmmmmm789012'
                 },
                 {
-                    'application_name': 'Leenton Service Desk',
+                    'application_name': 'Leenton',
                     'function': "New-ADUser",
                     'ttl': randint(15, 101),
                     'created': 1696809246,
@@ -82,8 +82,8 @@ class Events(object):
             await sleep(0.25)
 
     async def get_utilisation(self, time_range: int) -> Generator[dict, None, None]:
-        for metric in (await self.resource_monitor.get_utilisation(time_range)):
-            yield SSEvent(event="message", event_id=str(uuid4()), json=(metric), retry=5000)
+        async for sample in (self.resource_monitor.get_utilisation(time_range)):
+            yield SSEvent(event="message", event_id=str(uuid4()), json=(sample), retry=5000)
             
 
     # async def get_utilisation(self, time_range: int) -> Generator[dict, None, None]:

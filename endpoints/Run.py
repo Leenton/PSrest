@@ -135,9 +135,7 @@ class Run(object):
                 resp.text = dumps({'title': 'Internal Server Error', 'description': e.message})
                 self.logger.log(Message(message=e, level=Level.ERROR, code=Code.SYSTEM))
         
-        except (
-            SchedulerException,
-        ) as e:
+        except SchedulerException as e:
             resp.status = HTTP_500
             resp.text = dumps({'title': 'Internal Server Error', 'description': e.message})
             self.logger.log(Message(message=e, level=Level.ERROR, code=Code.SYSTEM))
