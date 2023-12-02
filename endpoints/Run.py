@@ -79,7 +79,6 @@ class Run(object):
 
     @jsonschema.validate(RUN_SCHEMA)
     async def on_post(self, req, resp):
-        self.logger.record(Metric(Label.REQUEST))
         resp.content_type = 'application/json'
         
         try:
@@ -109,12 +108,10 @@ class Run(object):
             resp.text = dumps({'title': 'Request data failed validation', 'description': e.message})
 
         except InvalidToken as e:
-            self.logger.record(Metric(Label.INVALID_CREDENTIALS_ERROR))
             resp.status = HTTP_401
             resp.text = dumps({'title': 'Unauthorised Request', 'description': e.message})
         
         except UnAuthorised as e:
-            self.logger.record(Metric(Label.UNAUTHORISED_ERROR))
             resp.status = HTTP_403
             resp.text = dumps({'title': 'Forbidden Request', 'description': e.message})
         
@@ -124,7 +121,6 @@ class Run(object):
 
         except ProcessorException as e:
             if e.message == 'Too busy.':
-                self.logger.record(Metric(Label.DROPPED_REQUEST))
                 resp.status = HTTP_503
                 resp.text = dumps({
                     'title': 'Too Many Requests',

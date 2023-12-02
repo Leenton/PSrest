@@ -24,7 +24,6 @@ class Help(object):
         self.logger = logger
 
     async def on_get(self, req, resp, command: str | None = None):
-        self.logger.record(Metric(Label.REQUEST))
         resp.content_type = 'application/json'
 
         if(not HELP):

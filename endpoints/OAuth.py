@@ -2,7 +2,7 @@ import json
 import sqlite3
 from falcon.media.validators import jsonschema
 from falcon.status_codes import HTTP_200, HTTP_401
-from log import LogClient, Message, Level, Code, Metric, Label
+from log import LogClient, Message, Level, Code
 from auth import BearerTokenGenerator, BearerToken
 from configuration import OAUTH_SCHEMA, CREDENTIAL_DATABASE
 
@@ -26,7 +26,6 @@ class OAuth(object):
     
     @jsonschema.validate(OAUTH_SCHEMA)
     async def on_post(self, req, resp):
-        self.logger.record(Metric(Label.REQUEST))
         resp.content_type = 'application/json'
         credentials: dict = await req.get_media()
 
@@ -50,4 +49,3 @@ class OAuth(object):
                 'title': 'Unauthorised',
                 'description':'Invalid credentials.'
                 })
-            self.logger.record(Metric(Label.INVALID_CREDENTIALS_ERROR))

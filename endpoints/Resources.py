@@ -20,7 +20,6 @@ class Resources(object):
         self.logger = logger
 
     async def on_get(self, req, resp, resource):
-        self.logger.record(Metric(Label.REQUEST))
         #check if the file exists
         if not os.path.isfile(RESOURCE_DIR + '/' + resource):
             resp.status = HTTP_404

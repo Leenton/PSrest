@@ -1,6 +1,6 @@
 from falcon.status_codes import HTTP_200
 import aiofiles
-from log import LogClient, Message, Level, Code, Metric, Label
+from log import LogClient, Message, Level, Code
 
 class Home(object):
     """
@@ -16,7 +16,6 @@ class Home(object):
         self.logger = logger
 
     async def on_get(self, req, resp):
-        self.logger.record(Metric(Label.REQUEST))
         resp.status = HTTP_200
         resp.content_type = 'text/html'
         async with aiofiles.open('./resources/html/home.html', 'rb') as f:

@@ -21,7 +21,7 @@ from endpoints import(
     Processes,
     Events
 )
-from processing import start_processor, start_resource_monitor
+from processing import start_processor
 from log import start_logging, LogClient, Message
 
 if __name__ == '__main__':
@@ -29,20 +29,15 @@ if __name__ == '__main__':
     if(not os.path.exists(CREDENTIAL_DATABASE)):
         setup_credential_db()
 
-    if(not os.path.exists(METRIC_DATABASE)):
-        setup_metric_db()
-
     #Create queues for communication between threads and processes
     metrics, messages = ProcessQueue(), ProcessQueue()
 
     #Create threads and subproceses for processing and logging and metrics handling
     processing = Process(target=start_processor, name='Processor')
     logging = Process(target=start_logging, name='Log',args=(messages, metrics))
-    resource_monitoring = Process(target=start_resource_monitor, name='Resource Monitor')
 
     processing.start()
     sleep(3)
-    resource_monitoring.start()
     logging.start()
     sleep(2)
 
@@ -55,8 +50,6 @@ if __name__ == '__main__':
     PSRest.add_route('/help', Help(logger)) #Page to show help for PSRest
     PSRest.add_route('/help/{command}', Help(logger)) #Page to show help for a specific command
     PSRest.add_route('/resources/{resource}', Resources(logger)) #Page to return static files like images for help page
-    PSRest.add_route('/processes', Processes(logger))
-    PSRest.add_route('/events', Events(logger))
     
     #Start the webserver
     logger.log(Message("Starting PS Rest"))
