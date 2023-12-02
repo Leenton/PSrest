@@ -30,11 +30,11 @@ if __name__ == '__main__':
         setup_credential_db()
 
     #Create queues for communication between threads and processes
-    metrics, messages = ProcessQueue(), ProcessQueue()
+    messages = ProcessQueue(), ProcessQueue()
 
-    #Create threads and subproceses for processing and logging and metrics handling
+    #Create threads and subproceses for processing and logging handling
     processing = Process(target=start_processor, name='Processor')
-    logging = Process(target=start_logging, name='Log',args=(messages, metrics))
+    logging = Process(target=start_logging, name='Log',args=(messages))
 
     processing.start()
     sleep(3)
@@ -43,7 +43,7 @@ if __name__ == '__main__':
 
     #Define the webserver application and add routes
     PSRest = App()
-    logger: LogClient = LogClient(messages, metrics)
+    logger: LogClient = LogClient(messages)
     PSRest.add_route('/', Home(logger)) #Page to get all running processes
     PSRest.add_route('/oauth', OAuth(logger)) #Page to get an access token
     PSRest.add_route('/run', Run(logger)) #Page to run commands
