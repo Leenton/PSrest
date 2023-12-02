@@ -16,5 +16,6 @@
         "Get-Help"
     ],
     "Help": true,
+    "Docs": true,
     "DefaultDepth": 4
 }

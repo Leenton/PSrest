@@ -61,6 +61,7 @@ CONFIG_SCHEMA = {
         "Enabled" : {"type" : "array", 'uniqueItems': True, "items": {"type": "string"}},
         "Disabled" : {"type" : "array", 'uniqueItems': True, "items": {"type": "string"}},
         "Help" : {"type" : "boolean"},
+        "Docs" : {"type" : "boolean"},
         "DefaultDepth" : {"type" : "integer"},
     },
     "required": [
@@ -75,6 +76,7 @@ CONFIG_SCHEMA = {
         "Enabled",
         "Disabled",
         "Help",
+        "Docs",
         "DefaultDepth"
         ],
     "additionalProperties": False

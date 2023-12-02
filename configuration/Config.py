@@ -65,6 +65,7 @@ PROCESSOR_SPIN_UP_PERIOD = 0.25
 PROCESSOR_SPIN_DOWN_PERIOD = 5
 ARBITRARY_COMMANDS = CONFIG['ArbitraryCommands']
 HELP = CONFIG['Help']
+DOCS = CONFIG['Docs']
 modules = CONFIG['Modules']
 SCRIPTS = CONFIG.get('Scripts', '')
 

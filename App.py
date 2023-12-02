@@ -6,11 +6,9 @@ from time import sleep
 import os
 
 from configuration import (
-    METRIC_DATABASE,
     CREDENTIAL_DATABASE,
     PORT,
-    setup_credential_db,
-    setup_metric_db
+    setup_credential_db
 )
 from endpoints import(
     Help,
@@ -18,8 +16,7 @@ from endpoints import(
     OAuth,
     Home,
     Resources,
-    Processes,
-    Events
+    Docs
 )
 from processing import start_processor
 from log import start_logging, LogClient, Message
@@ -30,11 +27,11 @@ if __name__ == '__main__':
         setup_credential_db()
 
     #Create queues for communication between threads and processes
-    messages = ProcessQueue(), ProcessQueue()
+    messages = ProcessQueue()
 
     #Create threads and subproceses for processing and logging handling
     processing = Process(target=start_processor, name='Processor')
-    logging = Process(target=start_logging, name='Log',args=(messages))
+    logging = Process(target=start_logging, name='Log',args=(messages,))
 
     processing.start()
     sleep(3)
@@ -47,7 +44,7 @@ if __name__ == '__main__':
     PSRest.add_route('/', Home(logger)) #Page to get all running processes
     PSRest.add_route('/oauth', OAuth(logger)) #Page to get an access token
     PSRest.add_route('/run', Run(logger)) #Page to run commands
-    PSRest.add_route('/help', Help(logger)) #Page to show help for PSRest
+    PSRest.add_route('/docs', Docs(logger)) #Page to show documentation for PSRest
     PSRest.add_route('/help/{command}', Help(logger)) #Page to show help for a specific command
     PSRest.add_route('/resources/{resource}', Resources(logger)) #Page to return static files like images for help page
     

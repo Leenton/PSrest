@@ -22,7 +22,7 @@ from errors import (
     InvalidCmdletParameter
 )
 from entities.Cmdlet import Cmdlet, CmdletInfoLibrary
-from log import LogClient, Message, Level, Code, Metric, Label
+from log import LogClient, Message, Level, Code
 from auth import Authorisation
 from auth import AuthorisationToken
 

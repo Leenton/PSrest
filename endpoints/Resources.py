@@ -3,7 +3,7 @@ import aiofiles
 import os
 import json
 from configuration import RESOURCE_DIR
-from log import LogClient, Message, Level, Code, Metric, Label
+from log import LogClient, Message, Level, Code
 
 class Resources(object):
     """

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Help</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* put the sidebar on the left */
+        .sidebar {
+            height: 100%;
+            width: 200px;
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            background-color: #f0f0f0;
+            overflow-x: hidden;
+            padding-top: 20px;
+        }
+
+        /* style the sidebar links */
+        .sidebar a {
+            display: block;
+            color: black;
+            padding: 16px;
+            text-decoration: none;
+        }
+
+        /* put the main content to the right of the sidebar */
+        .content {
+            margin-left: 200px;
+            padding: 1px 16px;
+            height: 1000px;
+        }
+
+
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <ul>
+            <li><a href="./">Home</a></li>
+            <li><a href="#config">Configuration</a>
+                <ul>
+                    <li><a href="#configFile">Config File</a></li>
+                    <li><a href="#help">Help</a></li>
+                </ul>
+            </li>
+            <li><a href="#auth">Authentication</a></li>
+            <li><a href="#run">Run Commands</a></li>
+            <li><a href="#help">Help</a></li>
+            <li><a href="#about">About</a></li>
+        </ul>
+    </div>
+    <div class="content">
+        <section class="header">
+            <div class="header">
+                <h1>Help</h1>
+                <p>PSRest Version: 1.0.0</p>
+            </div>
+            <div class="description">
+                <p>Help description here. And version of PSRest running is listed here</p>
+            </div>
+        </section>
+
+        <h2 id="config">Configuration</h2>
+        <section class="configuration">
+            <span>
+                PSRest offers a number of configuration options to allow you to alter the behaviour of the application.
+                There are two ways to configure PSRest, either by using a config file or by using the Powershell Cmdlets packaged with PSRest.
+
+
+            </span>
+
+            <h3 id="configFile">Config File</h3>
+            <span>
+                The config file is a JSON file that is used to configure PSRest. The config file is located in the `config` in the user application data folder
+                for the user that is running PSRest. On Windows this is located at `C:\Users\&lt;username&gt;\AppData\Roaming\PSRest\config.json`.
+                On MacOS the config file is located at `~/.config/PSRest/config.json`.
+            </span>
+            <h4 id="help">Help</h4>
+            <span>
+                When the `Help` option in the config is enabled, PSRest will automatically generate a help page for all commands that can be run by PSRest.
+                These help pages can be found at the following URL: ` &lt;psrest server&gt;/help/&lt;cmdlet name&gt; ` these help pages produce the same output
+                as the `Get-Help` cmdlet in Powershell with the `Full` swicth enabled.
+
+                These help pages offer a great way to document how to use commands you decide to expose via PSRest, allowing others to learn how to use your
+                commands without having to read the source code or directly ask you for support.
+            </span>
+        </section>
+
+
+
+        <h2 id="auth">Authentication</h2>
+        <section class="authentication">
+            <h3>Authentication Description</h3>
+            <p>Authentication description here</p>
+            <h3>Authentication Example</h3>
+            <p>Authentication example here</p>
+        </section>
+
+
+
+        <h2 id="run">Run Commands</h2>
+        <section class="run">
+            <h3>Run Commands Description</h3>
+            <p>Run commands description here</p>
+            <h3>Run Commands Example</h3>
+            <p>Run commands example here</p>
+        </section>
+
+
+
+
+        <h2 id="help">Help</h2>
+        <section class="help">
+
+
+        </section>
+
+        <h2 id="about">About</h2>
+        <section class="about">
+            <h3>About Description</h3>
+            <p>About description here</p>
+            <h3>About Example</h3>
+            <p>About example here</p>
+        </section>
+
+
+    </div>
+</html>
