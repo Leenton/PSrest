@@ -376,15 +376,9 @@ function Get-PSRestCommandLibrary{
 
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$false)]
-        # The modules to get the commands from
-        [string[]]$Module,
-        [Parameter(Mandatory=$false)]
+        [Parameter(Mandatory=$true)]
         # The commands that are not in the specified modules which should be included in the library
-        [string[]]$EnabledCommands,
-        [Parameter(Mandatory=$false)]
-        # The commands that are in the specified modules which should be excluded from the library
-        [string[]]$DisabledCommands,
+        [string]$ConfigFile,
 
         [Parameter(Mandatory=$true)]
         # The string to use to prepened to the returned base64 output for capture. 
@@ -393,25 +387,10 @@ function Get-PSRestCommandLibrary{
 
     process{
 
-        $Commands = @()
-
-        if($Module -eq '*'){
-            $ModuleCommands = Get-Command
-        }else{
-            foreach($Mod in $Module){
-                $ModuleCommands += Get-Command -Module $Mod
-            }
-        }
-        
-        # Remove the commands that are in the disabled list
-        foreach($Command in $ModuleCommands){
-            if($DisabledCommands -notcontains $Command.Name){
-                $Commands += $Command
-            }
-        }
+        $Config = Get-Content -Path $ConfigFile | ConvertFrom-Json
 
         # Add the commands that are in the enabled list
-        foreach($Command in $EnabledCommands){
+        foreach($Command in $Config.Enabled){
             $Commands += Get-Command -Name $Command 
         }
 
@@ -443,11 +422,11 @@ function Get-PSRestCommandLibrary{
         }
         
         if($Commands.count -gt 1){
-            $Commands =  $Commands | ConvertTo-Json
+            $Commands =  ConvertTo-Json -InputObject $Commands
         }elseif($Commands.count -eq 1){
-            $Commands =  @($Commands) | ConvertTo-Json
+            $Commands = ConvertTo-Json -InputObject @($Commands)
         }else{
-            $Commands =  @() | ConvertTo-Json
+            $Commands = ConvertTo-Json -InputObject @()
         }
         
         Write-host "$Seperator$([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Commands)))"

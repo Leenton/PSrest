@@ -51,33 +51,64 @@ CONFIG_SCHEMA = {
     "type" : "object",
     "properties" : {
         "Hostname" : {"type" : "string"},
-        "Port" : {"type" : "integer"},
-        "Cert" : {"type" : "string"},
-        "Repository" : {"type" : "string"},
-        "DefaultTTL" : {"type" : "integer"},
-        "MaxTTL" : {"type" : "integer"},
+        "Port" : {
+            "type" : "integer",
+            "maximum": 65535,
+            "minimum": 1
+        },
+        "SSLCertificate" : {"type" : ["string", "null"]},
+        "SSLKeyFile" : {"type" : ["string", "null"]},
+        "SSLKeyFilePassword" : {"type" : ["string", "null"]},
+        "SSLCiphers" : {
+            "enum": [
+                "TLSv1",
+                "TLSv1.1",
+                "TLSv1.2",
+                "TLSv1.3"
+            ]
+        },
+        "DefaultTTL" : {
+            "type" : "integer",
+            "maximum": 604800,
+            "minimum": 1
+        },
+        "StrictTTL" : {"type" : "boolean"},
+        "MaxTTL" : {
+            "type" : "integer",
+            "maximum": 604800,
+            "minimum": 1
+        },
         "ArbitraryCommands" : {"type" : "boolean"},
-        "Modules" : {"type" : "array", 'uniqueItems': True, "items": {"type": "string"}},
         "Enabled" : {"type" : "array", 'uniqueItems': True, "items": {"type": "string"}},
-        "Disabled" : {"type" : "array", 'uniqueItems': True, "items": {"type": "string"}},
         "Help" : {"type" : "boolean"},
         "Docs" : {"type" : "boolean"},
-        "DefaultDepth" : {"type" : "integer"},
+        "DefaultDepth" : {
+            "type" : "integer",
+            "maximum": 100,
+        },
+        "StrictDepth" : {"type" : "boolean"},
     },
     "required": [
         "Hostname",
         "Port",
-        "Cert",
-        "Repository",
         "DefaultTTL",
         "MaxTTL",
+        "StrictTTL",
         "ArbitraryCommands",
-        "Modules",
         "Enabled",
-        "Disabled",
         "Help",
         "Docs",
-        "DefaultDepth"
+        "DefaultDepth",
+        "StrictDepth"
         ],
-    "additionalProperties": False
+    "additionalProperties": False,
+    "if" : {
+        "properties" : {
+            "SSLCertificate" : {"type" : "string"}
+        }
+    },
+    "then" : {
+        "required" : ["SSLKeyFile"]
+    }
+    
 }

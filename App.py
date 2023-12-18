@@ -6,6 +6,10 @@ from time import sleep
 import os
 
 from configuration import (
+    CERTIFICATE,
+    KEY_FILE,
+    KEYFILE_PASSWORD,
+    CIPHERS,
     CREDENTIAL_DATABASE,
     PORT,
     setup_credential_db
@@ -47,8 +51,15 @@ if __name__ == '__main__':
     PSRest.add_route('/docs', Docs(logger)) #Page to show documentation for PSRest
     PSRest.add_route('/help/{command}', Help(logger)) #Page to show help for a specific command
     PSRest.add_route('/resources/{resource}', Resources(logger)) #Page to return static files like images for help page
-    
-    #Start the webserver
-    logger.log(Message("Starting PS Rest"))
-    # TODO: 
-    uvicorn.run(PSRest, host='0.0.0.0', port=PORT, log_level='info')
+
+    logger.log(Message(f"Starting PS Rest"))
+    uvicorn.run(
+        PSRest,
+        host='0.0.0.0',
+        port=PORT,
+        log_level='info',
+        ssl_keyfile=KEY_FILE,
+        ssl_certfile=CERTIFICATE,
+        ssl_keyfile_password=KEYFILE_PASSWORD,
+        ssl_ciphers=CIPHERS
+    )

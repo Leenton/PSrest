@@ -4,7 +4,9 @@ from falcon.media.validators import jsonschema
 import traceback
 from configuration import (
     DEFAULT_TTL,
+    STRICT_TTL,
     DEFAULT_DEPTH,
+    STRICT_DEPTH,
     MAX_TTL,
     MAX_DEPTH,
     RUN_SCHEMA
@@ -49,7 +51,7 @@ class Run(object):
         try:
             ttl = req.get_header('TTL')
 
-            if ttl == None:
+            if ttl == None or STRICT_TTL:
                 ttl = int(DEFAULT_TTL)
                 
             elif ttl > MAX_TTL:
@@ -61,7 +63,7 @@ class Run(object):
         try:
             depth = req.get_header('Depth')
 
-            if depth == None:
+            if depth == None or STRICT_DEPTH:
                 depth = int(DEFAULT_DEPTH)
 
             elif depth > int(MAX_DEPTH):

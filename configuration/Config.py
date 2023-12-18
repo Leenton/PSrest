@@ -12,6 +12,8 @@ from .Schema import CONFIG_SCHEMA
 
 # TODO: Add cert support in APP.py and cert verfication in Config.py
 
+
+
 # PSRestVersion
 VERSION = '0.2.0'
 
@@ -40,20 +42,27 @@ try:
         instance=CONFIG,
         schema=CONFIG_SCHEMA
     )
-except ValidationError:
-    raise Exception('Invalid config file. Please check the config file against the schema.')
+except ValidationError as e:
+    raise Exception('Invalid config file. Please check the config file against the schema. ' + e.message)
 
+CONFIG_FILE = APP_DATA + '/config.json'
 HOSTNAME = CONFIG['Hostname']
 PORT = CONFIG['Port']
+CERTIFICATE = CONFIG.get('SSLCertificate')
+KEY_FILE = CONFIG.get('SSLKeyFile')
+KEYFILE_PASSWORD = CONFIG.get('SSLKeyFilePassword')
+CIPHERS =  CONFIG.get('SSLCiphers') if CONFIG.get('SSLCiphers') else 'TLSv1' 
 
 # Constants for the ticketing system
 DEFAULT_TTL = CONFIG['DefaultTTL']
 MAX_TTL = CONFIG['MaxTTL']
+STRICT_TTL = CONFIG['StrictTTL']
 ACCESS_TOKEN_TTL = 3600
 REFRESH_TOKEN_TTL = 86400 * 14
 
 # Constants for how we serve responses
 DEFAULT_DEPTH = CONFIG['DefaultDepth']
+STRICT_DEPTH = CONFIG['StrictDepth']
 MAX_DEPTH = 100
 TOO_LONG = 0.25
 
@@ -66,15 +75,6 @@ PROCESSOR_SPIN_DOWN_PERIOD = 5
 ARBITRARY_COMMANDS = CONFIG['ArbitraryCommands']
 HELP = CONFIG['Help']
 DOCS = CONFIG['Docs']
-modules = CONFIG['Modules']
-SCRIPTS = CONFIG.get('Scripts', '')
-
-if(modules == ['*']):
-    MODULES = '*'
-else:
-    MODULES = modules
-
-DISABLE_COMMANDS = CONFIG['Disabled']
 ENABLE_COMMANDS = CONFIG['Enabled']
 COMPETED = 'completed'
 FAILED = 'failed'
@@ -109,10 +109,6 @@ CREDENTIAL_DATABASE = APP_DATA + '/data.db' # OAuth2 credential database
 METRIC_DATABASE = TMP_DIR + '/metrics.db' # Metric database
 PROCESSOR_DATABASE = TMP_DIR + '/processor.db' # Processor database
 
-# Constants for generating metric data
-METRIC_INTERVAL = 1
-MAX_METRIC_WAVE_LENGTH = 300
-CLEAR_OLD_METRICS = 86400 * 2
 
 # TODO: Sanitise the contents we get from the config file to prevent code injection.
 

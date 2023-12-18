@@ -51,25 +51,41 @@
 
 #start a tcp server on port 80
 
-from socket import *
+# from socket import *
 
-serverPort = 27017
+# serverPort = 27017
 
-serverSocket = socket(AF_INET, SOCK_STREAM)
+# serverSocket = socket(AF_INET, SOCK_STREAM)
 
-serverSocket.bind(('0.0.0.0', serverPort))
+# serverSocket.bind(('0.0.0.0', serverPort))
 
-serverSocket.listen()
+# serverSocket.listen()
 
-print('The server is ready to receive')
+# print('The server is ready to receive')
 
-while True:
-    connectionSocket, addr = serverSocket.accept()
-    print('connected to: ', addr)
-    try:
-        while True:
-            sentence = connectionSocket.recv(5)
-            print(sentence)
-    except:
-        print('error or close')
-        connectionSocket.close()
+# while True:
+#     connectionSocket, addr = serverSocket.accept()
+#     print('connected to: ', addr)
+#     try:
+#         while True:
+#             sentence = connectionSocket.recv(5)
+#             print(sentence)
+#     except:
+#         print('error or close')
+#         connectionSocket.close()
+
+# import webserver application and router
+from falcon.asgi import App
+import uvicorn
+
+class home(object):
+    async def on_get(self, req, resp):
+        resp.content_type = 'text/html'
+        resp.text = 'hello world'
+
+if __name__ == '__main__':
+    #Define the webserver application and add routes
+    test = App()
+    test.add_route('/', home()) #Page to get all running processes
+
+    uvicorn.run(test, host='0.0.0.0', port=80, log_level='info')
