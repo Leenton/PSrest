@@ -1,11 +1,18 @@
 # PSrest
 
-You can run the application by importing the PSRest module and running the Start-PSRestServer command. 
+PSrest is a PowerShell module that provides a RESTful HTTP endpoint for executing PowerShell commands and scripts. The module allows you to expose PowerShell functionality as a web service, making it easy to integrate PowerShell with other applications and services.
+
+## Getting Started
+
+To get started with PSrest, import the PSRest module and run the Start-PSRestServer command:
 
 ```powershell
 Import-Module .\PSRest.psm1
 Start-PSRestServer
 ```
+
+This will start the PSrest server and expose a RESTful HTTP endpoint at http://localhost:8080
+You can change the port by editing the config.yaml file.
 
 ## Configuration
 
@@ -36,8 +43,26 @@ Get-PSRestConfig
 ```
 
 ## User Management
+PSrest features basic user management functionality, allowing you to limit access commands executed by a given user. 
+
+```powershell
+Add-PSRestUser -Username admin -Password admin -Enabled
+```
+
+```powershell
+Remove-PSRestUser -Username admin
+```
+
+```powershell
+Enable-PSRestUser -Username admin
+```
+
+```powershell
+Disable-PSRestUser -Username admin
+```
 
 
+## TODO relic
 Overall plan, we will go heard for like 2 or 3 hours and speed implement our idea.
 
 
@@ -74,3 +99,17 @@ NO PS profile,
 NO have to reload the module each time we run a command. 
 
 Jobs are better since we don'ty have to 
+
+
+## Reasons why events and procsses tab where dropped:
+
+The additional development time and effort needed to bring these features to
+fruition were too large to be handled in the intial release of PSRest without
+significantly increasing the planned development time for this project.
+
+A slimer less feature rich version of this project is inline with the original
+problem statement this project was aiming to resolve. If the GUI features removed
+are paramount for your usecase, this project is not ideal for your usecase, and
+I recomend swithing to Powershell Universal by IronMan Software which offers a far
+richer GUI and more mature platform for taking this type of problem. 
+

@@ -1,9 +1,9 @@
-from entities.CmdletInfo import CmdletInfo
 import subprocess
 import json
 import base64
 import random
-from configuration.Config import *
+from configuration import CONFIG_FILE
+from .CmdletInfo import CmdletInfo
 
 class CmdletInfoLibrary():
     def __init__(self) -> None:
@@ -21,8 +21,11 @@ class CmdletInfoLibrary():
     def intialize(self) -> None:
         #read the config file and get the list of modules to load amd allowed commands and etc
         seperator = random.randint(1_000_000_000, 9_999_999_999)
+
+        print(f'pwsh -c "Get-PSRestCommandLibrary -ConfigFile  \'{CONFIG_FILE}\' -Seperator {seperator}"')
+        #TODO: DO THIS ASYNCRONOUSLY
         result = subprocess.run(
-            f'pwsh -c "Get-PSRestCommandLibrary -Module {MODULES} -Seperator {seperator}"',
+            f'pwsh -c "Get-PSRestCommandLibrary -ConfigFile \'{CONFIG_FILE}\' -Seperator {seperator}"',
             shell=True,
             capture_output=True,
             text=True)

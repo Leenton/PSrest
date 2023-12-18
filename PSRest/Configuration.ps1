@@ -46,8 +46,6 @@ function Get-PSRestConfig {
     return $Config
 }
 
-
-
 function Set-PSRestConfig {
     param (
         OptionalParameters

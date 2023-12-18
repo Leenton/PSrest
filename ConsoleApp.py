@@ -1,7 +1,7 @@
 
 import sys, getopt
 import json
-from configuration.Console import Console
+from configuration import Console
 
 def main(argv):
 
@@ -60,7 +60,6 @@ def main(argv):
     result = console.run(request)
 
     print(json.dumps({'data': result}))
-
 
 if __name__ == "__main__":
    main(sys.argv[1:])

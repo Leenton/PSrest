@@ -1,33 +1,57 @@
-import json
-# import language builtins and 3rd party modules
-from multiprocessing import Queue
+from json import dumps
 from falcon.status_codes import HTTP_200, HTTP_400, HTTP_401, HTTP_403, HTTP_408, HTTP_500, HTTP_503
 from falcon.media.validators import jsonschema
 import traceback
-
-# import project dependencies
-from exceptions.PSRExceptions import *
-from entities.Cmdlet import *
-from entities.CmdletInfoLibrary import CmdletInfoLibrary
-from entities.CmdletResponse import CmdletResponse
-from entities.Schema import RUN_SCHEMA
-from processing.OAuthService import OAuthService
-from log.LogMessage import LogMessage, LogLevel, LogCode
-from log.Metric import Metric, MetricLabel
-from log.MetricRecorderLogger import MetricRecorderLogger
-from configuration.Config import *
+from configuration import (
+    DEFAULT_TTL,
+    STRICT_TTL,
+    DEFAULT_DEPTH,
+    STRICT_DEPTH,
+    MAX_TTL,
+    MAX_DEPTH,
+    RUN_SCHEMA
+)
+from errors import (
+    InvalidToken,
+    UnAuthorised,
+    ProcessorException,
+    SchedulerException,
+    StreamTimeout,
+    UnSuppotedPSVersion,
+    UnSupportedPlatform,
+    InvalidCmdlet,
+    UnkownCmdlet,
+    InvalidCmdletParameter
+)
+from entities.Cmdlet import Cmdlet, CmdletInfoLibrary
+from log import LogClient, Message, Level, Code
+from auth import Authorisation
+from auth import AuthorisationToken
 
 class Run(object):
-    def __init__(self, logger: MetricRecorderLogger) -> None:
+    """
+    Handles HTTP POST requests to execute PowerShell cmdlets.
+
+    Attributes:
+        cmdlet_library (CmdletInfoLibrary): A library of PowerShell cmdlet information.
+        authorisation (Authorisation): An object that handles authentication and authorization.
+        logger (LogClient): A client for logging messages and metrics.
+
+    Methods:
+        validate_headers: Validates the request headers and returns the TTL and depth parameters.
+        on_post: Handles HTTP POST requests to execute PowerShell cmdlets.
+    """
+    
+    def __init__(self, logger: LogClient) -> None:
         self.cmdlet_library = CmdletInfoLibrary()
-        self.oauth = OAuthService()
+        self.authorisation = Authorisation()
         self.logger = logger
 
-    def validate_headers(self, req):
+    async def validate_headers(self, req) -> tuple[int, int, AuthorisationToken]:
         try:
             ttl = req.get_header('TTL')
 
-            if ttl == None:
+            if ttl == None or STRICT_TTL:
                 ttl = int(DEFAULT_TTL)
                 
             elif ttl > MAX_TTL:
@@ -39,7 +63,7 @@ class Run(object):
         try:
             depth = req.get_header('Depth')
 
-            if depth == None:
+            if depth == None or STRICT_DEPTH:
                 depth = int(DEFAULT_DEPTH)
 
             elif depth > int(MAX_DEPTH):
@@ -51,27 +75,25 @@ class Run(object):
         except (ValueError, TypeError):
             raise InvalidCmdlet(f'Depth is not a valid number. Please use a value less than {MAX_DEPTH}.')
         
-        header = req.get_header('Authorization')
-        if header == None:
-            header = ''
-        elif not isinstance(header, str):
-            header = 'true'
+        token = self.authorisation.get_token(req)
 
-        return ttl, depth, header
+        return ttl, depth, token
 
     @jsonschema.validate(RUN_SCHEMA)
     async def on_post(self, req, resp):
-        self.logger.record(Metric(MetricLabel.REQUEST))
         resp.content_type = 'application/json'
         
         try:
-            ttl, depth, header = self.validate_headers(req)
-            command = Cmdlet( self.cmdlet_library, (await req.get_media()), ttl, depth)
+            ttl, depth, token = self.validate_headers(req)
 
-            # command.application_name = self.oauth.get_authorized_application_name(header, command.function)
-
-            response = command.invoke()
-            await response.validate()
+            response = await (Cmdlet(
+                self.cmdlet_library,
+                self.authorisation,
+                (await req.get_media()),
+                ttl,
+                depth,
+                token
+            )).invoke()
 
             resp.status =  HTTP_200
             resp.content_length = await response.get_length()
@@ -83,47 +105,42 @@ class Run(object):
             UnkownCmdlet,
             InvalidCmdlet,
             InvalidCmdletParameter
-            ) as e:
+        ) as e:
             resp.status = HTTP_400
-            resp.text = json.dumps({'title': 'Request data failed validation', 'description': e.message})
+            resp.text = dumps({'title': 'Request data failed validation', 'description': e.message})
 
         except InvalidToken as e:
-            self.logger.record(Metric(MetricLabel.INVALID_CREDENTIALS_ERROR))
             resp.status = HTTP_401
-            resp.text = json.dumps({'title': 'Unauthorised Request', 'description': e.message})
+            resp.text = dumps({'title': 'Unauthorised Request', 'description': e.message})
         
         except UnAuthorised as e:
-            self.logger.record(Metric(MetricLabel.UNAUTHORISED_ERROR))
             resp.status = HTTP_403
-            resp.text = json.dumps({'title': 'Forbidden Request', 'description': e.message})
+            resp.text = dumps({'title': 'Forbidden Request', 'description': e.message})
         
         except StreamTimeout as e:
             resp.status = HTTP_408
-            resp.text = json.dumps({'title': 'Request Timeout', 'description': 'Time out occurred waiting for PSProcessor to return the response.'})
+            resp.text = dumps({'title': 'Request Timeout', 'description': 'Time out occurred waiting for PSProcessor to return the response.'})
 
         except ProcessorException as e:
             if e.message == 'Too busy.':
-                self.logger.record(Metric(MetricLabel.DROPPED_REQUEST))
                 resp.status = HTTP_503
-                resp.text = json.dumps({
+                resp.text = dumps({
                     'title': 'Too Many Requests',
                     'description': 'The server is currently unable to handle the request due to a temporary overload, please try again later.'
                     })
             else:
                 resp.status = HTTP_500
-                resp.text = json.dumps({'title': 'Internal Server Error', 'description': e.message})
-                self.logger.log(LogMessage(message=e, level=LogLevel.ERROR, code='500'))
+                resp.text = dumps({'title': 'Internal Server Error', 'description': e.message})
+                self.logger.log(Message(message=e, level=Level.ERROR, code=Code.SYSTEM))
         
-        except (
-            SchedulerException,
-            ) as e:
+        except SchedulerException as e:
             resp.status = HTTP_500
-            resp.text = json.dumps({'title': 'Internal Server Error', 'description': e.message})
-            self.logger.log(LogMessage(message=e, level=LogLevel.ERROR, code='500'))
+            resp.text = dumps({'title': 'Internal Server Error', 'description': e.message})
+            self.logger.log(Message(message=e, level=Level.ERROR, code=Code.SYSTEM))
 
         except Exception as e:
             print(e)
             traceback.print_exc()
             resp.status = HTTP_500
-            resp.text = json.dumps({'title': 'Internal Server Error', 'description': 'Something went wrong!'})
-            self.logger.log(LogMessage(message=e, level=LogLevel.ERROR, code=LogCode.SYSTEM))
+            resp.text = dumps({'title': 'Internal Server Error', 'description': 'Something went wrong!'})
+            self.logger.log(Message(message=e, level=Level.ERROR, code=Code.SYSTEM))

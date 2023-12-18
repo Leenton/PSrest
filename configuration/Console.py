@@ -1,11 +1,11 @@
 import sqlite3
-from configuration.Config import * 
 import jwt
 from argon2 import PasswordHasher
 import sqlite3
 from datetime import datetime, timedelta
 from typing import List
 from uuid import uuid4
+from .Config import * 
 
 class Console():
     def __init__(self,) -> None:

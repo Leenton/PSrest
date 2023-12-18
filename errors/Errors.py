@@ -1,3 +1,36 @@
+class UnkownCmdlet(Exception):
+    '''
+    Exception raised when the cmdlet requested does not exist in the current environment
+    '''
+    def __init__(self, message='Cmdlet is not supported.'):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return self.message 
+
+class InvalidCmdlet(Exception):
+    '''
+    Exception raised when the cmdlet requested is invalid
+    '''
+    def __init__(self, message='Cmdlet is invalid.'):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return self.message
+
+class InvalidCmdletParameter(Exception):
+    '''
+    Exception raised when the cmdlet parameters are invalid
+    '''
+    def __init__(self, message='Cmdlet parameters are invalid.'):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return self.message 
+
 class InvalidToken(Exception):
     '''
     Exception raised when supplied an invalid token
@@ -9,6 +42,49 @@ class InvalidToken(Exception):
     def __str__(self):
         return f'{self.message}'
 
+class InvalidTicket(Exception):
+    '''
+    Exception raised when supplied an invalid ticket
+    '''
+    def __init__(self, message='Ticket is invalid.'):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.message}'
+
+class InvalidCredentials(Exception):
+    '''
+    Exception raised when supplied invalid credentials
+    '''
+    def __init__(self, message='Credentials are invalid.'):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.message}'
+
+class InvalidTimeRange(Exception):
+    '''
+    Exception raised when supplied an invalid time range
+    '''
+    def __init__(self, message='Time range specified is invalid.'):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.message}'
+    
+class InvalidEventType(Exception):
+    '''
+    Exception raised when supplied an unknown event type
+    '''
+    def __init__(self, message='Event type specified is invalid.'):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.message}'
 class UnAuthorised(Exception):
     '''
     Exception raised for users who are not authorised to perform an action

@@ -1,28 +1,34 @@
 import json
 import base64
-from configuration.Config import *
-from entities.CmdletInfoLibrary import CmdletInfoLibrary
-from entities.CmdletResponse import CmdletResponse
+from configuration import ARBITRARY_COMMANDS
+from .CmdletInfoLibrary import CmdletInfoLibrary
+from .CmdletResponse import CmdletResponse
+from errors import UnkownCmdlet, InvalidCmdlet, InvalidCmdletParameter
+from auth import Authorisation, AuthorisationSchema, AuthorisationToken
+
 class Cmdlet():
     def __init__(
             self,
             cmdlet_library: CmdletInfoLibrary,
+            authorisation: Authorisation,
             command: dict,
             ttl: float,
             depth: int,
-            application_name: str = '', 
+            token: AuthorisationToken,
             platform = None,
             psversion = None
-            ) -> None:
-        
+        ) -> None:
+
         self.function = None
         self.ttl = ttl
         self.depth = depth
-        self.application_name = application_name
         self.platform = platform
         self.psversion = psversion
         self.cmdlet_library = cmdlet_library
         self.value = self.parse(command)
+        self.application_name =  authorisation.get_user(token) if authorisation.is_authorised(token, self.function, AuthorisationSchema.BEARER) else None
+        if(self.application_name == None):
+            raise UnkownCmdlet('Cmdlet does not exist in the current environment, or you do not have permission to run it.')
 
     def parse(self, command: dict) -> str:
         cmdlet = {}
@@ -40,9 +46,9 @@ class Cmdlet():
                         self.function = info.command
                         cmdlet['mandatory'] = info.mandatory_parameters
                     else:
-                        raise UnkownCmdlet(self, 'Cmdlet does not exist in the current environment, or you do not have permission to run it.')
+                        raise UnkownCmdlet('Cmdlet does not exist in the current environment, or you do not have permission to run it.')
         except KeyError:
-            raise InvalidCmdlet(self, 'No cmdlet provided')
+            raise InvalidCmdlet('No cmdlet provided')
         
         try:
             cmdlet['parameters'] = []
@@ -52,7 +58,7 @@ class Cmdlet():
                     if(isinstance(parameter_name, (str))):
                         cmdlet['parameters'].append([parameter_name, self.sanitise(parameter_value)])
                     else:
-                        raise InvalidCmdletParameter(self, 'Invalid parameter name provided, or parameter name is not a string.')
+                        raise InvalidCmdletParameter('Invalid parameter name provided, or parameter name is not a string.')
 
 
             elif(isinstance(command['parameters'], (list))):
@@ -60,7 +66,7 @@ class Cmdlet():
                     cmdlet['parameters'].append(self.sanitise(parameter_value))
 
             else:
-                raise InvalidCmdletParameter(self, 'Poorly formatted parameters provided')
+                raise InvalidCmdletParameter('Poorly formatted parameters provided')
         except KeyError:
             cmdlet['parameters'] = None
 
@@ -127,67 +133,7 @@ class Cmdlet():
             'application_name': self.application_name
         }
 
-    def invoke(self) -> CmdletResponse:
-        return CmdletResponse(self.serialise())
-            
-class InvalidCmdlet(Exception):
-    '''
-    Exception raised when the cmdlet requested is invalid
-    '''
-    def __init__(self, cmdlet: Cmdlet, message='Cmdlet is invalid.'):
-        self.cmdlet = cmdlet
-        self.message = message
-        super().__init__(self.message)
-
-    def __str__(self):
-        return f'Cmdlet: "{self.cmdlet.function}" is invalid.'
-    
-class UnkownCmdlet(Exception):
-    '''
-    Exception raised when the cmdlet requested does not exist in the current environment
-    '''
-    def __init__(self, cmdlet: Cmdlet, message='Cmdlet is not supported.'):
-        self.cmdlet = cmdlet
-        self.message = message
-        super().__init__(self.message)
-
-    def __str__(self):
-        return f'Cmdlet: "{self.cmdlet.function}" does not exist in the current environment.'
-
-class InvalidCmdletParameter(Exception):
-    '''
-    Exception raised when the cmdlet parameters are invalid
-    '''
-    def __init__(self, parameter: str, cmdlet: Cmdlet, message='Cmdlet parameters are invalid.'):
-        self.parameter = parameter
-        self.cmdlet = cmdlet
-        self.message = message
-        super().__init__(self.message)
-
-    def __str__(self):
-        return f'The value for parameter "{self.parameter}" is not a valid parameter, or was not provided to the function "{self.cmdlet.function}".'
-
-class CmdletExecutionError(Exception):
-    '''
-    Exception raised when the cmdlet execution fails
-    '''
-    def __init__(self, cmdlet: Cmdlet, message='Cmdlet execution failed.'):
-        self.cmdlet = cmdlet
-        self.message = message
-        super().__init__(self.message)
-
-    def __str__(self):
-        return f'Cmdlet: "{self.cmdlet.function}" failed to execute.'
-
-class CmdletExecutionTimeout(Exception):
-    '''
-    Exception raised when the cmdlet execution times out
-    '''
-    def __init__(self, cmdlet: Cmdlet, message='Cmdlet execution timed out.'):
-        self.cmdlet = cmdlet
-        self.message = message
-        super().__init__(self.message)
-
-    def __str__(self):
-        return f'Cmdlet: "{self.cmdlet.function}" timed out after {self.cmdlet.ttl} seconds.'
-    
+    async def invoke(self) -> CmdletResponse:
+        response = CmdletResponse(self.serialise())
+        await response.execute()
+        return response

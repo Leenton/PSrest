@@ -2,62 +2,64 @@
 from falcon.asgi import App
 import uvicorn
 from multiprocessing import Process, Queue as ProcessQueue
-from subprocess import Popen
 from time import sleep
 import os
 
-from endpoints.Help import Help
-from endpoints.Run import Run
-from endpoints.OAuth import OAuth
-from endpoints.Home import Home
-from endpoints.Resources import Resources
-from endpoints.Processes import Processes
-from endpoints.Events import Events
-from log.MetricRecorderLogger import MultiProcessSafeRecorderLogger
-from log.Logger import start_logger, LogMessage
-from log.MetricRecorder import start_metrics
-from processing.ResourceMonitor import start_resource_monitor
-from processing.Processor import start_processor
-from configuration.Config import *
+from configuration import (
+    CERTIFICATE,
+    KEY_FILE,
+    KEYFILE_PASSWORD,
+    CIPHERS,
+    CREDENTIAL_DATABASE,
+    PORT,
+    setup_credential_db
+)
+from endpoints import(
+    Help,
+    Run,
+    OAuth,
+    Home,
+    Resources,
+    Docs
+)
+from processing import start_processor
+from log import start_logging, LogClient, Message
 
 if __name__ == '__main__':
     #Check if the databases exists if not create them
     if(not os.path.exists(CREDENTIAL_DATABASE)):
         setup_credential_db()
 
-    if(not os.path.exists(METRIC_DATABASE)):
-        setup_metric_db()
-
-    setup_processor_db()
-
     #Create queues for communication between threads and processes
-    requests, alerts, stats, processes, logs = ProcessQueue(), ProcessQueue(), ProcessQueue(), ProcessQueue(), ProcessQueue()
+    messages = ProcessQueue()
 
-    #Create threads and subproceses for processing and log and queueing56
-    processing = Process(target=start_processor, name='Cmdlet Processor')
-    log = Process(target=start_logger, name='Logger',args=(logs,))
-    resource_monitoring = Process(target=start_resource_monitor, name='Resource Monitor')
-    metrics = Process(target=start_metrics, name='Metrics', args=(stats,))
+    #Create threads and subproceses for processing and logging handling
+    processing = Process(target=start_processor, name='Processor')
+    logging = Process(target=start_logging, name='Log',args=(messages,))
 
-    resource_monitoring.start()
-    log.start()
-    metrics.start()
-    sleep(5)
     processing.start()
+    sleep(3)
+    logging.start()
+    sleep(2)
 
     #Define the webserver application and add routes
     PSRest = App()
-    logger = MultiProcessSafeRecorderLogger(logs, stats)
-    # processor = PSProcessor(requests, alerts, stats, processes)
+    logger: LogClient = LogClient(messages)
     PSRest.add_route('/', Home(logger)) #Page to get all running processes
     PSRest.add_route('/oauth', OAuth(logger)) #Page to get an access token
     PSRest.add_route('/run', Run(logger)) #Page to run commands
-    PSRest.add_route('/help', Help(logger)) #Page to show help for PSRest
+    PSRest.add_route('/docs', Docs(logger)) #Page to show documentation for PSRest
     PSRest.add_route('/help/{command}', Help(logger)) #Page to show help for a specific command
     PSRest.add_route('/resources/{resource}', Resources(logger)) #Page to return static files like images for help page
-    PSRest.add_route('/processes', Processes(logger))
-    PSRest.add_route('/events/{event_type}', Events(processes, stats, logger))
-    
-    #Start the webserver
-    logger.log(LogMessage("Starting PS Rest"))
-    uvicorn.run(PSRest, host='0.0.0.0', port=PORT, log_level='critical')
+
+    logger.log(Message(f"Starting PS Rest"))
+    uvicorn.run(
+        PSRest,
+        host='0.0.0.0',
+        port=PORT,
+        log_level='info',
+        ssl_keyfile=KEY_FILE,
+        ssl_certfile=CERTIFICATE,
+        ssl_keyfile_password=KEYFILE_PASSWORD,
+        ssl_ciphers=CIPHERS
+    )

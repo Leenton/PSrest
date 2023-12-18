@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Help</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* put the sidebar on the left */
+        .sidebar {
+            height: 100%;
+            width: 200px;
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            background-color: #f0f0f0;
+            overflow-x: hidden;
+            padding-top: 20px;
+        }
+
+        /* style the sidebar links */
+        .sidebar a {
+            display: block;
+            color: black;
+            padding: 16px;
+            text-decoration: none;
+        }
+
+        /* put the main content to the right of the sidebar */
+        .content {
+            margin-left: 200px;
+            padding: 1px 16px;
+            height: 1000px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <ul>
+            <li><a href="./">Home</a></li>
+            <li><a href="#config">Configuration</a>
+                <ul>
+                    <li><a href="#configFile">Config File</a></li>
+                    <li><a href="#help">Help</a></li>
+                </ul>
+            </li>
+            <li><a href="#auth">Authentication</a></li>
+            <li><a href="#run">Run Commands</a></li>
+            <li><a href="#help">Help</a></li>
+            <li><a href="#about">About</a></li>
+        </ul>
+    </div>
+    <div class="content">
+        <section class="header">
+            <div class="header">
+                <h1>Help</h1>
+                <p>PSRest Version: 1.0.0</p>
+            </div>
+            <div class="description">
+                <p>Help description here. And version of PSRest running is listed here</p>
+            </div>
+        </section>
+
+        <h2 id="config">Configuration</h2>
+        <section class="configuration">
+            <span>
+                PSRest offers a number of configuration options to allow you to alter the behaviour of the application.
+                There are two ways to configure PSRest, either by using a config file or by using the Powershell Cmdlets packaged with PSRest.
+            </span>
+
+            <h4 id="configFile">Config File</h3>
+            <span>
+                The config file is a JSON file that is used to configure PSRest. The config file is located in the `config` in the user application data folder
+                for the user that is running PSRest. On Windows this is located at `C:\Users\&lt;username&gt;\AppData\Roaming\PSRest\config.json`.
+                On MacOS the config file is located at `~/.config/PSRest/config.json`.
+            </span>
+            <h4 id="Port">Port</h4>
+            <span>
+                The port `Port` option allows you to specify the port that PSRest will listen on. 
+            </span>
+            <h4 id="Cert">Certificate</h4>
+            <span>
+                The `certificate` option allows you to specify the filepath of the certificate that PSRest will use to encrypt the connection between the client
+                and the server. This will allows you to use HTTPS to connect to PSRest. If you do not specify a certificate then PSRest will fall back and use HTTP.
+            </span>
+            <h4 id="Enabled">Enabled</h4>
+            <span>
+                The `Enabled` option allows you to specify a set of cmdlets that you want to expose via PSRest. In the config file this is an array of strings where 
+                each string is the name of a cmdlet that you want to expose. If you do not specify any cmdlets then PSRest will not expose any cmdlets so no cmdlets
+                can be executed via the `&lt;psrest server&gt;/run` endpoint. 
+
+                If the list of cmdlets you want to specify is an array only conatining the string `*` then PSRest will expose all cmdlets that are available to the
+                user that is running PSRest. This is useful if you want to expose all cmdlets to PSRest but do not want to have to manually specify each cmdlet.
+            </span>
+
+            <h4 id="DefaultTTL">Default TTL</h4>
+            <span>
+                The `DefaultTTL` option allows you to specify the default time to live for a command that is run via PSRest. This is useful if you want to limit
+                the amount of time that a command can run for. If you do not specify a TTL for a command then the default TTL will be used.
+            </span>
+            <h4 id="MaxTTL">Max TTL</h4>
+            <span>
+                The `MaxTTL` option allows you to specify the maximum time to live for a command a user can specify when running a command via PSRest. This is
+                useful if you want to limit the amount of time that a command can run for. 
+            </span>
+            <h4 id="StrictTTL">Strict TTL</h4>
+            <span>
+                The `StrictTTL` option allows you to specify whether or not PSRest should not allow a user to specify a TTL. If this option is enabled then
+                PSRest will not allow a user to specify a TTL when running a command via PSRest and commands will only be able to run as long as defined by
+                the `DefaultTTL`. If this option is disabled then PSRest will allow a user to define a TTL for their command upto the maximum TTL defined by
+                the `MaxTTL` option.
+            <h4 id="Help">Help</h4>
+            <span>
+                When the `Help` option in the config is enabled, PSRest will automatically generate a help page for all commands that can be run by PSRest.
+                These help pages can be found at the following URL: ` &lt;psrest server&gt;/help/&lt;cmdlet name&gt; ` these help pages produce the same output
+                as the `Get-Help` cmdlet in Powershell with the `Full` swicth enabled.
+
+                These help pages offer a great way to document how to use commands you decide to expose via PSRest, allowing others to learn how to use your
+                commands without having to read the source code or directly ask you for support.
+            </span>
+
+            <h4 id="Docs">Docs</h4>
+            <span>
+                When the `Docs` option in the config is enabled the documentation page will be available at the following URL: ` &lt;psrest server&gt;/docs `.
+                If disabled this page will be disabled and a 403 error will be returned if you try to access it.
+            </span>
+            <h4 id="Depth">Default Depth</h4>
+            <span>
+                All cmdlet output returned by PSRest when using the `&lt;psrest server&gt;/run` endpoint are JSON responses, the `Default Depth` option allows you
+                to set the default depth that PSRest will use when cmdlet output to JSON. This is useful as it stops PSRest from returning a huge JSON response when
+                you only want a small amount of data. The default depth is 4, which means that only the first 4 levels of nested data in the object will be returned.
+
+                Anything deeper than this will be replaced with a `Powershell property description` of the data to indicate that there is more data available.
+                If you want to see more data you can use the `depth` in your cmdlet request to specify the depth you want.
+            </span>
+            <h4 id="StrictDepth">Strict Depth</h4>
+            <span>
+                When the `StrictDepth` option is enabled, PSRest will only return the data that is specified by the `DefaultDepth` option. If the `DefaultDepth`
+                option is set to 4, then only the first 4 levels of nested data will be returned. If the `StrictDepth` option is disabled, then PSRest will return
+                the default depth and if a user specifies a depth then PSRest will return the depth specified by the user.
+            </span>
+            <h4 id="ArbitraryCommands">Strict Depth</h4>
+            <span>
+                When the `ArbitraryCommands` option is enabled, PSRest will stop sanitizing cmdlets in the `&lt;psrest server&gt;/run` endpoint. This means that 
+                what everr raw cmdlet you pass to PSRest will be run. This is highly dangerous and should only be enabled if you know what you are doing.
+
+                When enabled this changes the `&lt;psrest server&gt;/run` endpoint from a predefined and and authorized cmdlet runner to an invoke-expression
+                endpoint, so any cmdlet string that is valid powersell will be executed by PSRest.
+            </span>
+        </section>
+
+
+
+        <h2 id="auth">Authentication</h2>
+        <section class="authentication">
+            <h3>Authentication Description</h3>
+            <p>Authentication description here</p>
+            <h3>Authentication Example</h3>
+            <p>Authentication example here</p>
+        </section>
+
+
+
+        <h2 id="run">Run Commands</h2>
+        <section class="run">
+            <h3>Run Commands Description</h3>
+            <p>Run commands description here</p>
+            <h3>Run Commands Example</h3>
+            <p>Run commands example here</p>
+        </section>
+
+
+
+
+        <h2 id="help">Help</h2>
+        <section class="help">
+
+        </section>
+
+        <h2 id="about">About</h2>
+        <section class="about">
+            <h3>About Description</h3>
+            <p>About description here</p>
+            <h3>About Example</h3>
+            <p>About example here</p>
+        </section>
+    </div>
+</html>

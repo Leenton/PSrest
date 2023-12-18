@@ -1,19 +1,21 @@
 {
     "Hostname": "localhost",
-    "Port": 80,
-    "Cert": "na",
-    "Repository": "",
+    "Scripts": "C:\\Users\\Public\\Documents\\PowerShell\\Scripts\\Invoke-PSImage.ps1",
+    "Port": 443,
+    "SSLCertificate": "/Users/leenton/python/PSrest/configuration/psrest.com+4.pem",
+    "SSLKeyFile": "/Users/leenton/python/PSrest/configuration/psrest.com+4-key.pem",
+    "SSLKeyFilePassword": null,
+    "SSLCiphers": "TLSv1.2",
     "DefaultTTL": 5,
     "MaxTTL": 900,
+    "StrictTTL": false,
     "ArbitraryCommands": false,
-    "Modules": ["*"],
     "Enabled": [
-        "Write-Host"
-    ],
-    "Disabled": [
-        "Invoke-Expression",
-        "Get-Help"
+        "Write-Host",
+        "Invoke-WebRequest"
     ],
     "Help": true,
-    "DefaultDepth": 4
+    "Docs": true,
+    "DefaultDepth": 4,
+    "StrictDepth": false
 }

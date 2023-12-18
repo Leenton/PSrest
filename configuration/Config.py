@@ -1,19 +1,21 @@
 # import dependecies for reading the config file. 
 import platform
-import random
 import sqlite3
-from os import path, remove, mkdir
+from os import path, mkdir
 from secrets import token_bytes
 from pathlib import Path
-from time import sleep
 from shutil import copyfile
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 from json import load
-from entities.Schema import CONFIG_SCHEMA
+from .Schema import CONFIG_SCHEMA
+
+# TODO: Add cert support in APP.py and cert verfication in Config.py
+
+
 
 # PSRestVersion
-VERSION = '0.1.2'
+VERSION = '0.2.0'
 
 # Constants for the platform
 PLATFORM = platform.system()
@@ -40,20 +42,27 @@ try:
         instance=CONFIG,
         schema=CONFIG_SCHEMA
     )
-except ValidationError:
-    raise Exception('Invalid config file. Please check the config file against the schema.')
+except ValidationError as e:
+    raise Exception('Invalid config file. Please check the config file against the schema. ' + e.message)
 
+CONFIG_FILE = APP_DATA + '/config.json'
 HOSTNAME = CONFIG['Hostname']
 PORT = CONFIG['Port']
+CERTIFICATE = CONFIG.get('SSLCertificate')
+KEY_FILE = CONFIG.get('SSLKeyFile')
+KEYFILE_PASSWORD = CONFIG.get('SSLKeyFilePassword')
+CIPHERS =  CONFIG.get('SSLCiphers') if CONFIG.get('SSLCiphers') else 'TLSv1' 
 
 # Constants for the ticketing system
 DEFAULT_TTL = CONFIG['DefaultTTL']
 MAX_TTL = CONFIG['MaxTTL']
+STRICT_TTL = CONFIG['StrictTTL']
 ACCESS_TOKEN_TTL = 3600
 REFRESH_TOKEN_TTL = 86400 * 14
 
 # Constants for how we serve responses
 DEFAULT_DEPTH = CONFIG['DefaultDepth']
+STRICT_DEPTH = CONFIG['StrictDepth']
 MAX_DEPTH = 100
 TOO_LONG = 0.25
 
@@ -65,14 +74,7 @@ PROCESSOR_SPIN_UP_PERIOD = 0.25
 PROCESSOR_SPIN_DOWN_PERIOD = 5
 ARBITRARY_COMMANDS = CONFIG['ArbitraryCommands']
 HELP = CONFIG['Help']
-modules = CONFIG['Modules']
-
-if(modules == ['*']):
-    MODULES = '*'
-else:
-    MODULES = modules
-
-DISABLE_COMMANDS = CONFIG['Disabled']
+DOCS = CONFIG['Docs']
 ENABLE_COMMANDS = CONFIG['Enabled']
 COMPETED = 'completed'
 FAILED = 'failed'
@@ -82,19 +84,10 @@ TMP_DIR = APP_DATA + '/temp'
 if(not path.isdir(TMP_DIR)):
     mkdir(TMP_DIR)
 
-RESPONSE_DIR = TMP_DIR + '/' + 'r'
-if(not path.isdir(RESPONSE_DIR)):
-    mkdir(RESPONSE_DIR)
-
 PROCESSOR_HOST = '127.0.0.1'
 PSREST_PORT = 27500
-RESPONDER_ADDRESS = f"{PROCESSOR_HOST}:{PSREST_PORT + 1}"
-RESPONDER_UNIX_ADDRESS = TMP_DIR + '/' + '5a682fbbe1bc487793d55fa09b55c547'
-INGESTER_ADDRESS = f"{PROCESSOR_HOST}:{PSREST_PORT + 2}"
+INGESTER_ADDRESS = f"{PROCESSOR_HOST}:{PSREST_PORT}"
 INGESTER_UNIX_ADDRESS = TMP_DIR + '/' + '95b51250d7ef4fcdaea1cf51886b8ba5'
-DISTRIBUTOR_ADDRESS = f"{PROCESSOR_HOST}:{PSREST_PORT + 3}"
-DISTRIBUTOR_UNIX_ADDRESS = TMP_DIR + '/' + 'fcf29f8069d646e8bdc75af3eb7f02e4'
-DISTRIBUTOR_WAIT = 250 # milliseconds
 RESOURCE_DIR = str(Path(__file__).parent.parent) + '/resources'
 
 # Logging preferences
@@ -111,9 +104,11 @@ with open(APP_DATA + '/zvakavanzika', 'rb') as f:
     SECRET_KEY = (f.read()).decode()
 
 # These database files and the temp files should live in user space not in the project directory
+ADMIN_USER =  'admin'
 CREDENTIAL_DATABASE = APP_DATA + '/data.db' # OAuth2 credential database
 METRIC_DATABASE = TMP_DIR + '/metrics.db' # Metric database
 PROCESSOR_DATABASE = TMP_DIR + '/processor.db' # Processor database
+
 
 # TODO: Sanitise the contents we get from the config file to prevent code injection.
 
@@ -125,31 +120,5 @@ def setup_credential_db():
         CREATE TABLE client (cid INTEGER PRIMARY KEY AUTOINCREMENT, client_id TEXT, client_secret TEXT, name TEXT, description TEXT, authentication TEXT);
         CREATE TABLE refresh_client_map (rid INTEGER PRIMARY KEY AUTOINCREMENT, refresh_token TEXT, expiry REAL, cid INTEGER, FOREIGN KEY(cid) REFERENCES client(cid) ON DELETE CASCADE);
         CREATE TABLE action_client_map (aid INTEGER PRIMARY KEY AUTOINCREMENT, action TEXT, cid INTEGER, FOREIGN KEY(cid) REFERENCES client(cid) ON DELETE CASCADE);
-        """
-    )
-
-def setup_metric_db():
-    db = sqlite3.connect(METRIC_DATABASE)
-    cursor = db.cursor()
-    cursor.executescript(
-        """--sql
-        CREATE TABLE metric (metric_id TEXT PRIMARY KEY, created REAL);
-        CREATE TABLE labels (label_id INTEGER PRIMARY KEY AUTOINCREMENT, label TEXT, metric_id TEXT, FOREIGN KEY(metric_id) REFERENCES metric(metric_id));
-        CREATE TABLE resource (resource_id INTEGER PRIMARY KEY AUTOINCREMENT, resource TEXT, value TEXT, created REAL);
-        """
-    )
-
-def setup_processor_db():
-    sleep(random.random())
-    if(path.isfile(PROCESSOR_DATABASE)):
-        remove(PROCESSOR_DATABASE)
-    
-    db = sqlite3.connect(PROCESSOR_DATABASE)
-    cursor = db.cursor()
-    # add a cascade to the schedule table so when a process is deleted, it's ticket is also deleted
-    cursor.executescript(
-        """--sql
-        CREATE TABLE schedule (ticket TEXT PRIMARY KEY, pid TEXT, application TEXT, cmdlet TEXT, command TEXT, depth INTEGER, status TEXT, created REAL, expiry REAL, modified REAL);
-        CREATE TABLE processes (pid TEXT PRIMARY KEY, kill INTEGER,  last_seen REAL, FOREIGN KEY(pid) REFERENCES schedule(pid) ON DELETE CASCADE);
         """
     )
