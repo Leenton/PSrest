@@ -1,5 +1,5 @@
 from falcon.status_codes import HTTP_200, HTTP_403, HTTP_404
-import json 
+from json import dumps
 from html import escape
 from log import LogClient, Message, Level, Code
 from entities import CmdletInfo, CmdletInfoLibrary
@@ -21,23 +21,26 @@ class Help(object):
         self.cmdlet_library = CmdletInfoLibrary()
         self.logger = logger
 
-    async def on_get(self, req, resp, command: str):
+    async def on_get(self, req, resp, command: str|None = None):
         resp.content_type = 'application/json'
 
         if(not HELP):
-                #Replace this with the fancy 500 error page
-                resp.status = HTTP_403
-                resp.text = json.dumps({'title': 'Forbidden', 'description': 'Help is disabled on this server.'})
+            #Replace this with the fancy 500 error page
+            resp.status = HTTP_403
+            resp.text = dumps({'title': 'Forbidden', 'description': 'Help is disabled on this server.'})
+
+        elif(command == None):
+            resp.status = HTTP_200
+            resp.text = dumps(self.cmdlet_library.get_cmdlets())
 
         elif command and (info := self.cmdlet_library.get_cmdlet(command.lower())):
-                resp.status = HTTP_200
-                resp.content_type = 'text/html'
-                resp.text = self.build_help_page(info)
+            resp.status = HTTP_200
+            resp.content_type = 'text/html'
+            resp.text = self.build_help_page(info)
 
         elif command:
-                resp.status = HTTP_404
-                resp.text = json.dumps({'title': '404 Not Found', 'description': 'The page you are looking for does not exist.'})
-    
+            resp.status = HTTP_404
+            resp.text = dumps({'title': '404 Not Found', 'description': 'The page you are looking for does not exist.'})
 
     def build_help_page(self, info: CmdletInfo) -> str:
         indents, content = self.get_style_and_content(info.help)

@@ -2,56 +2,243 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Help</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>PSRest</title>
     <style>
-        /* center the contents of the title */
+        /* based on browser light or dark mode change the background colour */
+        /* @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #1a1a1a;
+                color: #f0f0f0;
+            }
+        }  */
 
         body{
             font-family: Arial, Helvetica, sans-serif;
         }
 
-        .title {
-            display: block;
-            width: 80%;
-            margin: auto;
+        .header {
             text-align: center;
-            padding: 5%;
-            display: flex;
-        }
-        
-        .content div{
-            display: block;
-            width: 80%;
-            margin: auto;
         }
 
-        .footer div{
-            background-color: #f0f0f0;
+        .header h1 {
+            font-size: 50px;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-gap: 10px;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+
+        .buttons a{
             display: block;
-            width: 80%;
             margin: auto;
+            width: 70%;
+            padding: 1rem;
+            text-align: center;
+            text-decoration: none;
+            color: black;
+        }
+
+        .buttons a:hover {
+            background-color: #f0f0f0;
+        }
+
+        .buttons p {
+            display: block;
+            margin: auto;
+            width: 70%;
+            padding: 1rem;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            border-radius: 0.25rem;
+        }
+
+        .buttons p:hover {
+            background-color: #f0f0f0;
+        }
+
+        .content {
+            display: block;
+            margin: auto;
+            width: 70%;
+            max-width: 1000px;
+            padding: 10px;
+        }
+
+        .search {
+            display: none;
+        }
+
+        .search input {
+            box-sizing: border-box;
+            border: 0px none;
+            height: 2rem;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            padding-left: 1rem;
+        }
+
+        .results {
+            display: grid;
+            grid-template-columns: 1fr;
+            background-color: #f0f0f0;
+            border-radius: 0.25rem;
+            max-height: 200px;
+            overflow-y: scroll;
+        }
+
+        .results a {
+            padding-block: 0.5rem;
+            max-width: 100%;
+            text-decoration: none;
+            cursor: pointer;
+            color: black;
+            border-radius: 0.25rem;
+            background-color: #f0f0f0;
+            padding-inline-start: 1rem;
+        }
+
+        .results a:hover {
+            background-color: #e1e1e1;
+        }
+
+        .results a:focus-visible {
+            background-color: #e1e1e1;
+            outline: none;
+        }
+
+        .description {
+            margin-bottom: 1rem;
+        }
+
+        .show {
+            display: grid;
+            grid-template-columns: 1fr;
+        }
+
+        .tips {
+            padding-top: 1rem;
+        }
+
+
+        .footer {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            background-color: #f0f0f0;
+            color: black;
+            text-align: center;
         }
     </style>
 </head>
 <body>
     <section class="header">
         <div class="title">
-            <img src="resources/psrest.svg" alt="PSrest logo" style="width: 300px;">
-            <h1>PSrest</h1>
-            <p>v0.1.0</p>
+            <h1>PSRest</h1>
         </div>
     </section>
     <section class="content">
-        <div class="contnet">
-            <p>HTML sections on how to setup your config to expose the functions you want.</p>
-            <p>HTML sections on how to get an authorisation token.</p>
-            <p>HTML sections on how to make a web requst what endpoints are valid.</p>
-        </div>
+        <section class="serach-and-documentation">
+            <div class="buttons">
+                <a href="/docs">Documentation</a>
+                <p id="getHelpButton" tabindex='0' onclick="getHelp()">Get Help</p>
+            </div>
+            <div class="search" id="searchdiv">
+                <input type="text" placeholder="Verb-Noun..." id="search" onkeyup="filterCmdlets()" autocomplete="off">
+                <div id="results" class="results">
+                </div>
+            </div>
+        </section>
+        <section class="tips">
+            <h2>Getting Authenticated</h2>
+            <p>PSRest is a PowerShell module that allows you to run PowerShell commands over HTTP. It is designed to be used with a REST API client such as Postman.</p>
+            <p>PSRest is a free and open source project. It is licensed under the MIT license.</p>
+            <p>PSRest is developed by <a href="psrest.com">leenton</a>.</p>
+            <h2>Permissions</h2>
+            <p>PSRest requires the following permissions to run:</p>
+            <h2>Running Commands</h2>
+            <p>PSRest allows you to run PowerShell commands over HTTP. It is designed to be used with a REST API client such as Postman.</p>
+        </section>
     </section>
     <section class="footer">
         <div class="footer">
-            <p>Visit <a href="https://psrest.com">PSrest.com</a> to learn more or read documentation or make a donation to the software vendor</p>
+            <p id="version">PSRest Version: </p>
+            <p>Visit <a href="https://psrest.com">PSrest.com</a> to learn more or make a donation to the software vendor.</p>
         </div>
     </section>
+</body>
+    <script>
+        getHelpButton.addEventListener("keypress", function (event) {
+            if (event.key === "Enter") {
+                getHelpButton.click();
+            }
+        })
+        
+        async function getPSRestVersion(){
+            fetch('/?version',{
+                method: 'GET',
+            }).then(
+                response => response.json()
+            ).then(data => {
+                document.getElementById("version").innerHTML = "PSRest Version: <b><em>" + data.version + "</em></b>"
+            })
+        }
+
+        async function getCmdlets(){
+            fetch('/?help',{
+                method: 'GET',
+            }).then(response => {
+                if (response.status === 200) {
+                    return response.json()
+                }
+                else {
+                    return null;
+                }
+            }
+            ).then(data => {
+                if (data === null) {
+                    searchdiv.remove()
+                }else{
+                    data.help.forEach(cmdlet => {
+                        var a = document.createElement("a")
+                        a.innerHTML = cmdlet;
+                        a.href = "/help/" + cmdlet
+                        document.getElementById("results").appendChild(a)
+                    });
+                }
+            });
+        }
+
+        function getHelp() {
+            console.log("getHelp")
+            document.getElementById("searchdiv").classList.toggle("show")
+        }
+
+        function filterCmdlets() {
+            var input, filter, ul, li, a, i;
+            input = document.getElementById("search")
+            filter = input.value.toUpperCase();
+            div = document.getElementById("results")
+            a = div.getElementsByTagName("a")
+            for (i = 0; i < a.length; i++) {
+                // txtValue = a[i].textContent || a[i].innerText;
+                txtValue = a[i].innerHTML
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    a[i].style.display = ""
+                }
+                else {
+                    a[i].style.display = "none"
+                }
+            }
+        }
+
+        getCmdlets()
+        getPSRestVersion()
+
+    </script>
 </html>

@@ -10,12 +10,8 @@ from jsonschema.exceptions import ValidationError
 from json import load
 from .Schema import CONFIG_SCHEMA
 
-# TODO: Add cert support in APP.py and cert verfication in Config.py
-
-
-
 # PSRestVersion
-VERSION = '0.2.0'
+VERSION = 'Alpha 0.9.1'
 
 # Constants for the platform
 PLATFORM = platform.system()

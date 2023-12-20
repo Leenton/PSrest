@@ -42,8 +42,8 @@ class Run(object):
         on_post: Handles HTTP POST requests to execute PowerShell cmdlets.
     """
     
-    def __init__(self, logger: LogClient) -> None:
-        self.cmdlet_library = CmdletInfoLibrary()
+    def __init__(self, logger: LogClient, cmdlet_library: CmdletInfoLibrary) -> None:
+        self.cmdlet_library = cmdlet_library
         self.authorisation = Authorisation()
         self.logger = logger
 

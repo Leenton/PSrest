@@ -4,6 +4,7 @@ import uvicorn
 from multiprocessing import Process, Queue as ProcessQueue
 from time import sleep
 import os
+from entities import CmdletInfoLibrary
 
 from configuration import (
     CERTIFICATE,
@@ -45,9 +46,10 @@ if __name__ == '__main__':
     #Define the webserver application and add routes
     PSRest = App()
     logger: LogClient = LogClient(messages)
-    PSRest.add_route('/', Home(logger)) #Page to get all running processes
+    cmdlet_library = CmdletInfoLibrary()
+    PSRest.add_route('/', Home(logger, cmdlet_library)) #Page to get all running processes
     PSRest.add_route('/oauth', OAuth(logger)) #Page to get an access token
-    PSRest.add_route('/run', Run(logger)) #Page to run commands
+    PSRest.add_route('/run', Run(logger, cmdlet_library)) #Page to run commands
     PSRest.add_route('/docs', Docs(logger)) #Page to show documentation for PSRest
     PSRest.add_route('/help/{command}', Help(logger)) #Page to show help for a specific command
     PSRest.add_route('/resources/{resource}', Resources(logger)) #Page to return static files like images for help page
