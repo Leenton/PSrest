@@ -1,0 +1,162 @@
+/*!
+  Theme: PSRest - base16-humanoid-light and base16-humanoid-dark
+  Description: Original highlight.js style
+  Author: (c) Ivan Sagalaev <maniac@softwaremaniacs.org>
+  Maintainer: @highlightjs/core-team
+  Website: https://highlightjs.org/
+  License: see project LICENSE
+  Touched: 2021
+*/
+
+@media (prefers-color-scheme: dark) {
+    body {
+        --codeBackgroundHover: #2b2e32;
+        --codeMozSelectioBackground: #484e54;
+        --codeMozSelectioColour: #f8f8f2;
+        --codeSelectionBackground: #484e54;
+        --codeSelectionColour: #f8f8f2;
+        --codeSubsetColour: #f8f8f2;
+        --codeBackground: #232629;
+        --codeColour: #f8f8f2;
+        --codeComment: #60615d;
+        --codeTag: #c0c0bd;
+        --codeType: #f15ee3;
+        --codeEphasis: #f15ee3;
+        --codeVariable: #f11235;
+        --codeString: #b27701;
+        --codeRegex : #0dd9d6;
+        --codeConstant : #ff9505;
+        --codeClass : #ffb627;
+        --codeStrong : #ffb627;
+        --codeClassInherited : #02d849;
+        --codeProperty : #00a6fb;
+    }
+}
+@media (prefers-color-scheme: light) {
+    body {
+        --codeBackgroundHover: #ffffff;
+        --codeMozSelectioBackground: #fafafa;
+        --codeMozSelectioColour: #232629;
+        --codeSelectionBackground: #fafafa;
+        --codeSelectionColour: #232629;
+        --codeSubsetColour: #232629;
+        --codeBackground: #fafafa;
+        --codeColour: #232629;
+        --codeComment: #c0c0bd;
+        --codeTag: #60615d;
+        --codeType: #700f98;
+        --codeEphasis: #700f98;
+        --codeVariable: #b0151a;
+        --codeString: #b27701;
+        --codeRegex : #008e8e;
+        --codeConstant : #ff3d00;
+        --codeClass : #ffb627;
+        --codeStrong : #ffb627;
+        --codeClassInherited : #388e3c;
+        --codeProperty : #0082c9;
+    }
+}
+
+pre code.hljs {
+    display: block;
+    overflow-x: auto;
+    padding: 1em;
+}
+code.hljs {
+    padding: 3px 5px;
+}
+.hljs {
+    color: var(--codeColour);
+    background: var(--codeBackground);
+}
+.hljs:hover {
+    background: var(--codeBackgroundHover);
+}
+.hljs ::-moz-selection,
+.hljs::-moz-selection {
+    background-color: var(--codeMozSelectioBackground);
+    color: var(--codeMozSelectioColour);
+}
+.hljs ::selection,
+.hljs::selection {
+    background-color: var(--codeSelectionBackground);
+    color: var(--codeSelectionColour);
+}
+.hljs-comment {
+    color: var(--codeComment);
+}
+.hljs-tag {
+    color: var(--codeTag);
+}
+.hljs-operator,
+.hljs-punctuation,
+.hljs-subst {
+    color: var(--codeSubsetColour);
+}
+.hljs-operator {
+    opacity: 0.7;
+}
+.hljs-bullet,
+.hljs-deletion,
+.hljs-name,
+.hljs-selector-tag,
+.hljs-template-variable,
+.hljs-variable {
+    color: var(--codeVariable);
+}
+.hljs-attr,
+.hljs-link,
+.hljs-literal,
+.hljs-number,
+.hljs-symbol,
+.hljs-variable.constant_ {
+    color: var(--codeConstant);
+}
+.hljs-class .hljs-title,
+.hljs-title,
+.hljs-title.class_ {
+    color: var(--codeClass);
+}
+.hljs-strong {
+font-weight: 700;
+    color: var(--codeStrong);
+}
+.hljs-addition,
+.hljs-code,
+.hljs-string,
+.hljs-title.class_.inherited__ {
+    color: var(--codeClassInherited);
+}
+.hljs-built_in,
+.hljs-doctag,
+.hljs-keyword.hljs-atrule,
+.hljs-quote,
+.hljs-regexp {
+    color: var(--codeRegex);
+}
+.hljs-attribute,
+.hljs-function .hljs-title,
+.hljs-section,
+.hljs-title.function_,
+.ruby .hljs-property {
+    color: var(--codeProperty);
+}
+.diff .hljs-meta,
+.hljs-keyword,
+.hljs-template-tag,
+.hljs-type {
+    color: var(--codeType);
+}
+.hljs-emphasis {
+    color: var(--codeEphasis);
+    font-style: italic;
+}
+.hljs-meta,
+.hljs-meta .hljs-keyword,
+.hljs-meta .hljs-string {
+    color: var(--codeString);
+}
+.hljs-meta .hljs-keyword,
+.hljs-meta-keyword {
+font-weight: 700;
+}

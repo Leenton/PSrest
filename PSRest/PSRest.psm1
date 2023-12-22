@@ -341,31 +341,27 @@ function Start-PSRest(){
         [Parameter(Mandatory = $false)]
         [int]$Port,
         [Parameter(Mandatory = $false)]
-        [int]$Workers,
-        [Parameter(Mandatory = $false)]
-        [string]$LogLevel
+        [ValidateSet('debug', 'info', 'warning', 'error', 'critical', 'none')]
+        [string]$LogLevel = 'info'
+
     )
 
-    $PSRestDistributor = "PSRestDistributor"
+    if ($Port -gt 65535 -or $Port -lt 1 and $Port -ne $null){
+        throw "The port must be a positive whole number less than 65536."
+    }
 
     # Do any database patches if the version has changed
-    Update-PSRest -WarningAction SilentlyContinue
+    # Update-PSRest -WarningAction SilentlyContinue
 
     # Get the current directory so we can return to it after exiting PSRest
     $CurrentDirectory = Get-Location
 
     try{
-        Set-Location $Global:InstallPath
-        # Start the PSRestqQeue as it's shared between all the processors and workers
-        Get-Job -Name $PSRestDistributor -ErrorAction SilentlyContinue | Remove-Job -Force -ErrorAction SilentlyContinue
-        $Job = Start-Job -ScriptBlock { &python3 ./Queue.py } -Name $PSRestDistributor
+        Set-Location $PSScriptRoot
 
         # Start the PSRest Workers
-        &python3 ./App.py
+        &python3 App.py --port=$Port --loglevel=$LogLevel
     }finally{
-        # Stop the Queue as the workers have exited and we don't need it anymore
-        Remove-Job -Name $Job -Force -ErrorAction SilentlyContinue
-
         # Return to the original directory
         Set-Location $CurrentDirectory
     }
@@ -432,10 +428,6 @@ function Get-PSRestCommandLibrary{
         Write-host "$Seperator$([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Commands)))"
     }
 }
-
-
-
-
 
 #TODO: Remove this
 $client = @{client_id='36c9adc3-f9da-4170-b087-a3eaa14e14b3'; client_secret='1c051bd3-ec5d-479c-b777-60e5e92cbf5a'; grant_type="client_credential";}

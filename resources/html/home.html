@@ -3,46 +3,16 @@
 <head>
     <meta charset="utf-8">
     <title>PSRest</title>
+    <link rel="stylesheet" href="resources/colours.css">
+    <link rel="stylesheet" href="resources/code-colours.css">
     <style>
-        /* based on browser light or dark mode change the background colour */
-       /* :root {
-            --background: #f0f0f0;
-            --primary: #bb3333;
-            --secondary: #ffffff;
-            --tertiary: #000000;
-            
-            --text: #000000;
-
-       }
-        */
-        @media (prefers-color-scheme: dark) {
-            body {
-                --background: #1a1a1a;
-                --primary: #2f2f2f;
-                --secondary: #3c3c3c;
-                --tertiary: #232323;
-                --quaternary: #2f2f2f;
-                --text : #f0f0f0;
-
-            }
-        }
-        @media (prefers-color-scheme: light) {
-            body {
-                --background: #f3f3f3;
-                --primary: #e0e0e0;
-                --secondary: #d0d0d0;
-                --tertiary: #e9e9e9;
-                --quaternary: #dfdfdf;
-                --text : #000000;
-            }
-        }
-
         body{
             font-family: Arial, Helvetica, sans-serif;
             margin: 0; 
             margin-bottom: 0;
             background-color: var(--background);
             color: var(--text);
+            line-height: 1.5;
 
         }
 
@@ -132,10 +102,9 @@
             max-width: 100%;
             text-decoration: none;
             cursor: pointer;
-
             border-radius: 0.25rem;
             background-color: var(--primary);
-            padding-inline-start: 1rem;
+            padding-inline: 1rem;
         }
 
         .results a:hover {
@@ -170,44 +139,61 @@
             background-color: var(--primary);
         }
 
-        .tips div pre {
-            border: 2px solid var(--secondary);
-        }
-
-        .tips div:hover pre {
-            background-color: var(--secondary);
+        .tips div:hover pre:hover{
+            background-color: var(--tertiary);
         }
 
         .tips a{
-            color: dodgerblue;
+            color: var(--linkColour);
             font-weight: bold;
+            text-decoration: none;
+        }
+
+        .tips a:hover{
+            border-bottom: 3px solid var(--linkColour);
         }
 
         .exampleCode {
-            background-color: var(--quaternary);
             border-radius: 0.25rem;
-            font-family: monospace;
-            font-weight: bold;
             overflow-x: scroll;
-            padding: 1rem;
-            border: 2px solid var(--tertiary);
-        }
-
-        .token{
-            background-color: var(--secondary);
-            padding: 0.1rem;
-            font-weight: bold;
-            color: rgb(255, 85, 0);
-            font-family: monospace;
-            border-radius: 0.25rem;
         }
 
         footer {
-            background-color: var(--primary);
+            padding-top: 2rem;
+            width: 95%;
+            border-top-left-radius: 0.5rem;
+            border-top-right-radius: 0.5rem;
+            margin: auto;
+            display: grid;
+            margin-top: 5rem;
+            max-width: 1200px;
+            grid-template-columns: 1fr 1fr;
+            background-color: var(--tertiary);
             color: var(--text);
-            text-align: center;
         }
 
+        footer:hover {
+            background-color: var(--primary);
+        }
+
+        footer a {
+            color: var(--linkColour);
+            font-weight: bold; 
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            border-bottom: 3px solid var(--linkColour);
+        }
+
+        footer p {
+            padding: 0.5rem;
+            margin-inline: 1rem;
+        }
+
+        .legal {
+            text-align: right;
+        }
     </style>
 </head>
 <body>
@@ -256,38 +242,68 @@
                 </p>
 
                 <p>Example using <b>Invoke-WebRequest:</b></p>
-                <pre class="exampleCode">
-$headers = @{
-    "Content-Type" = "application/json";
-    "Authorization": "Bearer $accessToken"
-}
-$body = @{ "command" = "Get-Process" } | ConvertTo-Json
-Invoke-WebRequest -Uri http://localhost/run -Method POST -Body $body -ContentType "application/json" -Headers $headers
-                </pre>
+                <pre class="exampleCode"><code class="language-powershell">
+$headers = @{"Authorization": "Bearer &lt;access_token&gt;"}
+$body = @{
+    "command" = "Get-AdUser";
+    "parameters" = @{"Identity" = "jdoe"}
+} | ConvertTo-Json
+
+Invoke-WebRequest -Uri http://&lt;psrest_server&gt;/run -Method POST -Body $body -ContentType "application/json" -Headers $headers
+                </code></pre>
                 <p>Example using <b>curl:</b></p>
-                <pre class="exampleCode">
-curl -X POST http://localhost/run \
+                <pre class="exampleCode"><code>
+curl -X POST http://&lt;psrest_server&gt;/run \
     -H "Content-Type: application/json" \
-    -H "Authorization: Bearer <token>" \
-    -d '{"command":"Get-Process"}'
-                </pre>
+    -H "Authorization: Bearer &lt;access_token&gt;" \
+    -d '{"command":"Get-ADUser", "parameters":{"name":"jdoe"}}'
+                </code></pre>
                 <p><b>Response:</b></p>
-                <pre class="exampleCode">
+                <pre class="exampleCode"><code>
 HTTP: 200
 Content-Type : application/json
 
 {
-    "data" : [],
+    "data" : {
+        "GivenName":  "John",
+        "Surname":  "Doe",
+        "UserPrincipalName":  "jdoe@psrest.com",
+        "Enabled":  true,
+        "SamAccountName":  "jdoe",
+        "SID":  {
+            "BinaryLength":  28,
+            "AccountDomainSid":  {
+                "BinaryLength":  24,
+                "AccountDomainSid":  "S-1-5-21-3437450047-3123531039-1770530193",
+                "Value":  "S-1-5-21-3437450047-3123531039-1770530193"
+            },
+            "Value":  "S-1-5-21-3437450047-3123531039-1770530193-1116"
+        },
+        "DistinguishedName":  "CN=John Doe,OU=People,OU=PSRest,DC=PSRest,DC=com",
+        "Name":  "John Doe",
+        "ObjectClass":  "user",
+        "ObjectGuid":  "d1edb0b9-7b1e-4b43-a96a-7f5d47ee8fa4",
+        "PropertyNames":  ["DistinguishedName", "Enabled", "GivenName", "Name", "ObjectClass", "ObjectGUID", "SamAccountName", "SID", "Surname", "UserPrincipalName"],
+        "AddedProperties":  [],
+        "RemovedProperties":  [],
+        "ModifiedProperties":  [],
+        "PropertyCount":  10,
+        "ObjectGUID":  "d1edb0b9-7b1e-4b43-a96a-7f5d47ee8fa4"
+    },
     "error" : null
 }
-                </pre>
+                </code></pre>
             </div>
         </section>
     </section>
     <footer class="footer">
-        <p id="version">PSRest Version: </p>
-        <p>PSRest is developed by <a href="blog.leenton.dev">leenton</a>.</p>
-        <p>Visit <a href="https://psrest.com">PSrest.com</a> to learn more or make a donation to the software vendor.</p>
+        <div class="aboutPSRFest">
+            <p id="version">PSRest Version: </p>
+            <p>Visit <a href="https://psrest.com">PSrest.com</a> for updates, or to donate :)</p>
+        </div>
+        <div class="legal">
+            <p>Copyright of <a href="github.com/leenton">Leenton</a></p>
+        </div>
     </footer>
 </body>
     <script>
@@ -303,7 +319,7 @@ Content-Type : application/json
             }).then(
                 response => response.json()
             ).then(data => {
-                document.getElementById("version").innerHTML = "PSRest Version: <b><em>" + data.version + "</em></b>"
+                document.getElementById("version").innerHTML = 'PSRest Version: <a href="https://psrest.com/changelog">' + data.version + "</a>"
             })
         }
 
@@ -359,4 +375,8 @@ Content-Type : application/json
         getPSRestVersion()
 
     </script>
+    <script src="resources/highlight.js"></script>
+    <script src="resources/powershell.js"></script>
+    <script src="resources/json.js"></script>
+    <script>hljs.highlightAll();</script>
 </html>

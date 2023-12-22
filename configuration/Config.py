@@ -87,7 +87,7 @@ INGESTER_UNIX_ADDRESS = TMP_DIR + '/' + '95b51250d7ef4fcdaea1cf51886b8ba5'
 RESOURCE_DIR = str(Path(__file__).parent.parent) + '/resources'
 
 # Logging preferences
-LOG_LEVEL = 'INFO'
+LOG_LEVEL = 'info'
 LOG_FILE = APP_DATA + '/PSRest.log'
 
 # Constants for the encryption/fingerprinting

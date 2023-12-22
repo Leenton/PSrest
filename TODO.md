@@ -1,4 +1,3 @@
-1. Finish home slpash page
 2. Finish docs page 
 3. Test scaling down Processor works
 4. Fix broken Cmdlets for adding new PSRest applications

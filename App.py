@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 # import webserver application and router
 from falcon.asgi import App
 import uvicorn
@@ -5,7 +7,7 @@ from multiprocessing import Process, Queue as ProcessQueue
 from time import sleep
 import os
 from entities import CmdletInfoLibrary
-
+import sys
 from configuration import (
     CERTIFICATE,
     KEY_FILE,
@@ -13,6 +15,7 @@ from configuration import (
     CIPHERS,
     CREDENTIAL_DATABASE,
     PORT,
+    LOG_LEVEL,
     setup_credential_db
 )
 from endpoints import(
@@ -25,6 +28,25 @@ from endpoints import(
 )
 from processing import start_processor
 from log import start_logging, LogClient, Message
+
+#Get optional arguments from command line that override the config values.
+port = None
+loglevel = None
+
+for arg in sys.argv:
+    if(arg.startswith('--port=')):
+        port = int(arg.split('=', 2)[1])
+    elif(arg.startswith('--loglevel=')):
+        loglevel = arg.split('=', 2)[1]
+    elif(arg.startswith('--help')):
+        print('''App.py [OPTION]...
+Run the PSRest webserver.
+
+Optional arguments:
+--port=PORT        The port to run the webserver on. Overrides the config value.
+--loglevel=LEVEL   The log level to use. Overrides the config value.
+--help             Show this help message and exit.''')
+        exit(0)
 
 if __name__ == '__main__':
     #Check if the databases exists if not create them
@@ -58,8 +80,8 @@ if __name__ == '__main__':
     uvicorn.run(
         PSRest,
         host='0.0.0.0',
-        port=PORT,
-        log_level='info',
+        port=PORT if port is None else port,
+        log_level=LOG_LEVEL if loglevel is None else loglevel,
         ssl_keyfile=KEY_FILE,
         ssl_certfile=CERTIFICATE,
         ssl_keyfile_password=KEYFILE_PASSWORD,

@@ -49,6 +49,8 @@ class Help(object):
             <html>
             <head>
                 <meta charset="utf-8">
+                <link rel="stylesheet" href="/resources/colours.css">
+                <link rel="stylesheet" href="/resources/help.css">
                 <title>Help - """ + escape(info.command) + """</title>
                 <style>
                     body {
