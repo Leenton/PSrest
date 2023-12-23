@@ -346,7 +346,7 @@ function Start-PSRest(){
 
     )
 
-    if ($Port -gt 65535 -or $Port -lt 1 and $Port -ne $null){
+    if ($Port -gt 65535 -or $Port -lt 1 -and ($Port -ne $null)){
         throw "The port must be a positive whole number less than 65536."
     }
 

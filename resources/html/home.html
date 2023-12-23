@@ -1,265 +1,296 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="utf-8">
+  <head>
+    <meta charset="utf-8" />
     <title>PSRest</title>
-    <link rel="stylesheet" href="resources/colours.css">
-    <link rel="stylesheet" href="resources/code-colours.css">
+    <link rel="stylesheet" href="resources/colours.css" />
+    <link rel="stylesheet" href="resources/code-colours.css" />
+    <link rel="stylesheet" href="resources/code.css" />
     <style>
-        body{
-            font-family: Arial, Helvetica, sans-serif;
-            margin: 0; 
-            margin-bottom: 0;
-            background-color: var(--background);
-            color: var(--text);
-            line-height: 1.5;
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        margin: 0;
+        margin-bottom: 0;
+        background-color: var(--background);
+        color: var(--text);
+        line-height: 1.5;
 
-        }
+        --subMaxWidth: 1000px;
+        --subWidthPercentage: 90%;
+        --maxWidth: 1200px;
+        --widthPercentage: 95%;
+      }
 
-        .header {
-            text-align: center;
-        }
+      .title {
+        display: grid;
+        grid-template-columns: 3fr 14fr 3fr;
+        width: var(--subWidthPercentage);
+        max-width: var(--subMaxWidth);
+        margin: auto;
+      }
 
-        .header h1 {
-            font-size: 50px;
-        }
+      .logo {
+        background-image: var(--logo);
+        background-repeat: no-repeat;
+        background-size: contain;
+        background-position: center;
+      }
 
-        .buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-gap: 10px;
-            margin-bottom: 1rem;
-            font-weight: bold;
-        }
+      .header {
+        margin-top: 1rem;
+        text-align: center;
+      }
 
-        .buttons a {
-            display: block;
-            margin: auto;
-            width: 70%;
-            padding: 1rem;
-            text-align: center;
-            text-decoration: none;
-            cursor: pointer;
-            color: var(--text);
-            border-radius: 0.25rem;
-        }
+      .header h1 {
+        font-size: 3rem;
+      }
 
-        .buttons a:hover {
-            background-color: var(--primary);
-        }
+      .buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-gap: 10px;
+        margin-bottom: 1rem;
+        font-weight: bold;
+      }
 
-        .buttons p {
-            display: block;
-            margin: auto;
-            width: 70%;
-            padding: 1rem;
-            text-align: center;
-            text-decoration: none;
-            cursor: pointer;
-            border-radius: 0.25rem;
-        }
+      .buttons a {
+        display: block;
+        margin: auto;
+        width: 70%;
+        padding: 1rem;
+        text-align: center;
+        text-decoration: none;
+        cursor: pointer;
+        color: var(--text);
+        border-radius: 0.25rem;
+      }
 
-        .buttons p:hover {
-            background-color: var(--primary);
-        }
+      .buttons a:hover {
+        background-color: var(--primary);
+      }
 
-        .content {
-            display: block;
-            margin: auto;
-            width: 90%;
-            max-width: 1000px;
-            padding: 10px;
-        }
+      .buttons p {
+        display: block;
+        margin: auto;
+        width: 70%;
+        padding: 1rem;
+        text-align: center;
+        text-decoration: none;
+        cursor: pointer;
+        border-radius: 0.25rem;
+      }
 
-        .search {
-            display: none;
-        }
+      .buttons p:hover {
+        background-color: var(--primary);
+      }
 
-        .search input {
-            background-color: var(--background);
-            color: var(--text);
-            box-sizing: border-box;
-            border: 0px none;
-            height: 2rem;
-            font-size: 1rem;
-            margin-bottom: 1rem;
-            padding-left: 1rem;
-            outline-width: 0;
-        }
+      .content {
+        display: block;
+        margin: auto;
+        width: var(--subWidthPercentage);
+        max-width: var(--subMaxWidth);
+        padding: 0.5rem;
+      }
 
-        .results {
-            display: grid;
-            grid-template-columns: 1fr;
-            background-color: var(--primary);
-            border-radius: 0.25rem;
-            max-height: 200px;
-            overflow-y: scroll;
-        }
+      .search {
+        display: none;
+      }
 
-        .results a {
-            color: var(--text);
-            padding-block: 0.5rem;
-            max-width: 100%;
-            text-decoration: none;
-            cursor: pointer;
-            border-radius: 0.25rem;
-            background-color: var(--primary);
-            padding-inline: 1rem;
-        }
+      .search input {
+        background-color: var(--background);
+        color: var(--text);
+        box-sizing: border-box;
+        border: 0px none;
+        height: 2rem;
+        font-size: 1rem;
+        margin-bottom: 1rem;
+        padding-left: 1rem;
+        outline-width: 0;
+      }
 
-        .results a:hover {
-            background-color: var(--secondary);
-        }
+      .results {
+        display: grid;
+        grid-template-columns: 1fr;
+        background-color: var(--primary);
+        border-radius: 0.25rem;
+        max-height: 200px;
+        overflow-y: scroll;
+      }
 
-        .results a:focus-visible {
-            background-color: var(--secondary);
-            outline: none;
-        }
+      .results a {
+        color: var(--text);
+        padding-block: 0.5rem;
+        max-width: 100%;
+        text-decoration: none;
+        cursor: pointer;
+        border-radius: 0.25rem;
+        background-color: var(--primary);
+        padding-inline: 1rem;
+      }
 
-        .description {
-            margin-bottom: 1rem;
-        }
+      .results a:hover {
+        background-color: var(--secondary);
+      }
 
-        .show {
-            display: grid;
-            grid-template-columns: 1fr;
-        }
+      .results a:focus-visible {
+        background-color: var(--secondary);
+        outline: none;
+      }
 
-        .tips {
-            padding-top: 1rem;
-        }
+      .description {
+        margin-bottom: 1rem;
+      }
 
-        .tips div {
-            background-color: var(--tertiary);
-            padding: 1rem;
-            border-radius: 0.5rem;
-        }
+      .show {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
 
-        .tips div:hover {
-            background-color: var(--primary);
-        }
+      .tips {
+        padding-top: 1rem;
+      }
 
-        .tips div:hover pre:hover{
-            background-color: var(--tertiary);
-        }
+      .tips div {
+        background-color: var(--tertiary);
+        padding: 1rem;
+        border-radius: 0.5rem;
+      }
 
-        .tips a{
-            color: var(--linkColour);
-            font-weight: bold;
-            text-decoration: none;
-        }
+      .tips div:hover {
+        background-color: var(--primary);
+      }
 
-        .tips a:hover{
-            border-bottom: 3px solid var(--linkColour);
-        }
+      .tips div:hover pre:hover {
+        background-color: var(--tertiary);
+      }
 
-        .exampleCode {
-            border-radius: 0.25rem;
-            overflow-x: scroll;
-        }
+      .tips a {
+        color: var(--linkColour);
+        font-weight: bold;
+        text-decoration: none;
+      }
 
-        footer {
-            padding-top: 2rem;
-            width: 95%;
-            border-top-left-radius: 0.5rem;
-            border-top-right-radius: 0.5rem;
-            margin: auto;
-            display: grid;
-            margin-top: 5rem;
-            max-width: 1200px;
-            grid-template-columns: 1fr 1fr;
-            background-color: var(--tertiary);
-            color: var(--text);
-        }
+      .tips a:hover {
+        border-bottom: 3px solid var(--linkColour);
+      }
 
-        footer:hover {
-            background-color: var(--primary);
-        }
+      footer {
+        padding-top: 2rem;
+        width: var(--widthPercentage);
+        border-top-left-radius: 0.5rem;
+        border-top-right-radius: 0.5rem;
+        margin: auto;
+        display: grid;
+        margin-top: 5rem;
+        max-width: var(--maxWidth);
+        grid-template-columns: 1fr 1fr;
+        background-color: var(--tertiary);
+        color: var(--text);
+      }
 
-        footer a {
-            color: var(--linkColour);
-            font-weight: bold; 
-            text-decoration: none;
-        }
+      footer:hover {
+        background-color: var(--primary);
+      }
 
-        footer a:hover {
-            border-bottom: 3px solid var(--linkColour);
-        }
+      footer a {
+        color: var(--linkColour);
+        font-weight: bold;
+        text-decoration: none;
+      }
 
-        footer p {
-            padding: 0.5rem;
-            margin-inline: 1rem;
-        }
+      footer a:hover {
+        border-bottom: 3px solid var(--linkColour);
+      }
 
-        .legal {
-            text-align: right;
-        }
+      footer p {
+        padding: 0.5rem;
+        margin-inline: 1rem;
+      }
+
+      .legal {
+        text-align: right;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <section class="header">
-        <div class="title">
-            <h1>PSRest</h1>
-        </div>
+      <div class="title">
+        <div class="logo"></div>
+        <h1>PSRest</h1>
+        <div></div>
+      </div>
     </section>
     <section class="content">
-        <section class="serach-and-documentation">
-            <div class="buttons">
-                <a href="/docs">Documentation</a>
-                <p id="getHelpButton" tabindex='0' onclick="getHelp()">Get Help</p>
-            </div>
-            <div class="search" id="searchdiv">
-                <input type="text" placeholder="Verb-Noun..." id="search" onkeyup="filterCmdlets()" autocomplete="off">
-                <div id="results" class="results">
-                </div>
-            </div>
-        </section>
-        <section class="tips">
-            <h2>Configuration</h2>
-            <div>
-                <p>
-                    Check out the <a href="/docs#config">Configuration</a> section in the documentation, to learn how to configure PSRest. The documentation also
-                    covers the best <b>security practices</b> to follow when configuring PSRest to harden your PSRest.
-                </p>
-            </div>
-            <h2>Getting Authenticated</h2>
-            <div>
-                <p>
-                    PSRest requires all requests be authorised and authenticated, to learn how to create a <b>Client Id</b> and <b>Secret</b> or
-                    generate an <b>Access Token</b> check out the <a href="/docs#auth">Authentication</a> section in the documentation.
-                </p>
-                <p>
-                    If you've already got an <b>Access Token</b> or <b>Client Id</b> and <b>Secret</b> you can use them to authenticate requests to PSRest. To learn how
-                    to do so check out the <a href="/docs#authExample">OAuth Example</a> section in the documentation
-                </p>
-            </div>
+      <section class="serach-and-documentation">
+        <div class="buttons">
+          <a href="/docs">Documentation</a>
+          <p id="getHelpButton" tabindex="0" onclick="getHelp()">Get Help</p>
+        </div>
+        <div class="search" id="searchdiv">
+          <input
+            type="text"
+            placeholder="Verb-Noun..."
+            id="search"
+            onkeyup="filterCmdlets()"
+            autocomplete="off"
+          />
+          <div id="results" class="results"></div>
+        </div>
+      </section>
+      <section class="tips">
+        <h2>Configuration</h2>
+        <div>
+          <p>
+            Check out the <a href="/docs#config">configuration</a> section in
+            the documentation, to learn how to configure PSRest. The
+            documentation also covers the best <b>security practices</b> to
+            follow when configuring PSRest to harden your PSRest.
+          </p>
+        </div>
+        <h2>Getting Authenticated</h2>
+        <div>
+          <p>
+            PSRest requires all requests be authorised and authenticated, to
+            learn how to create a <code class="token">ClientId</code> and <code class="token">Secret</code> or generate
+            an <code class="token">AccessToken</code> check out the
+            <a href="/docs#auth">authentication</a> section in the
+            documentation.
+          </p>
+          <p>
+            If you've already got an <code class="token">AccessToken</code> or <code class="token">ClientId</code> and
+            <code class="token">Secret</code> you can use them to authenticate requests to PSRest.
+            To learn how to do so check out the
+            <a href="/docs#authExample">OAuth example</a> section in the
+            documentation
+          </p>
+        </div>
 
-            <h2>Running Commands</h2>
-            <div>
-                <p>
-                    All the details regarding how PSRest runs commands and how to format your requests can be found in the <a href="/docs#run">Run Commands</a> section
-                    in the documentation.
-                </p>
-
-                <p>Example using <b>Invoke-WebRequest:</b></p>
-                <pre class="exampleCode"><code class="language-powershell">
+        <h2>Running Commands</h2>
+        <div>
+          <p>
+            All the details regarding how PSRest runs commands and how to format
+            your requests can be found in the
+            <a href="/docs#run">run commands</a> section in the documentation.
+          </p>
+          <p>Example using <b>Invoke-WebRequest:</b></p>
+          <pre class="exampleCode"><code class="language-powershell">
 $headers = @{"Authorization": "Bearer &lt;access_token&gt;"}
 $body = @{
-    "command" = "Get-AdUser";
+    "cmdlet" = "Get-AdUser";
     "parameters" = @{"Identity" = "jdoe"}
 } | ConvertTo-Json
 
 Invoke-WebRequest -Uri http://&lt;psrest_server&gt;/run -Method POST -Body $body -ContentType "application/json" -Headers $headers
                 </code></pre>
-                <p>Example using <b>curl:</b></p>
-                <pre class="exampleCode"><code>
+          <p>Example using <b>curl:</b></p>
+          <pre class="exampleCode"><code>
 curl -X POST http://&lt;psrest_server&gt;/run \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer &lt;access_token&gt;" \
-    -d '{"command":"Get-ADUser", "parameters":{"name":"jdoe"}}'
+    -d '{"cmdlet":"Get-ADUser", "parameters":{"name":"jdoe"}}'
                 </code></pre>
-                <p><b>Response:</b></p>
-                <pre class="exampleCode"><code>
+          <p><b>Response:</b></p>
+          <pre class="exampleCode"><code class="language-json">
 HTTP: 200
 Content-Type : application/json
 
@@ -293,90 +324,96 @@ Content-Type : application/json
     "error" : null
 }
                 </code></pre>
-            </div>
-        </section>
+        </div>
+      </section>
     </section>
     <footer class="footer">
-        <div class="aboutPSRFest">
-            <p id="version">PSRest Version: </p>
-            <p>Visit <a href="https://psrest.com">PSrest.com</a> for updates, or to donate :)</p>
-        </div>
-        <div class="legal">
-            <p>Copyright of <a href="github.com/leenton">Leenton</a></p>
-        </div>
+      <div class="aboutPSRFest">
+        <p id="version">PSRest Version:</p>
+        <p>
+          Visit <a href="https://psrest.com">PSrest.com</a> for updates, or to
+          donate :)
+        </p>
+      </div>
+      <div class="legal">
+        <p>Copyright of <a href="github.com/leenton">Leenton</a></p>
+      </div>
     </footer>
-</body>
-    <script>
-        getHelpButton.addEventListener("keypress", function (event) {
-            if (event.key === "Enter") {
-                getHelpButton.click();
-            }
+  </body>
+  <script>
+    getHelpButton.addEventListener("keypress", function (event) {
+      if (event.key === "Enter") {
+        getHelpButton.click();
+      }
+    });
+
+    async function getPSRestVersion() {
+      fetch("/?version", {
+        method: "GET",
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          document.getElementById("version").innerHTML =
+            'PSRest Version: <a href="https://psrest.com/changelog">' +
+            data.version +
+            "</a>";
+        });
+    }
+
+    async function getCmdlets() {
+      fetch("/?help", {
+        method: "GET",
+      })
+        .then((response) => {
+          if (response.status === 200) {
+            return response.json();
+          } else {
+            return null;
+          }
         })
-
-        async function getPSRestVersion(){
-            fetch('/?version',{
-                method: 'GET',
-            }).then(
-                response => response.json()
-            ).then(data => {
-                document.getElementById("version").innerHTML = 'PSRest Version: <a href="https://psrest.com/changelog">' + data.version + "</a>"
-            })
-        }
-
-        async function getCmdlets(){
-            fetch('/?help',{
-                method: 'GET',
-            }).then(response => {
-                if (response.status === 200) {
-                    return response.json()
-                }
-                else {
-                    return null;
-                }
-            }
-            ).then(data => {
-                if (data === null) {
-                    searchdiv.remove()
-                }else{
-                    data.help.forEach(cmdlet => {
-                        var a = document.createElement("a")
-                        a.innerHTML = cmdlet;
-                        a.href = "/help/" + cmdlet
-                        document.getElementById("results").appendChild(a)
-                    });
-                }
+        .then((data) => {
+          if (data === null) {
+            searchdiv.remove();
+          } else {
+            data.help.forEach((cmdlet) => {
+              var a = document.createElement("a");
+              a.innerHTML = cmdlet;
+              a.href = "/help/" + cmdlet;
+              document.getElementById("results").appendChild(a);
             });
+          }
+        });
+    }
+
+    function getHelp() {
+      console.log("getHelp");
+      document.getElementById("searchdiv").classList.toggle("show");
+    }
+
+    function filterCmdlets() {
+      var input, filter, ul, li, a, i;
+      input = document.getElementById("search");
+      filter = input.value.toUpperCase();
+      div = document.getElementById("results");
+      a = div.getElementsByTagName("a");
+      for (i = 0; i < a.length; i++) {
+        // txtValue = a[i].textContent || a[i].innerText;
+        txtValue = a[i].innerHTML;
+        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+          a[i].style.display = "";
+        } else {
+          a[i].style.display = "none";
         }
+      }
+    }
 
-        function getHelp() {
-            console.log("getHelp")
-            document.getElementById("searchdiv").classList.toggle("show")
-        }
-
-        function filterCmdlets() {
-            var input, filter, ul, li, a, i;
-            input = document.getElementById("search")
-            filter = input.value.toUpperCase();
-            div = document.getElementById("results")
-            a = div.getElementsByTagName("a")
-            for (i = 0; i < a.length; i++) {
-                // txtValue = a[i].textContent || a[i].innerText;
-                txtValue = a[i].innerHTML
-                if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                    a[i].style.display = ""
-                }
-                else {
-                    a[i].style.display = "none"
-                }
-            }
-        }
-
-        getCmdlets()
-        getPSRestVersion()
-
-    </script>
-    <script src="resources/highlight.js"></script>
-    <script src="resources/powershell.js"></script>
-    <script src="resources/json.js"></script>
-    <script>hljs.highlightAll();</script>
+    getCmdlets();
+    getPSRestVersion();
+  </script>
+  <script src="resources/highlight.js"></script>
+  <script src="resources/powershell.js"></script>
+  <script src="resources/json.js"></script>
+  <script>
+    hljs.highlightAll();
+  </script>
 </html>

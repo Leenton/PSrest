@@ -1,0 +1,25 @@
+.exampleCode {
+    border-radius: 0.25rem;
+    overflow-x: scroll;
+}
+
+.token {
+    font-family: monospace;
+    color: var(--codeToken);
+    padding: 0.2em;
+    border-radius: 0.25em;
+    background-color: var(--codeTokenBackground);
+    font-size: 0.85rem;
+}
+
+.token.string {
+    color: var(--codeTokenString);
+}
+
+.token:hover {
+    background-color: var(--codeTokenBackgroundHover);
+}
+
+.codeLink .token:hover{
+border-bottom: 3px solid var(--linkColour);
+}

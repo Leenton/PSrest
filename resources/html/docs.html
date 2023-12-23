@@ -3,41 +3,112 @@
 <head>
     <meta charset="utf-8">
     <title>Help</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="resources/colours.css" />
+    <link rel="stylesheet" href="resources/code-colours.css" />
+    <link rel="stylesheet" href="resources/code.css" />
     <style>
-        /* put the sidebar on the left */
-        .sidebar {
-            height: 100%;
-            width: 200px;
-            position: fixed;
-            z-index: 1;
-            top: 0;
-            left: 0;
-            background-color: #f0f0f0;
-            overflow-x: hidden;
-            padding-top: 20px;
+        body{
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            margin-bottom: 0;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.5;
+            display: grid;
+            grid-template-columns: 1fr 4fr;            
         }
 
+        .content a {
+            color: var(--linkColour);
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .content a:hover {
+            border-bottom: 3px solid var(--linkColour);
+        }
+
+        .content {
+            width: 90%;
+            max-width: 1000px;
+        }
+        
+        .content h1 {
+            font-size: 3em;
+            text-align: center;
+        }
+
+        .content h2 {
+            font-size: 2em;
+            margin-top: 1em;
+            margin-bottom: 0.5em;
+        }
+
+        .content h3 {
+            font-size: 1.5em;
+            margin-top: 1em;
+            margin-bottom: 0.5em;
+        }
+
+       
+        .sidebar {
+            background-color: var(--primary);
+            position: relative;
+        }
+
+         /* put center the sidebar index to be in the center of the sidebar div */
+        .sidebar .index{
+            margin-top: 0;
+            position: fixed;
+            width: 20%;
+            list-style-type: none; 
+            padding: 0;
+        }
+
+        .sidebar ul{
+            list-style-type: none;  
+        }
         /* style the sidebar links */
         .sidebar a {
             display: block;
-            color: black;
+            color: var(--text);
             padding: 16px;
             text-decoration: none;
+            border-radius: 0.5em;
+            cursor: pointer;
+        }
+
+        .sidebar a:hover {
+            background-color: var(--secondary);
+            color: var(--text);
         }
 
         /* put the main content to the right of the sidebar */
         .content {
             margin-left: 200px;
             padding: 1px 16px;
-            height: 1000px;
+            margin: auto;
         }
+
+        .content li {
+            margin-block: 1rem;
+        }
+
+        pre code{
+            border-radius: 0.25rem;
+            overflow-x: scroll;
+        }
+
+        .codeLink .token:hover{
+            border-bottom: 3px solid var(--linkColour);
+        }
+
 
     </style>
 </head>
 <body>
     <div class="sidebar">
-        <ul>
+        <ul class="index">
             <li><a href="./">Home</a></li>
             <li><a href="#config">Configuration</a>
                 <ul>
@@ -53,13 +124,12 @@
     </div>
     <div class="content">
         <section class="header">
-            <div class="header">
-                <h1>Help</h1>
-                <p>PSRest Version: 1.0.0</p>
-            </div>
-            <div class="description">
-                <p>Help description here. And version of PSRest running is listed here</p>
-            </div>
+            <h1>Documentation</h1>
+            <p>
+                PSRest is a Powershell module that allows you to run Powershell commands via a REST API. PSRest is designed to be used as a REST API
+                for Powershell, allowing you to run Powershell commands from any language or source that can make HTTP requests. PSRest is designed to be used
+                as a REST API for Powershell. If you need more information about PSRest you can find it on the <a href="psrest.com">PSRest website</a>.
+            </p>
         </section>
 
         <h2 id="config">Configuration</h2>
@@ -149,9 +219,6 @@
                 endpoint, so any cmdlet string that is valid powersell will be executed by PSRest.
             </span>
         </section>
-
-
-
         <h2 id="auth">Authentication</h2>
         <section class="authentication">
             <h3>Authentication Description</h3>
@@ -161,22 +228,105 @@
         </section>
 
 
-
         <h2 id="run">Run Commands</h2>
         <section class="run">
-            <h3>Run Commands Description</h3>
+            <p>
+                The <code class="token">/run</code> endpoint is the main endpoint for PSRest. This endpoint allows you to run Powershell commands via a HTTP post request.
+                What commands you can run is limited to those authorized for your <code class="token">AccessToken</code>. Check out the
+                <a href="#authentication">authentication</a> section to learn how to get an <code class="token">AccessToken</code> and
+                <a href="#authorization">authorization</a> to learn how to authorize a set of cmdlets for a given user. 
+            </p>
+            <h3>Headers</h3>
+            <p>
+                Listed below are the headers that are used by the <code class="token">/run</code> endpoint.
+            </p>
+            <pre><code>
+    Authorization: Bearer &lt;AccessToken&gt;  // Mandatory
+    Content-Type: application/json        // Mandatory
+    Depth: &lt;int&gt;                          // Optional
+    TTL: &lt;int&gt;                            // Optional
+            </code></pre>
+            <ul>
+                <li>
+                    <code class="token"><b>Authorization</b></code> - This is a mandatory header. It should consist of the string <code class="token string">"Bearer "</code> followed by the
+                    <code class="token">AccessToken</code> string.
+                </li>
+                <li>
+                    <code class="token"><b>Content-Type</b></code> - This is a mandatory header and should always be set to <code class="token string">"application/json"</code> when making requests
+                    to the <code class="token">/run</code> endpoint, the endpoint only supports JSON requests.
+                </li>
+                <li>
+                    <code class="token"><b>Depth</b></code> - This is used to tell PSRest how deep to go when converting the output of a cmdlet to JSON. This header is optional
+                    and if not set it will default to the value of the <a href="#configDefaultDepth" class="codeLink"><code class="token">DefaultDepth</code></a> option in the <a href="#config">config</a>. The value of this
+                    header must be a whole number between 0 and the value of the <a href="#configMaxDepth" class="codeLink"><code class="token">MaxDepth</code></a> option in the Config.
+                </li> 
+                <li>
+                    <code class="token"><b>TTL</b></code> - This is used to tell PSRest how long to allow a command to run for before timing out. This header is optional and if not set will default to the value
+                    of the <a href="#configDefaultTTL" class="codeLink"><code class="token">DefaultTTL</code></a> option in the config file. If the <a href="#configStrictTTL" class="codeLink"><code class="token">StrictTTL</code></a>
+                    option is enabled in the config file then this header will be ignored and the <a href="#configDefaultTTL" class="codeLink"><code class="token">DefaultTTL</code></a> option will be used.
+                </li>
+            </ul>
+            <h3>Request Body</h3>
+            <p>
+                The request body sent must be a valid JSON object, the <code class="token string">"cmdlet"</code>  property on the JSON object is mandatory and the value of the  must be a string. The "parameters" property is optional
+            </p>
+            <pre><code class="language-json">
+    {
+        "cmdlet": "&lt;Cmdlet-Name&gt;"     
+    }
+            </code></pre>
+            <p>
+                Array Parameter option
+            </p>
+            <pre><code class="language-json">
+    {
+        "cmdlet": "&lt;Cmdlet-Name&gt;",    // Mandatory
+        "parameters": {
+            "&lt;parameter name&gt;": "&lt;parameter value&gt;",
+            "&lt;parameter name2&gt;": 1,
+            "&lt;parameter name3&gt;": [],
+            "&lt;parameter name4&gt;": {},
+            "&lt;parameter name5&gt;": null
+            "&lt;parameter name6&gt;": true
+        },           // Optional
+        "arrayWrap" : true;          // Optional
+    }
+            </code></pre>
+            <p>
+                Object Parameter option
+            </p>
+            <pre><code class="language-json">
+    {
+        "cmdlet": "&lt;Cmdlet-Name&gt;",    // Mandatory
+        "parameters": [&lt;&gt;],           // Optional
+        "arrayWrap" : &lt;bool&gt;          // Optional
+    }
+            </code></pre>
+
+            <ul>
+                <li>
+                    <code class="token"><b>cmdlet</b></code> - This is a mandatory property on the JSON object. The value of this property must be a string and should be the name of the cmdlet you want to run.
+                </li>
+                <li>
+                    <code class="token"><b>parameters</b></code> - This is an optional property on the JSON object. The value of this property must be a JSON object. The keys of the object should be the name of the parameter
+                    you want to pass to the cmdlet and the value should be the value you want to pass to the cmdlet. The value of the parameter can be a string, number, boolean, array, object or null.
+                </li>
+                <li>
+                    <code class="token"><b>arrayWrap</b></code> - This is an optional property on the JSON object. The value of this property must be a boolean. If this property is set to true then the value of the
+                    <code class="token">parameters</code> property must be an array. If this property is set to false then the value of the <code class="token">parameters</code> property must be an object.
+                </li>
+            </ul>
+
             <p>Run commands description here</p>
             <h3>Run Commands Example</h3>
             <p>Run commands example here</p>
+            <h3>Limitations</h3>
+            <p>
+                The `&lt;psrest server&gt;/run` endpoint has a number of limitations that you should be aware of when using it. These limitations are:
+                PSRest does not support 
+            </p>
         </section>
 
-
-
-
-        <h2 id="help">Help</h2>
-        <section class="help">
-
-        </section>
 
         <h2 id="about">About</h2>
         <section class="about">
@@ -195,4 +345,11 @@
             Invoke-Expression, Invoke-Command, Invoke-Item, Invoke-History, Invoke-WebRequest, Enter-PSHostProcess  Enter-PSSession
         </p>
     </div>
+</body>
+<script src="resources/highlight.js"></script>
+<script src="resources/powershell.js"></script>
+<script src="resources/json.js"></script>
+<script>
+  hljs.highlightAll();
+</script>
 </html>

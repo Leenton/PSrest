@@ -15,7 +15,8 @@ RUN_SCHEMA = {
     "type" : "object",
     "properties" : {    
         "cmdlet" : {"type" : "string"},
-        "parameters" : {"type" : ["object", "array"]}
+        "parameters" : {"type" : ["object", "array"]},
+        "arrayWrap" : {"type" : "boolean", "optional": True}
     },
     "required": ["cmdlet"],
     "additionalProperties": False
@@ -57,8 +58,14 @@ CONFIG_SCHEMA = {
             "minimum": 1
         },
         "SSLCertificate" : {"type" : ["string", "null"]},
-        "SSLKeyFile" : {"type" : ["string", "null"]},
-        "SSLKeyFilePassword" : {"type" : ["string", "null"]},
+        "SSLKeyFile" : {
+            "type" : ["string", "null"],
+            "required": ["SSLCertificate"],
+        },
+        "SSLKeyFilePassword" : {
+            "type" : ["string", "null"],
+            "required": ["SSLCertificate", "SSLKeyFile"],
+        },
         "SSLCiphers" : {
             "enum": [
                 "TLSv1",
@@ -101,14 +108,10 @@ CONFIG_SCHEMA = {
         "DefaultDepth",
         "StrictDepth"
         ],
-    "additionalProperties": False,
-    "if" : {
-        "properties" : {
-            "SSLCertificate" : {"type" : "string"}
-        }
-    },
-    "then" : {
-        "required" : ["SSLKeyFile"]
-    }
-    
+    "additionalProperties": False
 }
+
+    # // "SSLCertificate": "/Users/leenton/python/PSrest/configuration/psrest.com+4.pem",
+    # // "SSLKeyFile": "/Users/leenton/python/PSrest/configuration/psrest.com+4-key.pem",
+    # // "SSLKeyFilePassword": null,
+    # // "SSLCiphers": "TLSv1.2",

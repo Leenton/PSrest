@@ -2,7 +2,7 @@ from enum import Enum
 
 class AuthorisationSchema(Enum):
     BASIC = 'Basic'
-    BEARER = 'OAuth'
+    BEARER = 'Bearer'
 
 class AuthorisationToken():
     def __init__(self, schema: AuthorisationSchema, value: str) -> None:
@@ -12,3 +12,4 @@ class AuthorisationToken():
         self.expiry: float | None = None
         self.reference: str | None = None
         self.role: str | None = None
+        

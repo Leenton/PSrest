@@ -10,6 +10,8 @@
 
 @media (prefers-color-scheme: dark) {
     body {
+        --codeTokenBackground: #232629;
+        --codeTokenBackgroundHover: #2b2e32;
         --codeBackgroundHover: #2b2e32;
         --codeMozSelectioBackground: #484e54;
         --codeMozSelectioColour: #f8f8f2;
@@ -30,10 +32,13 @@
         --codeStrong : #ffb627;
         --codeClassInherited : #02d849;
         --codeProperty : #00a6fb;
+        --codeToken : #0dd9d6;
+        --codeTokenString: #02d849;
     }
 }
 @media (prefers-color-scheme: light) {
     body {
+        --codeTokenBackground: #fafafa;
         --codeBackgroundHover: #ffffff;
         --codeMozSelectioBackground: #fafafa;
         --codeMozSelectioColour: #232629;
@@ -54,6 +59,8 @@
         --codeStrong : #ffb627;
         --codeClassInherited : #388e3c;
         --codeProperty : #0082c9;
+        --codeToken : #008e8e;
+        --codeTokenString: #388e3c;
     }
 }
 

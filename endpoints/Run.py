@@ -84,7 +84,7 @@ class Run(object):
         resp.content_type = 'application/json'
         
         try:
-            ttl, depth, token = self.validate_headers(req)
+            ttl, depth, token = await self.validate_headers(req)
 
             response = await (Cmdlet(
                 self.cmdlet_library,

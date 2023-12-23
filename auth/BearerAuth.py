@@ -13,7 +13,7 @@ class BearerAuth():
         try:
             bearer_token = decode(token.value, SECRET_KEY, algorithms=['HS512'])
             #Check if the action is in the list of actions for the user in the returned token
-            if(bearer_token['expiry'] > datetime.timestamp(datetime.now())):
+            if(bearer_token['expiry'] < datetime.timestamp(datetime.now())):
                 raise InvalidToken('Access token has expired.')
             
             cursor = self.db.cursor()
@@ -24,8 +24,12 @@ class BearerAuth():
             row = cursor.fetchone()
             if(not row):
                 raise UnAuthorised('Couldn\'t identify the user associated with this token.')
+            
             token.user = row[0]
             token.value = bearer_token
+            token.reference = bearer_token['reference']
+            token.expiry = bearer_token['expiry']
+
             cursor.close()
             
         except Exception:
@@ -35,13 +39,13 @@ class BearerAuth():
         try:
             cursor = self.db.cursor()
             cursor.execute(
-                "SELECT action FROM client_action WHERE cid = ?",
+                "SELECT action FROM action_client_map WHERE cid = ?",
                 (reference,)
             )
             row = cursor.fetchall()
             cursor.close()
             return [action[0] for action in row]
         
-        except Exception:
+        except Exception as e:
             raise UnAuthorised('Unable to verify permissions.')        
 

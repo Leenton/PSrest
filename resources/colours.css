@@ -7,7 +7,7 @@
         --quaternary: #2f2f2f;
         --text : #f0f0f0;
         --linkColour: #ff9505;
-
+        --logo: url("../../../../../../../../../../resources/psrest.svg");
     }
 }
 @media (prefers-color-scheme: light) {
@@ -19,5 +19,6 @@
         --quaternary: #dfdfdf;
         --text : #000000;
         --linkColour: #008e8e;
+        --logo: url("../../../../../../../../../../resources/psrest.svg");
     }
 }

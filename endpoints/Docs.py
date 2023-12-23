@@ -16,15 +16,27 @@ class Docs(object):
     """
     def __init__(self, logger: LogClient) -> None:
         self.logger = logger
+        self.doc_pages = ['index', 'oauth', 'run', 'config', 'resources']
 
-    async def on_get(self, req, resp):
+    async def on_get(self, req, resp, page=None):
         resp.content_type = 'application/json'
 
-        if(DOCS):
+        if(not DOCS):
+            resp.status = HTTP_404
+            resp.text = json.dumps({'title': 'Not Found', 'description': 'Docs are disabled on this server.'})
+
+        elif(page == None):
             resp.status = HTTP_200
             resp.content_type = 'text/html'
             async with aiofiles.open('./resources/html/docs.html', 'rb') as f:
                 resp.text = await f.read()
+
+        elif(str(page).lower() in self.doc_pages):
+            resp.status = HTTP_200
+            resp.content_type = 'text/html'
+            async with aiofiles.open(f'./resources/html/docs/{page}.html', 'rb') as f:
+                resp.text = await f.read()
+
         else:
-            resp.status = HTTP_403
-            resp.text = json.dumps({'title': 'Forbidden', 'description': 'Docs are disabled on this server.'})
+            resp.status = HTTP_404
+            resp.text = json.dumps({'title': 'Not Found', 'description': 'The requested page was not found.'})

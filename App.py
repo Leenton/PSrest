@@ -73,6 +73,7 @@ if __name__ == '__main__':
     PSRest.add_route('/oauth', OAuth(logger)) #Page to get an access token
     PSRest.add_route('/run', Run(logger, cmdlet_library)) #Page to run commands
     PSRest.add_route('/docs', Docs(logger)) #Page to show documentation for PSRest
+    PSRest.add_route('/docs/{page}', Docs(logger)) #Page to show help for all commands
     PSRest.add_route('/help/{command}', Help(logger)) #Page to show help for a specific command
     PSRest.add_route('/resources/{resource}', Resources(logger)) #Page to return static files like images for help page
 

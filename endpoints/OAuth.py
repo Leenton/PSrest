@@ -43,7 +43,7 @@ class OAuth(object):
             resp.status = HTTP_200
             resp.text = json.dumps(bearer_token.serialise())
 
-        except Exception:
+        except Exception as e:
             resp.status = HTTP_401
             resp.text = json.dumps({
                 'title': 'Unauthorised',
