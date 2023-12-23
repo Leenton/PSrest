@@ -15,7 +15,7 @@
             color: var(--text);
             line-height: 1.5;
             display: grid;
-            grid-template-columns: 1fr 4fr;            
+            grid-template-columns: 20% 80%;            
         }
 
         .content a {
@@ -57,13 +57,13 @@
         }
 
          /* put center the sidebar index to be in the center of the sidebar div */
-        .sidebar .index{
+        /* .sidebar .index{
             margin-top: 0;
             position: fixed;
             width: 20%;
             list-style-type: none; 
             padding: 0;
-        }
+        } */
 
         .sidebar ul{
             list-style-type: none;  
@@ -231,8 +231,8 @@
         <h2 id="run">Run Commands</h2>
         <section class="run">
             <p>
-                The <code class="token">/run</code> endpoint is the main endpoint for PSRest. This endpoint allows you to run Powershell commands via a HTTP post request.
-                What commands you can run is limited to those authorized for your <code class="token">AccessToken</code>. Check out the
+                The <code class="token">/run</code> endpoint is the main endpoint for PSRest. This endpoint allows you to run Powershell commands via a HTTP post
+                request. What commands you can run is limited to those authorized for your <code class="token">AccessToken</code>. Check out the
                 <a href="#authentication">authentication</a> section to learn how to get an <code class="token">AccessToken</code> and
                 <a href="#authorization">authorization</a> to learn how to authorize a set of cmdlets for a given user. 
             </p>
@@ -240,86 +240,132 @@
             <p>
                 Listed below are the headers that are used by the <code class="token">/run</code> endpoint.
             </p>
-            <pre><code>
-    Authorization: Bearer &lt;AccessToken&gt;  // Mandatory
-    Content-Type: application/json        // Mandatory
-    Depth: &lt;int&gt;                          // Optional
-    TTL: &lt;int&gt;                            // Optional
-            </code></pre>
+            <pre><code class="language-yaml">Authorization: Bearer &lt;AccessToken&gt;
+Content-Type: application/json
+Depth: &lt;int&gt;
+TTL: &lt;int&gt;</code></pre>
             <ul>
                 <li>
-                    <code class="token"><b>Authorization</b></code> - This is a mandatory header. It should consist of the string <code class="token string">"Bearer "</code> followed by the
-                    <code class="token">AccessToken</code> string.
+                    <code class="token"><b>Authorization</b></code> - This is a mandatory header. It should consist of the string <code class="token string">"Bearer "</code>
+                    followed by the <code class="token">AccessToken</code> string.
                 </li>
                 <li>
-                    <code class="token"><b>Content-Type</b></code> - This is a mandatory header and should always be set to <code class="token string">"application/json"</code> when making requests
-                    to the <code class="token">/run</code> endpoint, the endpoint only supports JSON requests.
+                    <code class="token"><b>Content-Type</b></code> - This is a mandatory header and should always be set to <code class="token string">"application/json"</code>
+                    when making requests to the <code class="token">/run</code> endpoint, the endpoint only supports JSON requests.
                 </li>
                 <li>
-                    <code class="token"><b>Depth</b></code> - This is used to tell PSRest how deep to go when converting the output of a cmdlet to JSON. This header is optional
-                    and if not set it will default to the value of the <a href="#configDefaultDepth" class="codeLink"><code class="token">DefaultDepth</code></a> option in the <a href="#config">config</a>. The value of this
-                    header must be a whole number between 0 and the value of the <a href="#configMaxDepth" class="codeLink"><code class="token">MaxDepth</code></a> option in the Config.
+                    <code class="token"><b>Depth</b></code> - This is used to tell PSRest how deep to go when converting the output of a cmdlet to JSON. This
+                    header is optional and if not set it will default to the value of the <a href="#configDefaultDepth" class="codeLink"><code class="token">DefaultDepth</code></a>
+                    option in the <a href="#config">config</a>. The value of this header must be a whole number between 0 and the value of the
+                    <a href="#configMaxDepth" class="codeLink"><code class="token">MaxDepth</code></a> option in the Config.
                 </li> 
                 <li>
-                    <code class="token"><b>TTL</b></code> - This is used to tell PSRest how long to allow a command to run for before timing out. This header is optional and if not set will default to the value
-                    of the <a href="#configDefaultTTL" class="codeLink"><code class="token">DefaultTTL</code></a> option in the config file. If the <a href="#configStrictTTL" class="codeLink"><code class="token">StrictTTL</code></a>
-                    option is enabled in the config file then this header will be ignored and the <a href="#configDefaultTTL" class="codeLink"><code class="token">DefaultTTL</code></a> option will be used.
+                    <code class="token"><b>TTL</b></code> - This is used to tell PSRest how long to allow a command to run for before timing out. This header
+                    is optional and if not set will default to the value of the <a href="#configDefaultTTL" class="codeLink"><code class="token">DefaultTTL</code></a>
+                    option in the config file. If the <a href="#configStrictTTL" class="codeLink"><code class="token">StrictTTL</code></a> option is enabled in
+                    the config file then this header will be ignored and the <a href="#configDefaultTTL" class="codeLink"><code class="token">DefaultTTL</code></a>
+                    option will be used.
                 </li>
             </ul>
             <h3>Request Body</h3>
             <p>
-                The request body sent must be a valid JSON object, the <code class="token string">"cmdlet"</code>  property on the JSON object is mandatory and the value of the  must be a string. The "parameters" property is optional
+                The request body sent must be a valid JSON object, here is an example that uses named parameters:
             </p>
-            <pre><code class="language-json">
-    {
-        "cmdlet": "&lt;Cmdlet-Name&gt;"     
-    }
-            </code></pre>
-            <p>
-                Array Parameter option
-            </p>
-            <pre><code class="language-json">
-    {
-        "cmdlet": "&lt;Cmdlet-Name&gt;",    // Mandatory
-        "parameters": {
-            "&lt;parameter name&gt;": "&lt;parameter value&gt;",
-            "&lt;parameter name2&gt;": 1,
-            "&lt;parameter name3&gt;": [],
-            "&lt;parameter name4&gt;": {},
-            "&lt;parameter name5&gt;": null
-            "&lt;parameter name6&gt;": true
-        },           // Optional
-        "arrayWrap" : true;          // Optional
-    }
-            </code></pre>
-            <p>
-                Object Parameter option
-            </p>
-            <pre><code class="language-json">
-    {
-        "cmdlet": "&lt;Cmdlet-Name&gt;",    // Mandatory
-        "parameters": [&lt;&gt;],           // Optional
-        "arrayWrap" : &lt;bool&gt;          // Optional
-    }
-            </code></pre>
-
+            <pre><code class="language-json">{
+    "cmdlet": "&lt;Verb-Noun&gt;",
+    "parameters": {
+        "&lt;param1&gt;": "value",
+        "&lt;param2&gt;": 1,
+        "&lt;param3&gt;": [],
+        "&lt;param4&gt;": {},
+        "&lt;param5&gt;": null,
+        "&lt;param6&gt;": true,
+        ...
+    },
+    "arrayWrap" : true;
+}</code></pre>
+            
             <ul>
                 <li>
-                    <code class="token"><b>cmdlet</b></code> - This is a mandatory property on the JSON object. The value of this property must be a string and should be the name of the cmdlet you want to run.
+                    <code class="token"><b>cmdlet</b></code> - This is a mandatory property on the JSON object. The value of this property must be a string and
+                    should be the name of the cmdlet you want to run or the name of an installed powersell script. Using the filepath of a powershell script
+                    will not work.
                 </li>
                 <li>
-                    <code class="token"><b>parameters</b></code> - This is an optional property on the JSON object. The value of this property must be a JSON object. The keys of the object should be the name of the parameter
-                    you want to pass to the cmdlet and the value should be the value you want to pass to the cmdlet. The value of the parameter can be a string, number, boolean, array, object or null.
-                </li>
+                    <p>
+                        <code class="token"><b>parameters</b></code> - This is an optional property on the JSON object. The value of this property must be a
+                        JSON object or array.
+                    </p>
+                    <p>
+                        If the value of this property is an object, the properties of the object must be the name of the parameters you want to pass to the cmdlet
+                        and the value of the property must be the value you want to pass to the cmdlet. The value of the property can be any valid JSON data type.
+                    </p>
+                    <p>
+                        If the value of this property is an array, the values of the array are passed as positional parameters to the cmdlet in the order they
+                        appear in the array. The values of the array can be any valid JSON data type. An example is shown below:
+                    </p>
+                    <pre><code class="language-json">{
+    "cmdlet": "&lt;Verb-Noun&gt;", 
+    "parameters": [
+        "value",
+        1,
+        [],
+        {},
+        null,
+        true
+        ...
+    ],
+}</code></pre>
+                    <p>
+                        If the cmdlet you are running does not require any parameters then you do not need to specify this property. You can also specify this
+                        property as an empty object or array if you want to be explicit that you are not passing any parameters to the cmdlet. An example is
+                        shown below:
+                    </p>
+                    <pre><code class="language-json">{
+    "cmdlet": "&lt;Verb-Noun&gt;",
+}</code></pre>
+                    <p>
+                        <b>NOTE:</b> If the value of a given parameter is an object it will be passed as a <code class="token">PSCustomObject</code> to that parameter.
+                    </p>
                 <li>
-                    <code class="token"><b>arrayWrap</b></code> - This is an optional property on the JSON object. The value of this property must be a boolean. If this property is set to true then the value of the
-                    <code class="token">parameters</code> property must be an array. If this property is set to false then the value of the <code class="token">parameters</code> property must be an object.
+                    <p>
+                        <code class="token"><b>arrayWrap</b></code> - This is an optional property on the JSON object. The value of this property must be a boolean
+                        value if the property is not set PSRest will use <code class="token">false</code> when processing the request.
+                    </p>
+                    <p>
+                        When set to <code class="token">true</code> the value of the <code class="token">data</code> property in the JSON response will always be
+                        an array. For cmdlets that return a single non array value the result is wrapped in an array. For cmdlets that already return an array
+                        the result is not wrapped. 
+                    </p>
+                    <p>
+                        When set to <code class="token">false</code> the value of the <code class="token">data</code> property in the JSON response can be any
+                        valid JSON data type. 
+                    </p>
                 </li>
             </ul>
 
-            <p>Run commands description here</p>
-            <h3>Run Commands Example</h3>
+            <h3>Examples</h3>
+            <p>
+                Below are some examples of how to use the <code class="token">/run</code> endpoint using both <b>Invoke-WebRequest</b> and <b>Curl</b>.
             <p>Run commands example here</p>
+            <pre><code class="language-powershell">$headers = @{"Authorization": "Bearer &lt;access_token&gt;"}
+$body = @{
+    "cmdlet" = "Get-UpTime";
+} | ConvertTo-Json
+
+Invoke-WebRequest -Uri http://&lt;psrest_server&gt;/run -Method POST -Body $body -ContentType "application/json" -Headers $headers</code></pre>
+</code></pre>
+            <p>Response</p>
+            <pre><code class="language-json">{
+    "data": {
+        "Days": 0,
+        "Hours": 0,
+        "Minutes": 0,
+        "Seconds": 0,
+        "Milliseconds": 0,
+    }
+    "error": null,
+}</code></pre>
             <h3>Limitations</h3>
             <p>
                 The `&lt;psrest server&gt;/run` endpoint has a number of limitations that you should be aware of when using it. These limitations are:

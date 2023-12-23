@@ -273,57 +273,51 @@
             <a href="/docs#run">run commands</a> section in the documentation.
           </p>
           <p>Example using <b>Invoke-WebRequest:</b></p>
-          <pre class="exampleCode"><code class="language-powershell">
-$headers = @{"Authorization": "Bearer &lt;access_token&gt;"}
+          <pre class="exampleCode"><code class="language-powershell">$headers = @{"Authorization": "Bearer &lt;access_token&gt;"}
 $body = @{
     "cmdlet" = "Get-AdUser";
     "parameters" = @{"Identity" = "jdoe"}
 } | ConvertTo-Json
 
-Invoke-WebRequest -Uri http://&lt;psrest_server&gt;/run -Method POST -Body $body -ContentType "application/json" -Headers $headers
-                </code></pre>
-          <p>Example using <b>curl:</b></p>
-          <pre class="exampleCode"><code>
-curl -X POST http://&lt;psrest_server&gt;/run \
-    -H "Content-Type: application/json" \
-    -H "Authorization: Bearer &lt;access_token&gt;" \
-    -d '{"cmdlet":"Get-ADUser", "parameters":{"name":"jdoe"}}'
-                </code></pre>
+Invoke-WebRequest -Uri http://&lt;psrest_server&gt;/run -Method POST -Body $body -ContentType "application/json" -Headers $headers</code></pre>
+        <p>Example using <b>curl:</b></p>
+        <pre class="exampleCode"><code>curl -X POST http://&lt;psrest_server&gt;/run \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer &lt;access_token&gt;" \
+  -d '{"cmdlet":"Get-ADUser", "parameters":{"name":"jdoe"}}'</code></pre>
           <p><b>Response:</b></p>
-          <pre class="exampleCode"><code class="language-json">
-HTTP: 200
+          <pre class="exampleCode"><code class="language-json">HTTP: 200
 Content-Type : application/json
 
 {
-    "data" : {
-        "GivenName":  "John",
-        "Surname":  "Doe",
-        "UserPrincipalName":  "jdoe@psrest.com",
-        "Enabled":  true,
-        "SamAccountName":  "jdoe",
-        "SID":  {
-            "BinaryLength":  28,
-            "AccountDomainSid":  {
-                "BinaryLength":  24,
-                "AccountDomainSid":  "S-1-5-21-3437450047-3123531039-1770530193",
-                "Value":  "S-1-5-21-3437450047-3123531039-1770530193"
-            },
-            "Value":  "S-1-5-21-3437450047-3123531039-1770530193-1116"
-        },
-        "DistinguishedName":  "CN=John Doe,OU=People,OU=PSRest,DC=PSRest,DC=com",
-        "Name":  "John Doe",
-        "ObjectClass":  "user",
-        "ObjectGuid":  "d1edb0b9-7b1e-4b43-a96a-7f5d47ee8fa4",
-        "PropertyNames":  ["DistinguishedName", "Enabled", "GivenName", "Name", "ObjectClass", "ObjectGUID", "SamAccountName", "SID", "Surname", "UserPrincipalName"],
-        "AddedProperties":  [],
-        "RemovedProperties":  [],
-        "ModifiedProperties":  [],
-        "PropertyCount":  10,
-        "ObjectGUID":  "d1edb0b9-7b1e-4b43-a96a-7f5d47ee8fa4"
-    },
-    "error" : null
-}
-                </code></pre>
+  "data" : {
+      "GivenName":  "John",
+      "Surname":  "Doe",
+      "UserPrincipalName":  "jdoe@psrest.com",
+      "Enabled":  true,
+      "SamAccountName":  "jdoe",
+      "SID":  {
+          "BinaryLength":  28,
+          "AccountDomainSid":  {
+              "BinaryLength":  24,
+              "AccountDomainSid":  "S-1-5-21-3437450047-3123531039-1770530193",
+              "Value":  "S-1-5-21-3437450047-3123531039-1770530193"
+          },
+          "Value":  "S-1-5-21-3437450047-3123531039-1770530193-1116"
+      },
+      "DistinguishedName":  "CN=John Doe,OU=People,OU=PSRest,DC=PSRest,DC=com",
+      "Name":  "John Doe",
+      "ObjectClass":  "user",
+      "ObjectGuid":  "d1edb0b9-7b1e-4b43-a96a-7f5d47ee8fa4",
+      "PropertyNames":  ["DistinguishedName", "Enabled", "GivenName", "Name", "ObjectClass", "ObjectGUID", "SamAccountName", "SID", "Surname", "UserPrincipalName"],
+      "AddedProperties":  [],
+      "RemovedProperties":  [],
+      "ModifiedProperties":  [],
+      "PropertyCount":  10,
+      "ObjectGUID":  "d1edb0b9-7b1e-4b43-a96a-7f5d47ee8fa4"
+  },
+  "error" : null
+}</code></pre>
         </div>
       </section>
     </section>
