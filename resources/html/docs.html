@@ -103,7 +103,10 @@
             border-bottom: 3px solid var(--linkColour);
         }
 
-
+        .breakLine {
+            margin-block: 2rem;
+            border-bottom: 0.25rem solid var(--secondary);
+        }
     </style>
 </head>
 <body>
@@ -131,6 +134,11 @@
                 as a REST API for Powershell. If you need more information about PSRest you can find it on the <a href="psrest.com">PSRest website</a>.
             </p>
         </section>
+
+
+
+
+
 
         <h2 id="config">Configuration</h2>
         <section class="configuration">
@@ -219,13 +227,23 @@
                 endpoint, so any cmdlet string that is valid powersell will be executed by PSRest.
             </span>
         </section>
-        <h2 id="auth">Authentication</h2>
+        
+        
+        
+        
+        
+        
+        <h2 id="authenticatio/*-p[1256\3 ]">Authentication</h2>
         <section class="authentication">
-            <h3>Authentication Description</h3>
+            <p>
+                The <code class="token">/oauth</code> endpoint is used to authenticate a user and get an <code class="token">AccessToken</code> that can be used to
+                authorize a user to run a set of cmdlets.
+            <h3>Gettng an Access Token</h3>
             <p>Authentication description here</p>
             <h3>Authentication Example</h3>
             <p>Authentication example here</p>
         </section>
+
 
 
         <h2 id="run">Run Commands</h2>
@@ -284,7 +302,6 @@ TTL: &lt;int&gt;</code></pre>
     },
     "arrayWrap" : true;
 }</code></pre>
-            
             <ul>
                 <li>
                     <code class="token"><b>cmdlet</b></code> - This is a mandatory property on the JSON object. The value of this property must be a string and
@@ -326,6 +343,8 @@ TTL: &lt;int&gt;</code></pre>
 }</code></pre>
                     <p>
                         <b>NOTE:</b> If the value of a given parameter is an object it will be passed as a <code class="token">PSCustomObject</code> to that parameter.
+                        A <code class="token">String</code> value is also passed as literal string to the cmdlet so you can't use a variable or expression
+                        as a parameter value. 
                     </p>
                 <li>
                     <p>
@@ -343,41 +362,84 @@ TTL: &lt;int&gt;</code></pre>
                     </p>
                 </li>
             </ul>
-
             <h3>Examples</h3>
             <p>
                 Below are some examples of how to use the <code class="token">/run</code> endpoint using both <b>Invoke-WebRequest</b> and <b>Curl</b>.
-            <p>Run commands example here</p>
+            <b><p>Example 1</p></b>
             <pre><code class="language-powershell">$headers = @{"Authorization": "Bearer &lt;access_token&gt;"}
 $body = @{
-    "cmdlet" = "Get-UpTime";
+    "cmdlet" = "Get-Date";
 } | ConvertTo-Json
 
 Invoke-WebRequest -Uri http://&lt;psrest_server&gt;/run -Method POST -Body $body -ContentType "application/json" -Headers $headers</code></pre>
-</code></pre>
-            <p>Response</p>
+            <pre><code class="language-shell">curl -X POST  http://&lt;psrest_server&gt;/run \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer <access_token>" \
+    -d '{"command":"Get-Date"}'</code></pre>
+            <b><p>Response:</p></b>
             <pre><code class="language-json">{
     "data": {
-        "Days": 0,
-        "Hours": 0,
-        "Minutes": 0,
-        "Seconds": 0,
-        "Milliseconds": 0,
+        "value":  "\/Date(1703366724837)\/",
+        "DisplayHint":  2,
+        "DateTime":  "23 December 2023 21:25:24"
     }
     "error": null,
 }</code></pre>
-            <h3>Limitations</h3>
-            <p>
-                The `&lt;psrest server&gt;/run` endpoint has a number of limitations that you should be aware of when using it. These limitations are:
-                PSRest does not support 
-            </p>
+            <div class="breakLine"></div>
+            <b><p>Example 2</p></b>
+            <pre><code class="language-powershell">$headers = @{"Authorization": "Bearer &lt;access_token&gt;"}
+$body = @{
+    "cmdlet" = "Get-Date";
+    "parameters" = @{
+        "Date" = "01/01/2024"
+    }
+} | ConvertTo-Json
+
+Invoke-WebRequest -Uri http://&lt;psrest_server&gt;/run -Method POST -Body $body -ContentType "application/json" -Headers $headers</code></pre>
+            <pre><code class="language-shell">curl -X POST  http://&lt;psrest_server&gt;/run \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer <access_token>" \
+    -d '{"command":"Get-Date", "parameters": {"Date": "01/01/2024"}}'</code></pre>
+            <b><p>Response:</p></b>
+            <pre><code class="language-json">{
+    "data": {
+        "value":  "\/Date(1704067200000)\/",
+        "DisplayHint":  2,
+        "DateTime":  "01 January 2024 00:00:00"
+    }
+    "error": null,
+}</code></pre>
+            <div class="breakLine"></div>
+            <b><p>Example 3</p></b>
+            <pre><code class="language-powershell">$headers = @{"Authorization": "Bearer &lt;access_token&gt;"}
+$body = @{
+    "cmdlet" = "Get-UpTime";
+    "parameters" = ["01/12/2024"];
+    "arrayWrap" = true;
+} | ConvertTo-Json
+
+Invoke-WebRequest -Uri http://&lt;psrest_server&gt;/run -Method POST -Body $body -ContentType "application/json" -Headers $headers</code></pre>
+            <pre><code class="language-shell">curl -X POST http://<psrest_server>/run \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer <access_token>" \
+    -d '{"command":"Get-Date", "parameters": ["01/12/2024"]}'</code></pre>
+            <b><p>Response:</p></b>
+            <pre><code class="language-json">{
+    "data": [
+        {
+            "value":  "\/Date(1733011200000)\/",
+            "DisplayHint":  2,
+            "DateTime":  "01 December 2024 00:00:00"
+        }
+    ]
+    "error": null,
+}</code></pre>
         </section>
-
-
         <h2 id="about">About</h2>
         <section class="about">
-            <h3>About Description</h3>
-            <p>About description here</p>
+            <p>
+                PSRest is an application that allows you to run Powershell commands via a REST API. Allowing you to connect anything that can speak HTTP to Powershell.
+            </p>
             <h3>About Example</h3>
             <p>About example here</p>
         </section>
