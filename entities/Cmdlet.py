@@ -25,7 +25,7 @@ class Cmdlet():
         self.platform = platform
         self.psversion = psversion
         self.cmdlet_library = cmdlet_library
-        self.arrayWrap = command.get('arrayWrap', False)
+        self.array_wrap = command.get('array_wrap', False)
         self.value = self.parse(command)
         self.application_name =  token.user if authorisation.is_authorised(token, self.function, AuthorisationSchema.BEARER) else None
 
@@ -133,7 +133,7 @@ class Cmdlet():
             'command': self.value,
             'ticket': None,
             'application_name': self.application_name,
-            'arrayWrap': self.arrayWrap
+            'array_wrap': self.array_wrap
         }
 
     async def invoke(self) -> CmdletResponse:

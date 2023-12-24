@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>Help</title>
+    <link rel="icon" type="image/x-icon" href="resources/psrest.ico">
     <link rel="stylesheet" href="resources/colours.css" />
     <link rel="stylesheet" href="resources/code-colours.css" />
     <link rel="stylesheet" href="resources/code.css" />
@@ -46,6 +47,12 @@
 
         .content h3 {
             font-size: 1.5em;
+            margin-top: 1em;
+            margin-bottom: 0.5em;
+        }
+
+        .content h4 {
+            font-size: 1.25em;
             margin-top: 1em;
             margin-bottom: 0.5em;
         }
@@ -97,10 +104,6 @@
         pre code{
             border-radius: 0.25rem;
             overflow-x: scroll;
-        }
-
-        .codeLink .token:hover{
-            border-bottom: 3px solid var(--linkColour);
         }
 
         .breakLine {
@@ -168,7 +171,7 @@
                 each string is the name of a cmdlet that you want to expose. If you do not specify any cmdlets then PSRest will not expose any cmdlets so no cmdlets
                 can be executed via the `&lt;psrest server&gt;/run` endpoint. 
 
-                If the list of cmdlets you want to specify is an array only conatining the string `*` then PSRest will expose all cmdlets that are available to the
+                If the list of cmdlets you want to specify is an array only containing the string `*` then PSRest will expose all cmdlets that are available to the
                 user that is running PSRest. This is useful if you want to expose all cmdlets to PSRest but do not want to have to manually specify each cmdlet.
             </span>
 
@@ -224,48 +227,161 @@
                 what everr raw cmdlet you pass to PSRest will be run. This is highly dangerous and should only be enabled if you know what you are doing.
 
                 When enabled this changes the `&lt;psrest server&gt;/run` endpoint from a predefined and and authorized cmdlet runner to an invoke-expression
-                endpoint, so any cmdlet string that is valid powersell will be executed by PSRest.
+                endpoint, so any cmdlet string that is valid powershell will be executed by PSRest.
             </span>
+            <p>
+                It is recommended that you only expose the cmdlets that you need to use via PSRest and highly recommended to not expose the following cmdlets unless
+                you know what you are doing:
+            </p>
+            <p>
+                Invoke-Expression, Invoke-Command, Invoke-Item, Invoke-History, Invoke-WebRequest, Enter-PSHostProcess  Enter-PSSession
+            </p>
         </section>
+        <h2 id="applicationManagement">Application Management</h2>
+        <section class="applicationManagement">
+            <p>
+                PSRest allows you to create client applications that can be used to authenticate with PSRest. When a new client application is created a
+                <code class="token">client_id</code> and <code class="token">secret</code> are generated for that client application. These credentials are then
+                used to authenticate the client application and generate an <code class="token">access_token</code>. The <code class="token">access_token</code>
+                is then used to authenticate with PSRest and run commands.
+            </p>
+            <p>
+                The <code class="token">/application</code> endpoint is used to manage client applications. This endpoint allows you to create, update, delete and
+                list client applications. This endpoint is only available when the `Docs` option is enabled in the config file.
+            </p>
+            <h3>Headers</h3>
+            <p>
+                Listed below are the headers that are used by the <code class="token">/application</code> endpoint.
+            </p>
+        </section>
+
         
         
         
         
         
         
-        <h2 id="authenticatio/*-p[1256\3 ]">Authentication</h2>
+        <h2 id="authentication">Authentication</h2>
         <section class="authentication">
             <p>
-                The <code class="token">/oauth</code> endpoint is used to authenticate a user and get an <code class="token">AccessToken</code> that can be used to
-                authorize a user to run a set of cmdlets.
-            <h3>Gettng an Access Token</h3>
-            <p>Authentication description here</p>
-            <h3>Authentication Example</h3>
-            <p>Authentication example here</p>
+                The <code class="token">/oauth</code> endpoint is used to authenticate a user and provide them an <code class="token">access_token</code> when
+                the authentication attempt is successful.
+            </p>
+            <p>
+                There are 3 ways to get an <code class="token">access_token</code>:
+            </p>
+            <h3 id="clientCredential">Client Credential</h3>
+            <p>
+                When a new client application is registered with PSRest, a <code class="token">client_id</code>
+                and <code class="token">secret</code> are generated for that client application. These credentials are then used to authenticate the
+                client application and generate an <code class="token">access_token</code>. To learn more about registering a client application with PSRest
+                check out the <a href="#applicationManagement">application management</a> section.
+            </p>
+            <p>
+                Below is an example of how to authenticate a client application using the <code class="token">client_credential</code> method with
+                <b>Invoke-WebRequest</b> and <b>Curl</b>.
+            </p>
+            <h4>Headers</h4>
+            <pre><code class="language-yaml">Content-Type: application/json</code></pre>
+            <h4>Request Body</h4>
+            <pre><code class="language-json">{
+    "grant_type": "client_credentials",
+    "client_id": "&lt;client_id&gt;",
+    "client_secret": "&lt;client_secret&gt;"
+}</code></pre>
+                <h4>Example</h4>
+                <pre><code class="language-powershell">$body = @{
+    "grant_type" = "client_credentials";
+    "client_id" = "&lt;client_id&gt;";
+    "client_secret" = "&lt;client_secret&gt;";
+}
+
+Invoke-WebRequest -Uri http://&lt;psrest_server&gt;/oauth -Method POST -Body $body</code></pre>
+                <pre><code class="language-shell">curl -X POST http://&lt;psrest_server&gt;/oauth \
+    -H "Content-Type: application/json" \
+    -d '{"grant_type":"client_credentials", "client_id":"&lt;client_id&gt;", "client_secret":"&lt;client_secret&gt;"}'</code></pre>
+                <h4>Response</h4>
+                <pre><code class="language-json">{
+    "access_token": "&lt;access_token&gt;",
+    "expires_in": 3600,
+    "refresh_token": "&lt;refresh_token&gt;" 
+}</code></pre>
+                <p>
+                    <b>Note:</b> the <code class="token">expires_in</code> property is the number of seconds that the <code class="token">access_token</code> is valid for.
+                </p>
+                <div class="breakLine"></div>
+                <h3>Refresh Token</h3>
+                <p>
+                    When a user authenticates with PSRest using the <code class="token"><a href="#clientCredential">client_credential</a></code> method, a <code class="token">refresh_token</code>
+                    is also generated. This <code class="token">refresh_token</code> can be used to authenticate a user and generate a new
+                    <code class="token">access_token</code> when the <code class="token">access_token</code> expires. The <code class="token">refresh_token</code>
+                    is valid for 14 days after it is generated.
+                </p>
+                <p>
+                    Below is an example of how to authenticate a user using the <code class="token">refresh_token</code> method with <b>Invoke-WebRequest</b> and <b>Curl</b>.
+                </p>
+                <h4>Headers</h4>
+                <pre><code class="language-yaml">Content-Type: application/json</code></pre>
+                <h4>Request Body</h4>
+                <pre><code class="language-json">{
+    "grant_type": "refresh_token",
+    "refresh_token": "&lt;refresh_token&gt;"
+}</code></pre>
+                <h4>Example</h4>
+                <pre><code class="language-powershell">$body = @{
+    "grant_type" = "refresh_token";
+    "refresh_token" = "&lt;refresh_token&gt;";
+}
+
+Invoke-WebRequest -Uri http://&lt;psrest_server&gt;/oauth -Method POST -Body $body</code></pre>
+                <pre><code class="language-shell">curl -X POST http://&lt;psrest_server&gt;/oauth \
+    -H "Content-Type: application/json" \
+    -d '{"grant_type":"refresh_token", "refresh_token":"&lt;refresh_token&gt;"}'</code></pre>
+                <h4>Response</h4>
+                <pre><code class="language-json">{
+    "access_token": "&lt;access_token&gt;",
+    "expires_in": 3600,
+    "refresh_token": "&lt;refresh_token&gt;"
+}</code></pre>
+                <p>
+                    <b>Note:</b> the <code class="token">expires_in</code> property is the number of seconds that the <code class="token">access_token</code> is valid for.
+                </p>
+                <div class="breakLine"></div>
+                <h3>PSRest Console</h3>
+                <p>
+                    When creating a new client application for PSRest you can specify if you want to generate a <code class="token">client_id</code> and
+                    <code class="token">secret</code> or if you want to generate an <code class="token">access_token</code> for the
+                    client application. If you choose to generate an <code class="token">access_token</code> the console will generate an access token for you
+                    and display it in the console. This access token can then be used to authenticate with PSRest for 1 year.
+                </p>
+                <p>
+                    For security reasons the 1 year <code class="token">access_token</code> method is ill-advised and you should use the
+                    <code class="token"><a href="#clientCredential">client_credential</a></code> method.
+                </p>
+                <p>
+                    Check out the <a href="#applicationManagement">application management</a> section to learn more about creating a new client application for PSRest.
+                </p>
         </section>
-
-
-
         <h2 id="run">Run Commands</h2>
         <section class="run">
             <p>
                 The <code class="token">/run</code> endpoint is the main endpoint for PSRest. This endpoint allows you to run Powershell commands via a HTTP post
-                request. What commands you can run is limited to those authorized for your <code class="token">AccessToken</code>. Check out the
-                <a href="#authentication">authentication</a> section to learn how to get an <code class="token">AccessToken</code> and
-                <a href="#authorization">authorization</a> to learn how to authorize a set of cmdlets for a given user. 
+                request. What commands you can run is limited to those authorised for your <code class="token">access_token</code>. Check out the
+                <a href="#authentication">authentication</a> section to learn how to get an <code class="token">access_token</code> and
+                <a href="#applicationManagement">application management</a> to learn how to authorize a set of cmdlets for a given application. 
             </p>
             <h3>Headers</h3>
             <p>
                 Listed below are the headers that are used by the <code class="token">/run</code> endpoint.
             </p>
-            <pre><code class="language-yaml">Authorization: Bearer &lt;AccessToken&gt;
+            <pre><code class="language-yaml">Authorization: Bearer &lt;access_token&gt;
 Content-Type: application/json
 Depth: &lt;int&gt;
 TTL: &lt;int&gt;</code></pre>
             <ul>
                 <li>
                     <code class="token"><b>Authorization</b></code> - This is a mandatory header. It should consist of the string <code class="token string">"Bearer "</code>
-                    followed by the <code class="token">AccessToken</code> string.
+                    followed by the <code class="token">access_token</code> string.
                 </li>
                 <li>
                     <code class="token"><b>Content-Type</b></code> - This is a mandatory header and should always be set to <code class="token string">"application/json"</code>
@@ -273,15 +389,15 @@ TTL: &lt;int&gt;</code></pre>
                 </li>
                 <li>
                     <code class="token"><b>Depth</b></code> - This is used to tell PSRest how deep to go when converting the output of a cmdlet to JSON. This
-                    header is optional and if not set it will default to the value of the <a href="#configDefaultDepth" class="codeLink"><code class="token">DefaultDepth</code></a>
+                    header is optional and if not set it will default to the value of the <code class="token"><a href="#configDefaultDepth">DefaultDepth</a></code>
                     option in the <a href="#config">config</a>. The value of this header must be a whole number between 0 and the value of the
-                    <a href="#configMaxDepth" class="codeLink"><code class="token">MaxDepth</code></a> option in the Config.
+                    <code class="token"><a href="#configMaxDepth">MaxDepth</a></code> option in the Config.
                 </li> 
                 <li>
                     <code class="token"><b>TTL</b></code> - This is used to tell PSRest how long to allow a command to run for before timing out. This header
-                    is optional and if not set will default to the value of the <a href="#configDefaultTTL" class="codeLink"><code class="token">DefaultTTL</code></a>
-                    option in the config file. If the <a href="#configStrictTTL" class="codeLink"><code class="token">StrictTTL</code></a> option is enabled in
-                    the config file then this header will be ignored and the <a href="#configDefaultTTL" class="codeLink"><code class="token">DefaultTTL</code></a>
+                    is optional and if not set will default to the value of the <code class="token"><a href="#configDefaultTTL">DefaultTTL</a></code></a>
+                    option in the config file. If the <code class="token"><a href="#configStrictTTL">StrictTTL</a></code> option is enabled in
+                    the config file then this header will be ignored and the <code class="token"><a href="#configDefaultTTL">DefaultTTL</a></code>
                     option will be used.
                 </li>
             </ul>
@@ -300,12 +416,12 @@ TTL: &lt;int&gt;</code></pre>
         "&lt;param6&gt;": true,
         ...
     },
-    "arrayWrap" : true;
+    "array_wrap" : true;
 }</code></pre>
             <ul>
                 <li>
                     <code class="token"><b>cmdlet</b></code> - This is a mandatory property on the JSON object. The value of this property must be a string and
-                    should be the name of the cmdlet you want to run or the name of an installed powersell script. Using the filepath of a powershell script
+                    should be the name of the cmdlet you want to run or the name of an installed powershell script. Using the filepath of a powershell script
                     will not work.
                 </li>
                 <li>
@@ -348,7 +464,7 @@ TTL: &lt;int&gt;</code></pre>
                     </p>
                 <li>
                     <p>
-                        <code class="token"><b>arrayWrap</b></code> - This is an optional property on the JSON object. The value of this property must be a boolean
+                        <code class="token"><b>array_wrap</b></code> - This is an optional property on the JSON object. The value of this property must be a boolean
                         value if the property is not set PSRest will use <code class="token">false</code> when processing the request.
                     </p>
                     <p>
@@ -376,7 +492,7 @@ Invoke-WebRequest -Uri http://&lt;psrest_server&gt;/run -Method POST -Body $body
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer <access_token>" \
     -d '{"command":"Get-Date"}'</code></pre>
-            <b><p>Response:</p></b>
+            <b><p>Response</p></b>
             <pre><code class="language-json">{
     "data": {
         "value":  "\/Date(1703366724837)\/",
@@ -400,7 +516,7 @@ Invoke-WebRequest -Uri http://&lt;psrest_server&gt;/run -Method POST -Body $body
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer <access_token>" \
     -d '{"command":"Get-Date", "parameters": {"Date": "01/01/2024"}}'</code></pre>
-            <b><p>Response:</p></b>
+            <b><p>Response</p></b>
             <pre><code class="language-json">{
     "data": {
         "value":  "\/Date(1704067200000)\/",
@@ -415,15 +531,15 @@ Invoke-WebRequest -Uri http://&lt;psrest_server&gt;/run -Method POST -Body $body
 $body = @{
     "cmdlet" = "Get-UpTime";
     "parameters" = ["01/12/2024"];
-    "arrayWrap" = true;
+    "array_wrap" = true;
 } | ConvertTo-Json
 
 Invoke-WebRequest -Uri http://&lt;psrest_server&gt;/run -Method POST -Body $body -ContentType "application/json" -Headers $headers</code></pre>
-            <pre><code class="language-shell">curl -X POST http://<psrest_server>/run \
+            <pre><code class="language-shell">curl -X POST http://&lt;psrest_server&gt;/run \
     -H "Content-Type: application/json" \
-    -H "Authorization: Bearer <access_token>" \
+    -H "Authorization: Bearer &lt;access_token&gt;" \
     -d '{"command":"Get-Date", "parameters": ["01/12/2024"]}'</code></pre>
-            <b><p>Response:</p></b>
+            <b><p>Response</p></b>
             <pre><code class="language-json">{
     "data": [
         {
@@ -439,19 +555,15 @@ Invoke-WebRequest -Uri http://&lt;psrest_server&gt;/run -Method POST -Body $body
         <section class="about">
             <p>
                 PSRest is an application that allows you to run Powershell commands via a REST API. Allowing you to connect anything that can speak HTTP to Powershell.
+                CHeck out my soundcloud for more information about PSRest.
+
+                Also follow me on mastodon and twitter for updates about PSRest.
+
+                Donate to my patreon to support the development of PSRest.
+
+                email me at leenton@psrest.com if you have any questions or want to get in touch.
             </p>
-            <h3>About Example</h3>
-            <p>About example here</p>
         </section>
-
-
-        <p>
-            It is recommended that you only expose the cmdlets that you need to use via PSRest and highly recommended to not expose the following cmdlets unless
-            you know what you are doing:
-        </p>
-        <p>
-            Invoke-Expression, Invoke-Command, Invoke-Item, Invoke-History, Invoke-WebRequest, Enter-PSHostProcess  Enter-PSSession
-        </p>
     </div>
 </body>
 <script src="resources/highlight.js"></script>

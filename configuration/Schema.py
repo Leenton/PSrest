@@ -16,7 +16,7 @@ RUN_SCHEMA = {
     "properties" : {    
         "cmdlet" : {"type" : "string"},
         "parameters" : {"type" : ["object", "array"]},
-        "arrayWrap" : {"type" : "boolean", "optional": True}
+        "array_wrap" : {"type" : "boolean", "optional": True}
     },
     "required": ["cmdlet"],
     "additionalProperties": False
