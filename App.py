@@ -31,13 +31,13 @@ from log import start_logging, LogClient, Message
 
 #Get optional arguments from command line that override the config values.
 port = None
-loglevel = None
+log_level = None
 
 for arg in sys.argv:
     if(arg.startswith('--port=')):
         port = int(arg.split('=', 2)[1])
     elif(arg.startswith('--loglevel=')):
-        loglevel = arg.split('=', 2)[1]
+        log_level = arg.split('=', 2)[1]
     elif(arg.startswith('--help')):
         print('''App.py [OPTION]...
 Run the PSRest webserver.
@@ -78,13 +78,18 @@ if __name__ == '__main__':
     PSRest.add_route('/resources/{resource}', Resources(logger)) #Page to return static files like images for help page
 
     logger.log(Message(f"Starting PS Rest"))
-    uvicorn.run(
-        PSRest,
-        host='0.0.0.0',
-        port=PORT if port is None else port,
-        log_level=LOG_LEVEL if loglevel is None else loglevel,
-        ssl_keyfile=KEY_FILE,
-        ssl_certfile=CERTIFICATE,
-        ssl_keyfile_password=KEYFILE_PASSWORD,
-        ssl_ciphers=CIPHERS
-    )
+    try:
+        uvicorn.run(
+            PSRest,
+            host='0.0.0.0',
+            port=PORT if port == 0 or port == None else port,
+            log_level=LOG_LEVEL if log_level == None else log_level,
+            ssl_keyfile=KEY_FILE,
+            ssl_certfile=CERTIFICATE,
+            ssl_keyfile_password=KEYFILE_PASSWORD,
+            ssl_ciphers=CIPHERS
+        )
+    except KeyboardInterrupt:
+        logger.log(Message(f"Stopping PS Rest"))
+        processing.terminate()
+        logging.terminate()

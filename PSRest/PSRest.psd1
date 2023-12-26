@@ -9,7 +9,7 @@
 @{
 
     # Script module or binary module file associated with this manifest.
-    # RootModule = ''
+    RootModule = './PSRest.psm1'
     
     # Version number of this module.
     ModuleVersion = '1.0.0'
@@ -54,7 +54,7 @@
     # RequiredModules = @()
     
     # Assemblies that must be loaded prior to importing this module
-    RequiredAssemblies = @('PSRestModule.dll')
+    # RequiredAssemblies = @('PSRestModule.dll')
     
     # Script files (.ps1) that are run in the caller's environment prior to importing this module.
     # ScriptsToProcess = @()
@@ -69,10 +69,7 @@
     # NestedModules = @()
     
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-    FunctionsToExport = @()
-    
-    # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
-    CmdletsToExport = @(
+    FunctionsToExport = @(
         'Start-PSRestProcessor',
         'Update-PSRest',
         'Start-PSRest',
@@ -80,7 +77,12 @@
         'Get-PSRestApplication',
         'Remove-PSRestApplication',
         'Add-PSRestApplication',
-        'Set-PSRestApplication'
+        'Set-PSRestApplication',
+        'Import-PSRest'
+    )
+    
+    # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
+    CmdletsToExport = @(
     )
     
     # Variables to export from this module
