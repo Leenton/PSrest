@@ -99,22 +99,14 @@ if(not path.isfile(APP_DATA + '/zvakavanzika')):
 with open(APP_DATA + '/zvakavanzika', 'rb') as f:
     SECRET_KEY = (f.read()).decode()
 
-# These database files and the temp files should live in user space not in the project directory
-ADMIN_USER =  'admin'
 CREDENTIAL_DATABASE = APP_DATA + '/data.db' # OAuth2 credential database
-METRIC_DATABASE = TMP_DIR + '/metrics.db' # Metric database
-PROCESSOR_DATABASE = TMP_DIR + '/processor.db' # Processor database
-
-
-# TODO: Sanitise the contents we get from the config file to prevent code injection.
 
 def setup_credential_db():
     db = sqlite3.connect(CREDENTIAL_DATABASE)
     cursor = db.cursor()
     cursor.executescript(
         """--sql
-        CREATE TABLE client (cid INTEGER PRIMARY KEY AUTOINCREMENT, client_id TEXT, client_secret TEXT, name TEXT, description TEXT, authentication TEXT);
+        CREATE TABLE client (cid INTEGER PRIMARY KEY AUTOINCREMENT, client_id TEXT, client_secret TEXT, name TEXT, description TEXT, authentication TEXT, enabled_cmdlets TEXT, disabled_cmdlets TEXT, enabled_modules TEXT);
         CREATE TABLE refresh_client_map (rid INTEGER PRIMARY KEY AUTOINCREMENT, refresh_token TEXT, expiry REAL, cid INTEGER, FOREIGN KEY(cid) REFERENCES client(cid) ON DELETE CASCADE);
-        CREATE TABLE action_client_map (aid INTEGER PRIMARY KEY AUTOINCREMENT, action TEXT, cid INTEGER, FOREIGN KEY(cid) REFERENCES client(cid) ON DELETE CASCADE);
         """
     )

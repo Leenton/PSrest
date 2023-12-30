@@ -1,12 +1,15 @@
 import subprocess
-import json
-import base64
 import random
-from configuration import CONFIG_FILE
+from configuration.Console import get_actions
+from configuration import CONFIG_FILE, CREDENTIAL_DATABASE
 from .CmdletInfo import CmdletInfo
+from sqlite3 import connect
+from json import loads, dumps
+from base64 import b64encode, b64decode
 
 class CmdletInfoLibrary():
     def __init__(self) -> None:
+        self.db = connect(CREDENTIAL_DATABASE)
         self.cmdlets: dict[CmdletInfo] = {}
         #create a temporary database to store the cmdlets in memory
         self.intialize()
@@ -26,22 +29,60 @@ class CmdletInfoLibrary():
         return cmdlets
     
     def intialize(self) -> None:
-        #read the config file and get the list of modules to load amd allowed commands and etc
-        seperator = random.randint(1_000_000_000, 9_999_999_999)
+        # Build the action_client_map table in the database
+        cursor = self.db.cursor()
+        cursor.executescript(
+            "DROP TABLE IF EXISTS action_client_map;"
+        )
 
-        result = subprocess.run(
-            f'pwsh -c "Get-PSRestCommandLibrary -ConfigFile \'{CONFIG_FILE}\' -Seperator {seperator}"',
-            shell=True,
-            capture_output=True,
-            text=True)
+        cursor.executescript(
+            "CREATE TABLE action_client_map (aid INTEGER PRIMARY KEY AUTOINCREMENT, action TEXT, cid INTEGER, FOREIGN KEY(cid) REFERENCES client(cid) ON DELETE CASCADE);"
+        )
 
-        result = base64.b64decode(result.stdout.split(str(seperator))[1])
-        commands = json.loads(result)
+        cursor.execute(
+            "SELECT cid, enabled_cmdlets, disabled_cmdlets, enabled_modules FROM client"
+        )
+        data = cursor.fetchall()
 
-        for command in commands:
-            self.cmdlets[command['Name'].lower()] = CmdletInfo(
-                command['Name'],
-                command['MandatoryParameters'],
-                command['Module'],
-                command['Version'],
-                command['Help'])
+        for row in data:
+            actions = get_actions(row[1], row[2], row[3])
+            for action in actions:
+                cursor.execute(
+                    "INSERT INTO action_client_map (action, cid) VALUES (?, ?)",
+                    (action, row[0])
+                )
+
+                self.db.commit()
+        
+        # Build the cmdlet library in memory
+        cursor.execute(
+            "SELECT DISTINCT action FROM action_client_map"
+        )
+
+        data = cursor.fetchall()
+        cmdlets = []
+
+        for row in data:
+            cmdlets.append(row[0])
+        
+        if (cmdlets):
+            separator = random.randint(1_000_000_000, 9_999_999_999)
+            enabled = b64encode(dumps(cmdlets).encode('utf-8')).decode('utf-8')
+    
+            result = subprocess.run(
+                f'pwsh -c "Get-PSRestCommandLibrary -Enabled \'{enabled}\' -Separator {separator} -AsBase64"',
+                shell=True,
+                capture_output=True,
+                text=True
+            )
+            
+            result = b64decode(result.stdout)
+            commands = loads(result)
+
+            for command in commands:
+                self.cmdlets[command['Name'].lower()] = CmdletInfo(
+                    command['Name'],
+                    command['MandatoryParameters'],
+                    command['Module'],
+                    command['Version'],
+                    command['Help'])

@@ -5,7 +5,7 @@ from configuration import Console
 
 def main(argv):
 
-    opts, args = getopt.getopt(argv,"hi:o:",["method=", 'name=', 'description=', 'authentication=', 'actions=', 'id='])
+    opts, args = getopt.getopt(argv,"hi:o:",["method=", 'name=', 'description=', 'authentication=', 'enabledActions=', 'disabledActions=', 'enabledModules=' ,'id='])
 
     request = {'mandatory' : []}
     for opt, arg in opts:
@@ -27,7 +27,6 @@ def main(argv):
                 request['mandatory'].append('name')
                 request['mandatory'].append('authentication')
                 request['mandatory'].append('description')
-                request['mandatory'].append('actions')
 
         elif opt in ("-i", "--id"):
             request['id'] = arg
@@ -44,11 +43,16 @@ def main(argv):
             else:
                 print('Invalid authentication type')
                 sys.exit()
-        
-        elif opt in ("-c", "--actions"):
-            request['actions'] = arg.split(',')
 
-    
+        elif opt in ("-m", "--enabledModules"):
+            request['enabledModules'] = arg.split(',')
+        
+        elif opt in ("-e", "--enabledActions"):
+            request['enabledActions'] = arg.split(',')
+        
+        elif opt in ("-d", "--disabledActions"):
+            request['disabledActions'] = arg.split(',')
+
     # Verify that all mandatory fields are present
     for field in request['mandatory']:
         if field not in request:

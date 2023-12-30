@@ -34,5 +34,13 @@ function Get-PSRestApplication()
         throw "An Id and Name cannot be specified at the same time."
     }
 
-    return $application.data
+    $applications = $application.data
+    $separator = Get-Random -Minimum 1000000000  -Maximum 10000000000
+    $applications | ForEach-Object {
+        $Filter = ($_.EnabledCmdlets -join ',') + $Separator + ($_.EnabledModules -join ',') + $Separator + ($_.DisabledModuleCmdlets -join ',')
+        $Filter = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Filter))
+        $_ | Add-Member -MemberType NoteProperty -Name Cmdlets -Value (Get-PSRestActions -Separator $Separator -Filter $Filter) -Force
+    }
+
+    return $applications
 }

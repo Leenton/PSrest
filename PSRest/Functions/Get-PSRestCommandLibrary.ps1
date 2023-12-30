@@ -3,21 +3,22 @@ function Get-PSRestCommandLibrary{
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)]
-        # The commands that are not in the specified modules which should be included in the library
-        [string]$ConfigFile,
+        [string]$Enabled,
 
         [Parameter(Mandatory=$true)]
-        # The string to use to prepened to the returned base64 output for capture. 
-        [string]$Seperator
+        [string]$Separator,
+
+        [switch]$AsBase64
     )
 
     process{
-
-        $Config = Get-Content -Path $ConfigFile | ConvertFrom-Json
-
+        $Enabled = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($Enabled))
+        $EnabledCmdlets = ConvertFrom-Json -InputObject $Enabled
+        $Commands = @()
+        
         # Add the commands that are in the enabled list
-        foreach($Command in $Config.Enabled){
-            $Commands += Get-Command -Name $Command 
+        $EnabledCmdlets | ForEach-Object {
+            $Commands += Get-Command -Name $_ 
         }
 
         #Get only the unique commands in the Commands array so we don't reprocess data
@@ -55,6 +56,11 @@ function Get-PSRestCommandLibrary{
             $Commands = ConvertTo-Json -InputObject @()
         }
         
-        Write-host "$Seperator$([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Commands)))"
+        if ($AsBase64){
+            Write-host "$Seperator$([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Commands)))"
+        }
+        else{
+            Write-host $Commands
+        }
     }
 }
