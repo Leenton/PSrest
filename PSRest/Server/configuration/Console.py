@@ -148,7 +148,7 @@ class Console():
         hasher = PasswordHasher()
         
         if(authentication == 'access_token'):
-            expiry = datetime.timestamp(datetime.now() + timedelta(days=360))
+            expiry = datetime.timestamp(datetime.now() + timedelta(days=365))
 
             cursor.execute(
                 "INSERT INTO client (name, description, authentication, client_id, client_secret, enabled_cmdlets, disabled_cmdlets, enabled_modules) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
@@ -162,13 +162,6 @@ class Console():
                 (client_id,))
 
             cid = cursor.fetchone()[0]
-
-            for action in self.get_actions(enabled, disabled, modules):
-                cursor.execute(
-                    "INSERT INTO action_client_map (cid, action) VALUES (?, ?)", 
-                    (cid, action.lower()))
-
-                self.database.commit()
 
             access_token = jwt.encode({'reference': cid, 'expiry': expiry}, SECRET_KEY, algorithm='HS512')
 

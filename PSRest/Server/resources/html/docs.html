@@ -252,7 +252,7 @@
                 When creating a new client application you can choose the authentication method that the application will use to authenticate with PSRest.
                 There are two authentication methods that can be used, <code class="token"><a href="#clientCredential">client_credential</a></code> and
                 <code class="token">access_token</a></code>. When a new client application is created a <code class="token">client_id</code> and
-                <code class="token">secret</code> are generated for that client application or an <code class="token">access_token</code> is generated
+                <code class="token">client_secret</code> are generated for that client application or an <code class="token">access_token</code> is generated
                 depending on the authentication method you choose.
             </p>
             <p>
@@ -264,84 +264,58 @@
                 <li><code class="token"><a href="help/Get-PSRestApplication">Get-PSRestApplication</a></code></li>
                 <li><code class="token"><a href="help/Remove-PSRestApplication">Remove-PSRestApplication</a></code></li>
             </ul>
-            <h3>Create a new application</h3>
+            <h3 id="createApplication">Create a new application</h3>
             <p>
                 Creating a new application can be done using the <code class="token">New-PSRestApplication</code> cmdlet. Here is an example of how to
                 use it. 
             </p>
-            <pre><code class="language-powershell">New-PSRestApplication -Name "Example" -Description "An example to showcase PSRest" -Authentication "client_credential" -EnabledCommand "Get-Item", "Remove-Item"</code></pre>
-            <pre><code>client_id                            client_secret
+            <pre><code class="language-powershell">New-PSRestApplication -Name "Example" -Description "An example to showcase PSRest" -Authentication "client_credential" -EnabledCmdlets "Get-Item", "Remove-Item"</code></pre>
+            <pre><code class="language-shell">client_id                            client_secret
 ---------                            -------------
 1c6b246d-54bc-4d4b-9cb4-282dc9acaf5b 741c43b5-fb67-4a94-9495-f987e8c0922f</code></pre>
             <p>
-                By using the <code class="token">Get-PSRestApplication</code> cmdlet you can view all the applications that have been created. And what cmdlets
+                When authentication is set to <code class="token">access_token</code> an <code class="token">access_token</code> is provided. The token
+                is valid for 1 year and there is no way to get the token again so make sure you save it somewhere safe.
+            </p>
+            <pre><code class="language-powershell">New-PSRestApplication -Name "Example2" -Description "An example to showcase PSRest with access_token authentication" -Authentication "access_token" -EnabledModules "PSReadLine" -DisabledModuleCmdlets "Set-PSReadLineOption", "PSConsoleHostReadLine"</code></pre>
+            <pre><code class="language-shell">access_token
+------------
+eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJyZWZlcmVuY2UiOjEzLCJleHBpcnkiOjE3MzUwODU4MjguMjc2NTcyfQ.fNKOT1LXHFwgduq7P1NvySeW1ddMhhB23uh35PAItU3uD3aS2ONpVg0C03xytlAccvFaSaiJinY7_wsvLWJXTQ</code></pre>
+            <p>
+                By using the <code class="token">Get-PSRestApplication</code> cmdlet you can view all the applications that have been created. And what
+                cmdlets they are allowed to run. Here is an example of how to use it.
             </p>
             <pre><code class="language-powershell">Get-PSRestApplication</code></pre>
-            <pre><code class="language-shell">Id                    : 9
+            <pre><code class="language-shell">Id                    : 1
 ApplicationName       : Example
 Description           : An example to showcase PSRest
 EnabledCmdlets        : {Get-Item, Remove-Item}
 DisabledModuleCmdlets : {}
 EnabledModules        : {}
-Cmdlets               : {Get-Item, Remove-Item}</code></pre>
+Cmdlets               : {Get-Item, Remove-Item}
+
+Id                    : 2
+ApplicationName       : Example2
+Description           : An example to showcase PSRest with access_token authentication
+EnabledCmdlets        : {}
+DisabledModuleCmdlets : {Set-PSReadLineOption, PSConsoleHostReadLine}
+EnabledModules        : {PSReadLine}
+Cmdlets               : {Get-PSReadLineKeyHandler, Get-PSReadLineOption, Remove-PSReadLineKeyHandler, Set-PSReadLineKeyHandler}</code></pre>
             <p>
-                The <code class="token">New-PSRestApplication</code> cmdlet takes 3 parameters, <code class="token">Name</code>,
-                <code class="token">Description</code> and <code class="token">Authentication</code>. The <code class="token">Name</code> parameter is
-                mandatory and must be a string. The <code class="token">Name</code> parameter must be unique, if you try to create an application with a
-                name that already exists an error will be thrown. The <code class="token">Description</code> parameter is optional and must be a string.
-                The <code class="token">Authentication</code> parameter is mandatory and must be a string. The <code class="token">Authentication</code>
-                parameter must be either <code class="token">client_credential</code> or <code class="token">access_token</code>.
-
-            </p> 
-
-            
-            
-
-
-
-
-
-
-
-
-
-
-
-                <p>
-                To create a new application you can use the <code class="token">New-PSRestApplication</code> cmdlet. This cmdlet takes a single parameter
-                <code class="token">Name</code> which is the name of the application you want to create. The <code class="token">Name</code> parameter is
-                mandatory and must be a string. The <code class="token">Name</code> parameter must be unique, if you try to create an application with a
-                name that already exists an error will be thrown.
+                Cmdlets is a list of all the cmdlets that the application is allowed to run. This list is the union of the cmdlets in the
+                <code class="token">EnabledCmdlets</code> and all the exported cmdlets in the modules specified in the <code class="token">EnabledModules</code>
+                property minus the cmdlets in the <code class="token">DisabledModuleCmdlets</code> property.
             </p>
-            <p>
-                Below is an example of how to create a new application using the <code class="token">New-PSRestApplication</code> cmdlet.
-            </p>
-            <pre><code class="language-powershell">New-PSRestApplication -Name "&lt;application_name&gt;"</code></pre>
             <h3>Modify an application</h3>
             <p>
-                To set the cmdlets that an application can run you can use the <code class="token">Set-PSRestApplicationCmdlets</code> cmdlet. This cmdlet
-                takes two parameters <code class="token">Name</code> and <code class="token">Cmdlets</code>. The <code class="token">Name</code> parameter
-                is mandatory and must be a string. The <code class="token">Name</code> parameter must be the name of an application that already exists.
-                The <code class="token">Cmdlets</code> parameter is mandatory and must be an array of strings. The strings in the array must be the names
-                of cmdlets that you want to allow the application to run.
+                Using the <code class="token">Set-PSRestApplication</code> cmdlet you can modify an existing client application. This cmdlet
+                allows you to modify the cmdlets a given application can run and it's description. Here is an example of how to use it.
             </p>
+            <pre><code class="language-powershell">Set-PSRestApplication -Name "Example" -Description "An example to showcase PSRest" -EnabledCmdlets "Get-Item", "Remove-Item", "Get-ChildItem"</code></pre>
             <p>
-                Below is an example of how to set the cmdlets that an application can run using the <code class="token">Set-PSRestApplicationCmdlets</code>
-                cmdlet.
+                You can also remove a given application using the <code class="token">Remove-PSRestApplication</code> cmdlet. Here is an example of how to use it.
             </p>
-            <pre><code class="language-powershell">Set-PSRestApplication -Name "&lt;application_name&gt;" -Cmdlets @("&lt;cmdlet1&gt;", "&lt;cmdlet2&gt;", ...)</code></pre>
-            <h3>Get Application</h3>
-            <p>
-                To get an application you can use the <code class="token">Get-PSRestApplication</code> cmdlet. This cmdlet takes a single parameter
-                <code class="token">Name</code> which is the name of the application you want to get. The <code class="token">Name</code> parameter is
-                mandatory and must be a string. The <code class="token">Name</code> parameter must be the name of an application that already exists.
-            </p>
-            <h4>Remove application</h4>
-            <p>
-                To remove an application you can use the <code class="token">Remove-PSRestApplication</code> cmdlet. This cmdlet takes a single parameter
-                <code class="token">Name</code> which is the name of the application you want to remove. The <code class="token">Name</code> parameter is
-                mandatory and must be a string. The <code class="token">Name</code> parameter must be the name of an application that already exists.  
-            </p>
+            <pre><code class="language-powershell">Remove-PSRestApplication -Name "Example"</code></pre>
         </section>
         <h2 id="authentication">Authentication</h2>
         <section class="authentication">
@@ -354,7 +328,7 @@ Cmdlets               : {Get-Item, Remove-Item}</code></pre>
             </p>
             <h3 id="clientCredential">Client Credential</h3>
             <p>
-                When a new client application is created a <code class="token">client_id</code> and <code class="token">secret</code> are generated for
+                When a new client application is created a <code class="token">client_id</code> and <code class="token">client_secret</code> are generated for
                 that client application. These credentials can be used to authenticate the client application and generate an
                 <code class="token">access_token</code>. To learn more about creating a client application with PSRest check out the
                 <a href="#application">application</a> section.
@@ -432,7 +406,7 @@ Invoke-WebRequest -Uri http://&lt;psrest_server&gt;/oauth -Method POST -Body $bo
                 <h3>PSRest Console</h3>
                 <p>
                     When creating a new client application for PSRest you can specify if you want to generate a <code class="token">client_id</code> and
-                    <code class="token">secret</code> or if you want to generate an <code class="token">access_token</code> for the
+                    <code class="token">client_secret</code> or if you want to generate an <code class="token">access_token</code> for the
                     client application. If you choose to generate an <code class="token">access_token</code> the console will generate an access token for you
                     and display it in the console. This access token can then be used to authenticate with PSRest for 1 year.
                 </p>

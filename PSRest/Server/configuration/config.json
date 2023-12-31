@@ -10,10 +10,6 @@
     "MaxTTL": 900,
     "StrictTTL": false,
     "ArbitraryCommands": false,
-    "Enabled": [
-        "Write-Host",
-        "Invoke-WebRequest"
-    ],
     "Help": true,
     "Docs": true,
     "DefaultDepth": 4,

@@ -14,13 +14,13 @@ function New-PSRestApplication()
         [string]$Authentication = 'client_credential',
         [Parameter(Mandatory=$false)]
         # The cmdlets the application is permitted to use.
-        [string[]]$EnabledCommand = @(),
+        [string[]]$EnabledCmdlets = @(),
         [Parameter(Mandatory=$false)]
         # The modules the application is permitted to use.
-        [string[]]$EnabledModule = @(),
+        [string[]]$EnabledModules = @(),
         [Parameter(Mandatory=$false)]
         # The cmdlets the application is not permitted to use.
-        [string[]]$DisabledModuleCommand = @()
+        [string[]]$DisabledModuleCmdlets = @()
     )
 
     #Check that the description is no more than 10^9 bytes long when encoded as UTF-8
@@ -34,10 +34,10 @@ function New-PSRestApplication()
     # Verify that the cmdlets exist on the system.
     $Cmdlets = @()
 
-    if ($EnabledCommand -eq '*'){
+    if ($EnabledCmdlets -eq '*'){
         $Cmdlets = Get-Command | Select-Object -ExpandProperty Name
     }else{
-        $EnabledCommand | ForEach-Object {
+        $EnabledCmdlets | ForEach-Object {
             $command = Get-Command $_ -ErrorAction SilentlyContinue
             if ($command){
                 $Cmdlets += $_
@@ -49,7 +49,7 @@ function New-PSRestApplication()
 
     # Verify that the modules exist on the system.
 
-    $EnabledModule | ForEach-Object {
+    $EnabledModules | ForEach-Object {
         $Module = Get-Module $_ -ErrorAction SilentlyContinue
         if ($Module){
             $Module.ExportedCmdlets.GetEnumerator() | ForEach-Object {
@@ -61,7 +61,7 @@ function New-PSRestApplication()
     }
 
     # Remove any cmdlets that are disabled.
-    $DisabledModuleCommand | ForEach-Object {
+    $DisabledModuleCmdlets | ForEach-Object {
         $command = Get-Command $_ -ErrorAction SilentlyContinue
         if ($command){
             $Cmdlets = $Cmdlets | Where-Object { $_ -ne $command }
@@ -78,7 +78,7 @@ function New-PSRestApplication()
         throw "The application '$Name' already exists."
     }
 
-    $result = Invoke-PSRestConsole -command  "--method add --name '$Name' --description '$Description' --authentication '$Authentication' --enabledActions '$($EnabledCommand -join ',')' --enabledModules '$($EnabledModule -join ',')' --disabledActions '$($DisabledModuleCommand -join ',')'"
+    $result = Invoke-PSRestConsole -command  "--method add --name '$Name' --description '$Description' --authentication '$Authentication' --enabledActions '$($EnabledCmdlets -join ',')' --enabledModules '$($EnabledModules -join ',')' --disabledActions '$($DisabledModuleCmdlets -join ',')'"
     
     try{
         $application = ConvertFrom-Json $result

@@ -8,7 +8,7 @@ function Start-PSRestProcess {
     )
 
     process{
-        import-Module '/Users/leenton/python/PSrest/PSRest/PSRestModule.dll'
+        Import-Module "$Global:DLLs/PSRestModule.dll"
         
         trap{
             if(!$command){
