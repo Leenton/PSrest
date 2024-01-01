@@ -1,7 +1,7 @@
 import aiofiles
 from falcon.status_codes import HTTP_200, HTTP_403, HTTP_404
 from log import LogClient, Message, Level, Code
-from configuration import DOCS
+from configuration import DOCS, RESOURCE_DIR
 import json
 
 class Docs(object):
@@ -28,13 +28,13 @@ class Docs(object):
         elif(page == None):
             resp.status = HTTP_200
             resp.content_type = 'text/html'
-            async with aiofiles.open('./resources/html/docs.html', 'rb') as f:
+            async with aiofiles.open(RESOURCE_DIR + '/html/docs.html', 'rb') as f:
                 resp.text = await f.read()
 
         elif(str(page).lower() in self.doc_pages):
             resp.status = HTTP_200
             resp.content_type = 'text/html'
-            async with aiofiles.open(f'./resources/html/docs/{page}.html', 'rb') as f:
+            async with aiofiles.open( RESOURCE_DIR + f'/html/docs/{page}.html', 'rb') as f:
                 resp.text = await f.read()
 
         else:

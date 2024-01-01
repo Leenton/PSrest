@@ -1,7 +1,7 @@
 from falcon.status_codes import HTTP_200
 import aiofiles
 from log import LogClient, Message, Level, Code
-from configuration import VERSION, HELP
+from configuration import VERSION, HELP, RESOURCE_DIR
 from json import dumps
 from entities import CmdletInfoLibrary
 
@@ -38,6 +38,7 @@ class Home(object):
         else:                    
             resp.status = HTTP_200
             resp.content_type = 'text/html'
-            async with aiofiles.open('./resources/html/home.html', 'rb') as f:
+            
+            async with aiofiles.open(RESOURCE_DIR + '/html/home.html', 'rb') as f:
                 resp.text = await f.read()
             
