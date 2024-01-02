@@ -14,33 +14,14 @@ function Set-PSRestApplication()
         [string]$Description,
         [Parameter(Mandatory=$false)]
         # The cmdlets the application is permitted to use.
-        [string[]]$Cmdlet
+        [string[]]$EnabledCmdlets,
+        [Parameter(Mandatory=$false)]
+        # The modules the application is permitted to use.
+        [string[]]$EnabledModules,
+        [Parameter(Mandatory=$false)]
+        # The cmdlets the application is not permitted to use.
+        [string[]]$DisabledModuleCmdlets
     )
-
-    #Check that the description is no more than 10^9 bytes long when encoded as UTF-8
-    if ($Description)
-    {
-        $DescriptionBytes = [System.Text.Encoding]::UTF8.GetBytes($Description)
-        if ($DescriptionBytes.Length -gt 1000000000)
-        {
-            throw "The description is too long. The description must be no more than 10^9 bytes long when encoded as UTF-8."
-        }
-    }
-
-    # Verify tha the specified cmdlets exist on the system.
-    $Cmdlets = @()
-    foreach ($Cmd in $Cmdlet)
-    {
-        $Command = Get-Command $Cmd -ErrorAction SilentlyContinue
-        if ($Command)
-        {
-            $Cmdlets += $Cmd
-        }
-        else
-        {
-            throw "The cmdlet '$Cmd' does not exist on the system."
-        }
-    }
 
     try{
         if($Name){
@@ -56,15 +37,73 @@ function Set-PSRestApplication()
             }
         }
 
-        $result = Invoke-PSRestConsole -command "--method set --id $Id $($Description ? "--description '$Description' " : '')$($Cmdlets ? "--actions $($Cmdlets -join ',')" : '' )"
-        $application = ConvertFrom-Json $result
+        # Check that the description is no more than 10^9 bytes long when encoded as UTF-8
+        if ($Description)
+        {
+            $DescriptionBytes = [System.Text.Encoding]::UTF8.GetBytes($Description)
+            if ($DescriptionBytes.Length -gt 1000000000)
+            {
+                throw "The description is too long. The description must be no more than 10^9 bytes long when encoded as UTF-8."
+            }
+        }
+
+        # Verify that the cmdlets exist on the system.
+        $Cmdlets = @()
+
+        if($null -ne $EnabledCmdlets){
+            if ($EnabledCmdlets -eq '*'){
+                $Cmdlets = Get-Command | Select-Object -ExpandProperty Name
+            }else{
+                $EnabledCmdlets | ForEach-Object {
+                    $command = Get-Command $_ -ErrorAction SilentlyContinue
+                    if ($command){
+                        $Cmdlets += $_
+                    }else{
+                        throw "The cmdlet '$_' does not exist on the system."
+                    }
+                }
+            }
+        }
+
+        # Verify that the modules exist on the system.
+        if($null -ne $EnabledModules){
+            $EnabledModules | ForEach-Object {
+                $Module = Get-Module $_ -ErrorAction SilentlyContinue
+                if ($Module){
+                    $Module.ExportedCmdlets.GetEnumerator() | ForEach-Object {
+                        $Cmdlets += $_.Key
+                    }
+                }else{
+                    throw "The module '$_' does not exist on the system."
+                }
+            }
+        }
+
+        # Remove any cmdlets that are disabled.
+        if($null -ne $DisabledModuleCmdlets){
+            $DisabledModuleCmdlets | ForEach-Object {
+                $command = Get-Command $_ -ErrorAction SilentlyContinue
+                if ($command){
+                    $Cmdlets = $Cmdlets | Where-Object { $_ -ne $command }
+                }else{
+                    throw "The cmdlet '$_' does not exist on the system."
+                }
+            }
+        }
+
+        $application = Invoke-PSRestConsole -command (
+            "--method set " +
+            "--id $Id $($Description ? "--description '$Description' " : '')" +
+            "$($EnabledCmdlets ? "--enabledActions '$($EnabledCmdlets -join ',')' " : '')" +
+            "$($EnabledModules ? "--enabledModules '$($EnabledModules -join ',')' " : '')" +
+            "$($DisabledModuleCmdlets ? "--disabledActions '$($DisabledModuleCmdlets -join ',')' " : '' )"
+        ) | ConvertFrom-Json
 
         if($application.data -eq $true){
             return
         }else{
             throw "Error occured attempting to modify the specified application."
         }
-
     }catch{
         throw "Error occured attempting to modify the specified application."
     }

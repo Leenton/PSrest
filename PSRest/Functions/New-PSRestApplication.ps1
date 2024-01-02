@@ -48,7 +48,6 @@ function New-PSRestApplication()
     }
 
     # Verify that the modules exist on the system.
-
     $EnabledModules | ForEach-Object {
         $Module = Get-Module $_ -ErrorAction SilentlyContinue
         if ($Module){

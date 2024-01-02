@@ -55,11 +55,12 @@ class Console():
                 return self.get_application()
             
         elif request['method'] == 'set':
-
             return self.set_application(
                 request['id'],
                 request.get('description', None),
-                request.get('actions', None),
+                request.get('enabledActions', None),
+                request.get('enabledModules', None),
+                request.get('disabledActions', None)
             )
         
         elif request['method'] == 'version':
@@ -184,14 +185,13 @@ class Console():
     def set_application(
             self, cid: str,
             description: str|None,
-            enabled: List[str],
-            modules: List[str],
-            disabled: List[str]
+            enabled: List[str]|None = None,
+            modules: List[str]|None = None,
+            disabled: List[str]|None = None
         ) -> dict:
         cursor = self.database.cursor()
 
         if(description):
-            print("Updating description")
             cursor.execute(
                 "UPDATE client SET description = ? WHERE cid = ?",
                 (description, cid))
@@ -199,7 +199,6 @@ class Console():
             self.database.commit()
         
         if enabled is not None:
-            print("Updating enabled")
             cursor.execute(
                 "UPDATE client SET enabled_cmdlets = ? WHERE cid = ?",
                 (','.join(enabled), cid))
@@ -207,7 +206,6 @@ class Console():
             self.database.commit()
 
         if disabled is not None:
-            print("Updating disabled")
             cursor.execute(
                 "UPDATE client SET disabled_cmdlets = ? WHERE cid = ?",
                 (','.join(disabled), cid))
@@ -215,7 +213,6 @@ class Console():
             self.database.commit()
         
         if modules is not None:
-            print("Updating modules")
             cursor.execute(
                 "UPDATE client SET enabled_modules = ? WHERE cid = ?",
                 (','.join(modules), cid))

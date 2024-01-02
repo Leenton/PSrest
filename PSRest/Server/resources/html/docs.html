@@ -308,10 +308,10 @@ Cmdlets               : {Get-PSReadLineKeyHandler, Get-PSReadLineOption, Remove-
             </p>
             <h3>Modify an application</h3>
             <p>
-                Using the <code class="token">Set-PSRestApplication</code> cmdlet you can modify an existing client application. This cmdlet
-                allows you to modify the cmdlets a given application can run and it's description. Here is an example of how to use it.
+                Using the <code class="token">Set-PSRestApplication</code> cmdlet you can modify an existing client application. This allows you
+                to modify the cmdlets a given application can run and it's description. Here is an example of how to use it.
             </p>
-            <pre><code class="language-powershell">Set-PSRestApplication -Name "Example" -Description "An example to showcase PSRest" -EnabledCmdlets "Get-Item", "Remove-Item", "Get-ChildItem"</code></pre>
+            <pre><code class="language-powershell">Set-PSRestApplication -Name "Example" -Description "A NewDescription" -EnabledCmdlets "Get-Item", "Remove-Item", "Get-ChildItem"</code></pre>
             <p>
                 You can also remove a given application using the <code class="token">Remove-PSRestApplication</code> cmdlet. Here is an example of how to use it.
             </p>
