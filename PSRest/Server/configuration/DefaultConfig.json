@@ -1,0 +1,11 @@
+{
+    "Port": 80,
+    "DefaultTTL": 5,
+    "MaxTTL": 900,
+    "StrictTTL": false,
+    "ArbitraryCommands": false,
+    "Help": true,
+    "Docs": true,
+    "DefaultDepth": 4,
+    "StrictDepth": false
+}

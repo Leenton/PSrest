@@ -30,7 +30,7 @@ if(not path.isdir(APP_DATA)):
 
 # Load the config file and inject the values into the constants
 if(not path.isfile(APP_DATA + '/config.json')):
-    copyfile(str(Path(__file__).parent) + '/config.json', APP_DATA + '/config.json')
+    copyfile(str(Path(__file__).parent) + '/DefaultConfig.json', APP_DATA + '/config.json')
 
 CONFIG: dict = load(open(APP_DATA + '/config.json', 'r'))
 try:
