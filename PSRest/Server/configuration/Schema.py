@@ -51,7 +51,6 @@ OAUTH_SCHEMA = {
 CONFIG_SCHEMA = {
     "type" : "object",
     "properties" : {
-        "Hostname" : {"type" : "string"},
         "Port" : {
             "type" : "integer",
             "maximum": 65535,
@@ -86,7 +85,6 @@ CONFIG_SCHEMA = {
             "minimum": 1
         },
         "ArbitraryCommands" : {"type" : "boolean"},
-        "Enabled" : {"type" : "array", 'uniqueItems': True, "items": {"type": "string"}},
         "Help" : {"type" : "boolean"},
         "Docs" : {"type" : "boolean"},
         "DefaultDepth" : {
@@ -96,13 +94,11 @@ CONFIG_SCHEMA = {
         "StrictDepth" : {"type" : "boolean"},
     },
     "required": [
-        "Hostname",
         "Port",
         "DefaultTTL",
         "MaxTTL",
         "StrictTTL",
         "ArbitraryCommands",
-        "Enabled",
         "Help",
         "Docs",
         "DefaultDepth",
@@ -110,8 +106,3 @@ CONFIG_SCHEMA = {
         ],
     "additionalProperties": False
 }
-
-    # // "SSLCertificate": "/Users/leenton/python/PSrest/configuration/psrest.com+4.pem",
-    # // "SSLKeyFile": "/Users/leenton/python/PSrest/configuration/psrest.com+4-key.pem",
-    # // "SSLKeyFilePassword": null,
-    # // "SSLCiphers": "TLSv1.2",

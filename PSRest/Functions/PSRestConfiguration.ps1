@@ -1,5 +1,4 @@
 class PSRestConfig{
-    [string]$Hostname;
     [int]$Port;
     [string]$SSLCertificate;
     [string]$SSLKeyFile;

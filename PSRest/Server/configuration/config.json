@@ -1,5 +1,4 @@
 {
-    "Hostname": "localhost",
     "Scripts": "C:\\Users\\Public\\Documents\\PowerShell\\Scripts\\Invoke-PSImage.ps1",
     "Port": 443,
     "SSLCertificate": "/Users/leenton/python/PSrest/configuration/psrest.com+4.pem",

@@ -10,6 +10,7 @@ foreach($file in Get-ChildItem -Path "$PSScriptRoot/Functions" -Filter *.ps1){
 #Check the config file to know if check for updates is enabled
 $Global:CheckForUpdates = $true
 
-
-$Global:AppData = (Invoke-PSRestConsole -command "--method config" | ConvertFrom-Json).path
+$about = (Invoke-PSRestConsole -command "--method config" | ConvertFrom-Json).data
+$Global:AppData = $about.path
+$GLobal:Platform = $about.platform
 $Global:Config = Get-PSRestConfig 

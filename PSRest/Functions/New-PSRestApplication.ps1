@@ -77,7 +77,14 @@ function New-PSRestApplication()
         throw "The application '$Name' already exists."
     }
 
-    $result = Invoke-PSRestConsole -command  "--method add --name '$Name' --description '$Description' --authentication '$Authentication' --enabledActions '$($EnabledCmdlets -join ',')' --enabledModules '$($EnabledModules -join ',')' --disabledActions '$($DisabledModuleCmdlets -join ',')'"
+    $result = Invoke-PSRestConsole -command  (
+        "--method add --name '$Name'" +
+        " --description '$Description'" +
+        " --authentication '$Authentication'" +
+        " --enabledActions '$($EnabledCmdlets -join ',')'" +
+        " --enabledModules '$($EnabledModules -join ',')'" +
+        " --disabledActions '$($DisabledModuleCmdlets -join ',')'"
+    )
     
     try{
         $application = ConvertFrom-Json $result

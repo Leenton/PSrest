@@ -1,30 +1,22 @@
-function Get-PSRestConfig {
+function Get-PSRestConfiguration {
     [CmdletBinding()]
     param (
     )
 
     $Configuration = [PSRestConfig]::new()
 
-    $ConfigJson = Get-Content -Path "$($Global:AppData.Path)/config.json" | ConvertFrom-Json
+    try{
+        $ConfigJson = Get-Content -Path "$($Global:AppData)/config.json" -Raw | ConvertFrom-Json
+        $Keys = ($ConfigJson | Get-Member -MemberType NoteProperty).Name
 
-    # try{
-    #     $Config | Get-Member -MemberType Property | ForEach-Object {
-    #         if($ConfigJson."$($_.Name)" -eq 'Modules'){
-                
-    #             if($ConfigJson."$($_.Name)" -contains '*' -and $ConfigJson."$($_.Name)".Count -eq 1){
-    #                 $collection = $ConfigJson."$($_.Name)"
-    #                 foreach ($ in $collection) {
-    #                     <# $ is the current item #>
-    #                 }
-    #                 throw "Error: Unable to read config file, ensure that the config file exists and is valid JSON."
-    #             }
-    #         }
+        foreach ($Key in $Keys) {
+            $Configuration.$Key = $ConfigJson.$Key
+        }
 
-    #         $Config."$($_.Name)" = $ConfigJson."$($_.Name)"
-    #     }
-    # }catch{
-    #     throw "Error: Unable to read config file, ensure that the config file exists and is valid JSON."
-    # }
+        Write-Verbose "Configuration loaded from: $($Global:AppData)/config.json"
+    }catch{
+        throw "Error: Unable to read config file, ensure that the config file exists and is valid JSON."
+    }
 
-    return $Config
+    return $Configuration
 }

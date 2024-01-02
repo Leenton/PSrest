@@ -33,7 +33,7 @@
     Description = 'Module for administering a PSRest Server'
     
     # Minimum version of the PowerShell engine required by this module
-    PowerShellVersion = '7.3.0'
+    PowerShellVersion = '7.4.0'
     
     # Name of the PowerShell host required by this module
     # PowerShellHostName = ''
@@ -70,6 +70,8 @@
     
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
     FunctionsToExport = @(
+        'Get-PSRestConfiguration',
+        'Set-PSRestConfiguration',
         'Update-PSRest',
         'Start-PSRest',
 

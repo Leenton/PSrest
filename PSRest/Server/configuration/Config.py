@@ -42,7 +42,6 @@ except ValidationError as e:
     raise Exception('Invalid config file. Please check the config file against the schema. ' + e.message)
 
 CONFIG_FILE = APP_DATA + '/config.json'
-HOSTNAME = CONFIG['Hostname']
 PORT = CONFIG['Port']
 CERTIFICATE = CONFIG.get('SSLCertificate')
 KEY_FILE = CONFIG.get('SSLKeyFile')
@@ -71,7 +70,6 @@ PROCESSOR_SPIN_DOWN_PERIOD = 5
 ARBITRARY_COMMANDS = CONFIG['ArbitraryCommands']
 HELP = CONFIG['Help']
 DOCS = CONFIG['Docs']
-ENABLE_COMMANDS = CONFIG['Enabled']
 COMPETED = 'completed'
 FAILED = 'failed'
 
@@ -79,7 +77,6 @@ FAILED = 'failed'
 TMP_DIR = APP_DATA + '/temp'
 if(not path.isdir(TMP_DIR)):
     mkdir(TMP_DIR)
-
 PROCESSOR_HOST = '127.0.0.1'
 PSREST_PORT = 27500
 INGESTER_ADDRESS = f"{PROCESSOR_HOST}:{PSREST_PORT}"
