@@ -1,17 +1,3 @@
-# Port               : 80
-# SSLCertificate     : 
-# SSLKeyFile         : 
-# SSLKeyFilePassword : 
-# SSLCiphers         : 
-# DefaultTTL         : 5
-# MaxTTL             : 900
-# StrictTTL          : False
-# ArbitraryCommands  : False
-# Help               : True
-# Docs               : True
-# DefaultDepth       : 4
-# StrictDepth        : False
-
 function Set-PSRestConfiguration() {
     [CmdletBinding(SupportsShouldProcess)]
     param (
