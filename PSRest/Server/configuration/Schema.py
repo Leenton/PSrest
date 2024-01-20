@@ -61,10 +61,6 @@ CONFIG_SCHEMA = {
             "type" : ["string", "null"],
             "required": ["SSLCertificate"],
         },
-        "SSLKeyFilePassword" : {
-            "type" : ["string", "null"],
-            "required": ["SSLCertificate", "SSLKeyFile"],
-        },
         "SSLCiphers" : {
             "enum": [
                 "TLSv1",

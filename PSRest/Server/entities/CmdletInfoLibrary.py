@@ -1,7 +1,7 @@
 import subprocess
 import random
 from configuration.Console import get_actions
-from configuration import CONFIG_FILE, CREDENTIAL_DATABASE
+from configuration import CREDENTIAL_DATABASE, PSREST_CMDLETS
 from .CmdletInfo import CmdletInfo
 from sqlite3 import connect
 from json import loads, dumps
@@ -64,6 +64,13 @@ class CmdletInfoLibrary():
 
         for row in data:
             cmdlets.append(row[0])
+        
+        for cmdlet in PSREST_CMDLETS:
+            cmdlets.append(cmdlet)
+
+        #Make contents of cmdlets unique
+        cmdlets = list(set(cmdlets))
+        
         
         if (cmdlets):
             separator = random.randint(1_000_000_000, 9_999_999_999)

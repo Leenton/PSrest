@@ -29,8 +29,6 @@ function Set-PSRestConfiguration() {
         })]
         [string]$SSLKeyFile,
         [Parameter(Mandatory=$false)]
-        [string]$SSLKeyFilePassword,
-        [Parameter(Mandatory=$false)]
         [string]$SSLCiphers,
         [Parameter(Mandatory=$false)]
         [ValidateScript({
@@ -99,10 +97,6 @@ function Set-PSRestConfiguration() {
 
     if ($SSLKeyFile){
         $ConfigJson.SSLKeyFile = $SSLKeyFile
-    }
-
-    if ($SSLKeyFilePassword){
-        $ConfigJson.SSLKeyFilePassword = $SSLKeyFilePassword
     }
 
     if ($SSLCiphers){

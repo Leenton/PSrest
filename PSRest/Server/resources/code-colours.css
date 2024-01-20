@@ -39,6 +39,7 @@
 @media (prefers-color-scheme: light) {
     body {
         --codeTokenBackground: #fafafa;
+        --codeTokenBackgroundHover: #ffffff;
         --codeBackgroundHover: #ffffff;
         --codeMozSelectioBackground: #fafafa;
         --codeMozSelectioColour: #232629;

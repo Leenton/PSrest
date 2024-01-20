@@ -9,6 +9,7 @@ from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 from json import load
 from .Schema import CONFIG_SCHEMA
+from os import getenv
 
 # PSRestVersion
 VERSION = 'Alpha 0.9.1'
@@ -45,7 +46,8 @@ CONFIG_FILE = APP_DATA + '/config.json'
 PORT = CONFIG['Port']
 CERTIFICATE = CONFIG.get('SSLCertificate')
 KEY_FILE = CONFIG.get('SSLKeyFile')
-KEYFILE_PASSWORD = CONFIG.get('SSLKeyFilePassword')
+KEYFILE_PASSWORD = getenv('PSRestSSLKeyFilePassword') if KEY_FILE and CERTIFICATE else None
+
 CIPHERS =  CONFIG.get('SSLCiphers') if CONFIG.get('SSLCiphers') else 'TLSv1' 
 
 # Constants for the ticketing system
@@ -69,6 +71,16 @@ PROCESSOR_SPIN_UP_PERIOD = 0.25
 PROCESSOR_SPIN_DOWN_PERIOD = 5
 ARBITRARY_COMMANDS = CONFIG['ArbitraryCommands']
 HELP = CONFIG['Help']
+PSREST_CMDLETS = [
+    'Get-PSRestConfiguration',
+    'Set-PSRestConfiguration',
+    'Update-PSRest',
+    'Start-PSRest',
+    'New-PSRestApplication',
+    'Set-PSRestApplication',
+    'Get-PSRestApplication',
+    'Remove-PSRestApplication'
+]
 DOCS = CONFIG['Docs']
 COMPETED = 'completed'
 FAILED = 'failed'

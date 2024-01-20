@@ -9,5 +9,4 @@
 
 # // "SSLCertificate": "/Users/leenton/python/PSrest/configuration/psrest.com+4.pem",
 # // "SSLKeyFile": "/Users/leenton/python/PSrest/configuration/psrest.com+4-key.pem",
-# // "SSLKeyFilePassword": null,
 # // "SSLCiphers": "TLSv1.2",

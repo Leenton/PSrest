@@ -15,8 +15,6 @@
             background-color: var(--background);
             color: var(--text);
             line-height: 1.5;
-            display: grid;
-            grid-template-columns: 20% 80%;            
         }
 
         .content a {
@@ -30,7 +28,7 @@
         }
 
         .content {
-            width: 90%;
+            width: 85%;
             max-width: 1000px;
         }
         
@@ -57,40 +55,6 @@
             margin-bottom: 0.5em;
         }
 
-       
-        .sidebar {
-            background-color: var(--primary);
-            position: relative;
-        }
-
-         /* put center the sidebar index to be in the center of the sidebar div */
-        /* .sidebar .index{
-            margin-top: 0;
-            position: fixed;
-            width: 20%;
-            list-style-type: none; 
-            padding: 0;
-        } */
-
-        .sidebar ul{
-            list-style-type: none;  
-        }
-        /* style the sidebar links */
-        .sidebar a {
-            display: block;
-            color: var(--text);
-            padding: 16px;
-            text-decoration: none;
-            border-radius: 0.5em;
-            cursor: pointer;
-        }
-
-        .sidebar a:hover {
-            background-color: var(--secondary);
-            color: var(--text);
-        }
-
-        /* put the main content to the right of the sidebar */
         .content {
             margin-left: 200px;
             padding: 1px 16px;
@@ -110,137 +74,311 @@
             margin-block: 2rem;
             border-bottom: 0.25rem solid var(--secondary);
         }
+
+        section {
+            background-color: var(--tertiary);
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .sidebar {
+            height: 100%;
+            min-width: 4.5%;
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            background-color: var(--tertiary);
+            overflow-x: hidden;
+            padding-top: 20px;
+            scrollbar-width: none;
+            font-weight: bold;
+        } 
+
+        .sidebar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .sidebar:hover {
+            background-color: var(--primary);
+            background-image: none;
+            cursor: pointer;
+        }
+
+        #index {
+            list-style-type: none;  
+            display: none;
+            text-decoration: none;
+            padding: 0;
+            padding: 3rem;
+        }
+
+        #index ul {
+            list-style-type: disc;
+        }
+
+        #index li {
+            margin-block: 0.5rem;
+        }
+
+        #index a {
+            display: block;
+            color: var(--text);
+            padding: 16px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        #index a:hover {
+            color: var(--text);
+            font-weight: bold;
+            color: var(--linkColour);
+
+        }
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <ul class="index">
+
+    <div id="sidebar" class="sidebar" onclick="toggleSideBar()">
+        <ul id="index">
             <li><a href="./">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#gettingStarted">Getting Started</a></li>
             <li><a href="#config">Configuration</a>
                 <ul>
+                    <li><a href="#configCmdlets">Config Cmdlets</a></li>
                     <li><a href="#configFile">Config File</a></li>
-                    <li><a href="#help">Help</a></li>
                 </ul>
             </li>
-            <li><a href="#auth">Authentication</a></li>
-            <li><a href="#run">Run Commands</a></li>
-            <li><a href="#help">Help</a></li>
-            <li><a href="#about">About</a></li>
+            <li><a href="#applications">Applications</a>
+                <ul>
+                    <li><a href="#createApplication">Create Application</a></li>
+                    <li><a href="#modifyApplication">Modify Application</a></li>
+                </ul>
+            </li>
+            <li><a href="#authentication">Authentication</a>
+                <ul>
+                    <li><a href="#clientCredential">Client Credential</a></li>
+                    <li><a href="#refreshToken">Refresh Token</a></li>
+                    <li><a href="#psrestConsole">PSRest Console</a></li>
+                </ul>
+            </li>
+            <li><a href="#run">Run Commands</a>
+                <ul>
+                    <li><a href="#runHeaders">Headers</a></li>
+                    <li><a href="#runRequestBody">Request Body</a></li>
+                </ul>
+            </li>
         </ul>
     </div>
+    <div class="container" onclick="clearSideBar()">
     <div class="content">
-        <section class="header">
-            <h1>Documentation</h1>
+        <h1>Documentation</h1>
+        <p>
+            If you like using PSrest consider donating to help support the project. Visit <a href="https://psrest.com/donate">psrest.com</a> to donate and
+            learn more.
+        </p>
+        <h2 id="gettingStarted">Getting started</h2>
+        <section class="gettingStarted">
             <p>
                 PSRest is a Powershell module that allows you to run Powershell commands via a REST API. PSRest is designed to be used as a REST API
                 for Powershell, allowing you to run Powershell commands from any language or source that can make HTTP requests. PSRest is designed to be used
-                as a REST API for Powershell. If you need more information about PSRest you can find it on the <a href="psrest.com">PSRest website</a>.
+                as a REST API for Powershell. If you need more information about PSRest you can find it on the <a href="https://psrest.com">PSRest website</a>.
             </p>
+            <h3 id="install">Install</h3>
+            <p>
+                PSRest can be installed from the Powershell Gallery using the following command:
+            </p>
+            <pre><code class="language-powershell">Install-Module -Name PSRest</code></pre>
         </section>
-
-
-
-
-
-
         <h2 id="config">Configuration</h2>
         <section class="configuration">
-            <span>
-                PSRest offers a number of configuration options to allow you to alter the behaviour of the application.
-                There are two ways to configure PSRest, either by using a config file or by using the Powershell Cmdlets packaged with PSRest.
-            </span>
-
-            <h4 id="configFile">Config File</h3>
-            <span>
-                The config file is a JSON file that is used to configure PSRest. The config file is located in the `config` in the user application data folder
-                for the user that is running PSRest. On Windows this is located at `C:\Users\&lt;username&gt;\AppData\Roaming\PSRest\config.json`.
-                On MacOS the config file is located at `~/.config/PSRest/config.json`.
-            </span>
+            <P>
+                PSRest offers a number of configuration options to allow you to alter the behaviour of the application. There are two ways to configure
+                PSRest, using the Powershell Cmdlets packaged with PSRest or by editing the config file directly.
+            </p>
+            <h3 id="configCmdlets">Config Cmdlets</h3>
+            <p>
+                PSRest comes with a number of cmdlets that allow you to configure PSRest. These cmdlets are:
+            </p>
+            <ul>
+                <li><code class="token"><a href="help/Get-PSRestConfiguration">Get-PSRestConfiguration</a></code></li>
+                <li><code class="token"><a href="help/Set-PSRestConfiguration">Set-PSRestConfiguration</a></code></li>
+            </ul>
+            <p>
+                The <code class="token">Get-PSRestConfiguration</code> cmdlet allows you to view the current configuration of PSRest. Here is an example of how to use it:
+            </p>
+            <pre><code class="language-powershell">Get-PSRestConfiguration</code></pre>
+            <pre><code class="language-shell">Port              : 80
+SSLCertificate    : 
+SSLKeyFile        : 
+SSLCiphers        : 
+DefaultTTL        : 5
+MaxTTL            : 900
+StrictTTL         : False
+ArbitraryCommands : False
+Help              : True
+Docs              : True
+DefaultDepth      : 4
+StrictDepth       : False</code>
+            </pre>
+            <p>
+                The <code class="token">Set-PSRestConfiguration</code> cmdlet allows you to modify the configuration of PSRest. To learn what each parameter does
+                check out the <a href="#configFile">config file</a> section, or read the <a href="help/Set-PSRestConfiguration">help</a> page for the cmdlet.
+            </p>
+            <pre><code class="language-powershell">Set-PSRestConfiguration -Port 443 -SSLCertificate "&lt;certifcate_path&gt;" -SSLKeyFile "&lt;certifcate_path&gt;" -SSLCiphers "TLSv1.2" -DefaultTTL 10</code></pre>
+            <p>
+                After running the above command the <code class="token">Get-PSRestConfiguration</code> cmdlet will return the following:
+            </p>
+            <pre><code class="language-shell">Port              : 443
+SSLCertificate    : &lt;certifcate_path&gt;                         
+SSLKeyFile        : &lt;certifcate_path&gt;
+SSLCiphers        : TLSv1.2
+DefaultTTL        : 10
+MaxTTL            : 900
+StrictTTL         : False
+ArbitraryCommands : False
+Help              : True
+Docs              : True
+DefaultDepth      : 4
+StrictDepth       : False</code></pre>
+            <h3 id="configFile">Config file</h3>
+            <p>
+                The config file is a JSON file that can be found in the following locations depending on your operating system:
+            </p>
+            <ul>
+                <li>Windows: <code class="token">%AppData%\PSRest\config.json</code></li>
+                <li>MacOS: <code class="token">~/.config/PSRest/config.json</code></li>
+                <li>Linux: <code class="token">~/Library/Application Support/PSRest</code></li>
+            </ul>
+            <p>
+                It's location is relative to the user that is running PSRest. If you are running PSRest as a service then the config file will be located
+                in the home directory of the user that is running PSRest.
+            </p>
+            <p>
+                The config contains all the configuration options that PSRest supports. The config file is loaded when PSRest starts and any changes made
+                to the config file will not take effect until PSRest is restarted. Below is an example showing the contents of the config file:
+            </p>
+            <pre><code class="language-json">{
+    "Port": 443,
+    "SSLCertificate": "&lt;certifcate_path&gt;",
+    "SSLKeyFile": "&lt;certifcate_path&gt;",
+    "SSLCiphers": "TLSv1.2",
+    "DefaultTTL": 5,
+    "MaxTTL": 900,
+    "StrictTTL": false,
+    "Help": true,
+    "Docs": true,
+    "DefaultDepth": 4,
+    "StrictDepth": false,
+    "ArbitraryCommands": false
+}</code></pre>
+            <p>
+                The config file contains the following options:
+            </p>
             <h4 id="Port">Port</h4>
-            <span>
-                The port `Port` option allows you to specify the port that PSRest will listen on. 
-            </span>
-            <h4 id="Cert">Certificate</h4>
-            <span>
-                The `certificate` option allows you to specify the filepath of the certificate that PSRest will use to encrypt the connection between the client
-                and the server. This will allows you to use HTTPS to connect to PSRest. If you do not specify a certificate then PSRest will fall back and use HTTP.
-            </span>
-            <h4 id="Enabled">Enabled</h4>
-            <span>
-                The `Enabled` option allows you to specify a set of cmdlets that you want to expose via PSRest. In the config file this is an array of strings where 
-                each string is the name of a cmdlet that you want to expose. If you do not specify any cmdlets then PSRest will not expose any cmdlets so no cmdlets
-                can be executed via the `&lt;psrest server&gt;/run` endpoint. 
+            <p>
+                The <code class="token">Port</code> option allows you to specify the port PSRest will listen on. The value must be a valid port number
+                i.e between 1 and 65535. This option is mandatory and if not set PSRest will not start.
+            </p>
+            <h4 id="SSLCertificate">SSL Certificate</h4>
+            <p>
+                <code class="token">SSLCertificate</code> is an optional option, when this option is set PSRest will use only work with HTTPS and
+                will not accept HTTP requests. The value of this option must be a valid path to a certificate file. If this option is not set PSRest
+                will work with only HTTP and will not accept HTTPS requests.
+            </p>
+            <h4 id="SSLKeyFile">SSL Key File</h4>
+            <p>
+                <code class="token">SSLKeyFile</code> is an optional option, that is dependent on the <code class="token">SSLCertificate</code> option being set.
+                When this option is set PSRest will use only work with HTTPS and will not accept HTTP requests. The value of this option must be a valid
+                path to a key file. If this option is not set PSRest will work with only HTTP and will not accept HTTPS requests.
+            </p>
 
-                If the list of cmdlets you want to specify is an array only containing the string `*` then PSRest will expose all cmdlets that are available to the
-                user that is running PSRest. This is useful if you want to expose all cmdlets to PSRest but do not want to have to manually specify each cmdlet.
-            </span>
-
+            <p>
+                If your Key file has a password in order to use it with PSRest you will need to create an environment variable called
+                <code class="token">PSRestSSLKeyFilePassword</code>. 
+            </p>
+            <h4 id="SSLCiphers">SSL Ciphers</h4>
+            <p>
+                <code class="token">SSLCiphers</code> is an optional option, and is dependent on the <code class="token">SSLCertificate</code> and the
+                <code class="token">SSLKeyFile</code> options being set. This allows you to specify the ciphers PSRest will use when handling PSRest will use
+                when handling HTTPS requests. The value of this option must be a valid cipher string. If this option is not set PSRest will use the default
+                <code>TLSv1.2</code>.
             <h4 id="DefaultTTL">Default TTL</h4>
-            <span>
-                The `DefaultTTL` option allows you to specify the default time to live for a command that is run via PSRest. This is useful if you want to limit
-                the amount of time that a command can run for. If you do not specify a TTL for a command then the default TTL will be used.
-            </span>
+            <p>
+                <code class="token">DefaultTTL</code> is a mandatory option that allows you to specify the default time to live for a command
+                that is run by PSRest. If a user does not specify a TTL when running a command via PSRest then the command will run for the amount of time
+                specified by this option. The value of this option must be a whole number between 1 and the value of the <code class="token">MaxTTL</code>
+                option. 
+            </p>
+            <p>
+                The value represents the number of seconds that a command can run for. If the value is set to 1 then the command must complete within
+                1 second or it will be terminated. And the user will be returned a timeout error.
+            </p>
             <h4 id="MaxTTL">Max TTL</h4>
-            <span>
-                The `MaxTTL` option allows you to specify the maximum time to live for a command a user can specify when running a command via PSRest. This is
-                useful if you want to limit the amount of time that a command can run for. 
-            </span>
+            <p>
+                <code class="token">MaxTTL</code> is a mandatory option that allows you to specify the maximum time to live for a command a user
+                can specify when running a command via PSRest. This is useful if you want to limit the amount of time that a command can run for. ie 
+                not allow commands to take longer than 5 minutes for example.
+            </p>
             <h4 id="StrictTTL">Strict TTL</h4>
-            <span>
-                The `StrictTTL` option allows you to specify whether or not PSRest should not allow a user to specify a TTL. If this option is enabled then
-                PSRest will not allow a user to specify a TTL when running a command via PSRest and commands will only be able to run as long as defined by
-                the `DefaultTTL`. If this option is disabled then PSRest will allow a user to define a TTL for their command upto the maximum TTL defined by
-                the `MaxTTL` option.
+            <p>
+                <code class="token">StrictTTL</code> is a mandatory option that allows you to specify whether or not PSRest should or should not allow a
+                user to specify a custom TTL when executing commands. If this option is enabled, PSRest will not allow a user to specify a TTL when running
+                a command and commands will only be able to run as long as defined by the <code class="token">DefaultTTL</code>.
+            </p>
+            <p>
+                If this option is disabled
+                then PSRest will allow a user to define a TTL for their command upto the maximum TTL defined by the <code class="token">MaxTTL</code> option.
+            </p>
             <h4 id="Help">Help</h4>
-            <span>
-                When the `Help` option in the config is enabled, PSRest will automatically generate a help page for all commands that can be run by PSRest.
-                These help pages can be found at the following URL: ` &lt;psrest server&gt;/help/&lt;cmdlet name&gt; ` these help pages produce the same output
-                as the `Get-Help` cmdlet in Powershell with the `Full` swicth enabled.
-
+            <p>
+                <code class="token">Help</code> is a mandatory option when this is enabled, i.e set to true, PSRest will automatically generate a help page
+                for all commands that can be run by PSRest.
+            </p>
+            <p>    These help pages can be found at the following URL:
+                <code class="token">&lt;psrest server&gt;/help/&lt;cmdlet name&gt;</code> these help pages produce the same output
+                as the <code class="token">Get-Help</code> cmdlet in Powershell with the <code class="token">Full</code> swicth enabled.
+            </p>
+            <p>
                 These help pages offer a great way to document how to use commands you decide to expose via PSRest, allowing others to learn how to use your
                 commands without having to read the source code or directly ask you for support.
-            </span>
-
+            </p>
             <h4 id="Docs">Docs</h4>
-            <span>
-                When the `Docs` option in the config is enabled the documentation page will be available at the following URL: ` &lt;psrest server&gt;/docs `.
-                If disabled this page will be disabled and a 403 error will be returned if you try to access it.
-            </span>
-            <h4 id="Depth">Default Depth</h4>
-            <span>
-                All cmdlet output returned by PSRest when using the `&lt;psrest server&gt;/run` endpoint are JSON responses, the `Default Depth` option allows you
-                to set the default depth that PSRest will use when cmdlet output to JSON. This is useful as it stops PSRest from returning a huge JSON response when
-                you only want a small amount of data. The default depth is 4, which means that only the first 4 levels of nested data in the object will be returned.
-
-                Anything deeper than this will be replaced with a `Powershell property description` of the data to indicate that there is more data available.
-                If you want to see more data you can use the `depth` in your cmdlet request to specify the depth you want.
-            </span>
-            <h4 id="StrictDepth">Strict Depth</h4>
-            <span>
-                When the `StrictDepth` option is enabled, PSRest will only return the data that is specified by the `DefaultDepth` option. If the `DefaultDepth`
-                option is set to 4, then only the first 4 levels of nested data will be returned. If the `StrictDepth` option is disabled, then PSRest will return
-                the default depth and if a user specifies a depth then PSRest will return the depth specified by the user.
-            </span>
-            <h4 id="ArbitraryCommands">Strict Depth</h4>
-            <span>
-                When the `ArbitraryCommands` option is enabled, PSRest will stop sanitizing cmdlets in the `&lt;psrest server&gt;/run` endpoint. This means that 
-                what everr raw cmdlet you pass to PSRest will be run. This is highly dangerous and should only be enabled if you know what you are doing.
-
-                When enabled this changes the `&lt;psrest server&gt;/run` endpoint from a predefined and and authorized cmdlet runner to an invoke-expression
-                endpoint, so any cmdlet string that is valid powershell will be executed by PSRest.
-            </span>
             <p>
-                It is recommended that you only expose the cmdlets that you need to use via PSRest and highly recommended to not expose the following cmdlets unless
-                you know what you are doing:
+                <code class="token">Docs</code> is a mandatory option when enabled this documentation page you are reading right now is made available,
+                allowing you and others to learn how to use PSRest and how to configure it. 
+            </p>
+            <h4 id="Depth">Default Depth</h4>
+            <p>
+                All cmdlet output returned by PSRest when using the <code class="token">/run</code> endpoint are JSON responses, <code class="token">DefaultDepth</code>
+                is a mandatory option that allows you to specify the default depth that PSRest will use when converting cmdlet responses to json.
             </p>
             <p>
-                Invoke-Expression, Invoke-Command, Invoke-Item, Invoke-History, Invoke-WebRequest, Enter-PSHostProcess  Enter-PSSession
+                This stops PSRest from returning a huge JSON response which are quite common when converting powershell objects to json
+                when you only want a small amount of data. By default <code class="token">DefaultDepth</code> is set to 4, which means that only the first
+                4 levels of nested data in the object will be returned.
+            </p>
+            <p>
+                Anything deeper than this will be replaced with a <b>Powershell property description</b> of the data to indicate that there is more data available.
+                If a user wants to see the data that is deeper than the <code class="token">DefaultDepth</code> they can specify a depth when running a command.
+            </p>
+            <h4 id="StrictDepth">Strict Depth</h4>
+            <p>
+                <code class="token">StrictDepth</code> is a mandatory boolean option, when set to true,PSRest will only return convert the responses generated
+                by powershell cmdlets to the depth level specified by the <code class="token">DefaultDepth</code> option and will ignore any depth specified by
+                the user when running a command.
+            </p>
+            <h4 id="ArbitraryCommands">Arbitrary Commands</h4>
+            <p>
+                <code class="token">ArbitraryCommands</code> is a mandatory boolean option, when set to true PSRest will stop sanitizing cmdlets it recieves. 
+                Whatever raw cmdlet a user passes to PSRest will be run regardless of whether or not the application has been configured to allow that cmdlet
+                to be run. This also allows you to escape strings and pipe cmdlets together.
+            </p>
+            <p>
+                This is highly dangerous and should only be enabled if you know what you are doing.
             </p>
         </section>
-
-
-
-
         <h2 id="applications">Applications</h2>
         <section class="applications">
             <p>
@@ -306,10 +444,13 @@ Cmdlets               : {Get-PSReadLineKeyHandler, Get-PSReadLineOption, Remove-
                 <code class="token">EnabledCmdlets</code> and all the exported cmdlets in the modules specified in the <code class="token">EnabledModules</code>
                 property minus the cmdlets in the <code class="token">DisabledModuleCmdlets</code> property.
             </p>
-            <h3>Modify an application</h3>
+            <h3 id="modifyApplication">Modify an application</h3>
             <p>
                 Using the <code class="token">Set-PSRestApplication</code> cmdlet you can modify an existing client application. This allows you
                 to modify the cmdlets a given application can run and it's description. 
+            </p>
+            <p>
+                It's worth noting any changes made to an application will not take effect until PSRest is restarted.
             </p>
             <pre><code class="language-powershell">Set-PSRestApplication -Name "Example" -Description "A new description" -EnabledModules "PSReadLine"</code></pre>
             <pre><code class="language-powershell">Get-PSRestApplication -Name "Example"</code></pre>
@@ -339,7 +480,7 @@ Cmdlets               : {Get-Item, Remove-Item, Get-PSReadLineKeyHandler, Get-PS
                 When a new client application is created a <code class="token">client_id</code> and <code class="token">client_secret</code> are generated for
                 that client application. These credentials can be used to authenticate the client application and generate an
                 <code class="token">access_token</code>. To learn more about creating a client application with PSRest check out the
-                <a href="#application">application</a> section.
+                <a href="#applications">applications</a> section.
             </p>
             <p>
                 Below is an example of how to authenticate a client application using the <code class="token">client_credential</code> method with
@@ -374,7 +515,7 @@ Invoke-WebRequest -Uri http://&lt;psrest_server&gt;/oauth -Method POST -Body $bo
                     <b>Note:</b> the <code class="token">expires_in</code> property is the number of seconds that the <code class="token">access_token</code> is valid for.
                 </p>
                 <div class="breakLine"></div>
-                <h3>Refresh Token</h3>
+                <h3 id="refreshToken">Refresh Token</h3>
                 <p>
                     When a user authenticates with PSRest using the <code class="token"><a href="#clientCredential">client_credential</a></code> method, a <code class="token">refresh_token</code>
                     is also generated. This <code class="token">refresh_token</code> can be used to authenticate a user and generate a new
@@ -411,7 +552,7 @@ Invoke-WebRequest -Uri http://&lt;psrest_server&gt;/oauth -Method POST -Body $bo
                     <b>Note:</b> the <code class="token">expires_in</code> property is the number of seconds that the <code class="token">access_token</code> is valid for.
                 </p>
                 <div class="breakLine"></div>
-                <h3>PSRest Console</h3>
+                <h3 id="psrestConsole">PSRest Console</h3>
                 <p>
                     When creating a new client application for PSRest you can specify if you want to generate a <code class="token">client_id</code> and
                     <code class="token">client_secret</code> or if you want to generate an <code class="token">access_token</code> for the
@@ -423,7 +564,7 @@ Invoke-WebRequest -Uri http://&lt;psrest_server&gt;/oauth -Method POST -Body $bo
                     <code class="token"><a href="#clientCredential">client_credential</a></code> method.
                 </p>
                 <p>
-                    Check out the <a href="#applicationManagement">application management</a> section to learn more about creating a new client application for PSRest.
+                    Check out the <a href="#applications">applications</a> section to learn more about creating a new client application for PSRest.
                 </p>
         </section>
         <h2 id="run">Run Commands</h2>
@@ -432,9 +573,9 @@ Invoke-WebRequest -Uri http://&lt;psrest_server&gt;/oauth -Method POST -Body $bo
                 The <code class="token">/run</code> endpoint is the main endpoint for PSRest. This endpoint allows you to run Powershell commands via a HTTP post
                 request. What commands you can run is limited to those authorised for your <code class="token">access_token</code>. Check out the
                 <a href="#authentication">authentication</a> section to learn how to get an <code class="token">access_token</code> and
-                <a href="#applicationManagement">application management</a> to learn how to authorize a set of cmdlets for a given application. 
+                <a href="#applications">applications</a> to learn how to authorise a set of cmdlets for a given application. 
             </p>
-            <h3>Headers</h3>
+            <h3 id="runHeaders">Headers</h3>
             <p>
                 Listed below are the headers that are used by the <code class="token">/run</code> endpoint.
             </p>
@@ -465,7 +606,7 @@ TTL: &lt;int&gt;</code></pre>
                     option will be used.
                 </li>
             </ul>
-            <h3>Request Body</h3>
+            <h3 id="runRequestBody">Request Body</h3>
             <p>
                 The request body sent must be a valid JSON object, here is an example that uses named parameters:
             </p>
@@ -615,24 +756,22 @@ Invoke-WebRequest -Uri http://&lt;psrest_server&gt;/run -Method POST -Body $body
     "error": null,
 }</code></pre>
         </section>
-
-
-
-
-
         <h2 id="about">About</h2>
         <section class="about">
             <p>
                 PSRest is an application that allows you to run Powershell commands via a REST API. Allowing you to connect anything that can speak HTTP to Powershell.
-                CHeck out my soundcloud for more information about PSRest.
-
-                Also follow me on mastodon and twitter for updates about PSRest.
-
-                Donate to my patreon to support the development of PSRest.
-
-                email me at leenton@psrest.com if you have any questions or want to get in touch.
+                PSRest was created by Leenton in 2022. To learn about licensing check out the <a href="https://psrest.com/license">license</a> page
+                on the PSRest website.
+            </p>
+            <p>
+                If you have any queries and want to get in touch or need help send an email to <a href="mailto:howdy@psrest.com">howdy@psrest.com</a> or join send a "toot" to 
+                <a href="https://mastodon.social/@leenton">@leenton</a> on Mastodon.
+            </p>
+            <p>
+                To learn more about new versions of psrest check out the <a href="https://psrest.com/changelog">changelog</a> page on the PSRest website.
             </p>
         </section>
+    </div>
     </div>
 </body>
 <script src="resources/highlight.js"></script>
@@ -640,5 +779,22 @@ Invoke-WebRequest -Uri http://&lt;psrest_server&gt;/run -Method POST -Body $body
 <script src="resources/json.js"></script>
 <script>
   hljs.highlightAll();
+</script>
+<script>
+    function toggleSideBar() {
+        var id = document.getElementById("index");
+        if (id.style.display == "none" || id.style.display == "") {
+            id.style.display = "block";
+            sidebar.onclick = function() { clearSideBar(); };
+        }
+    }
+
+    function clearSideBar() {
+        sidebar.onclick = function() { toggleSideBar(); }; 
+        var id = document.getElementById("index");
+        if (id.style.display == "block") {
+            id.style.display = "none";
+        }
+    }
 </script>
 </html>

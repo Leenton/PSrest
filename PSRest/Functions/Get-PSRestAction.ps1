@@ -32,7 +32,7 @@ function Get-PSRestActions{
     if ($EnabledModule -ne ''){
         # Verify that the modules exist on the system.
         $EnabledModule | ForEach-Object {
-            $Module = Get-Module $_ -ErrorAction SilentlyContinue
+            $Module = Get-Module $_ -ErrorAction SilentlyContinue -ListAvailable
             if ($Module){
                 $Module.ExportedCmdlets.GetEnumerator() | ForEach-Object {
                     $Cmdlets += $_.Key
