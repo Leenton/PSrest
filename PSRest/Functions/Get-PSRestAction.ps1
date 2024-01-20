@@ -8,6 +8,8 @@ function Get-PSRestActions{
         [switch]$AsBase64
     )
 
+    $ErrorActionPreference = 'Stop'
+
     $Filter = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($Filter))
     $EnabledCommand, $EnabledModule, $DisabledModuleCommand = $Filter.Split($Separator)
 

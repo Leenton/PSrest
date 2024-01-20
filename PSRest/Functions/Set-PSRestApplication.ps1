@@ -23,6 +23,8 @@ function Set-PSRestApplication()
         [string[]]$DisabledModuleCmdlets
     )
 
+    $ErrorActionPreference = 'Stop'
+
     try{
         if($Name){
             $application = Get-PSRestApplication -Name $Name -ErrorAction SilentlyContinue

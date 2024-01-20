@@ -9,6 +9,8 @@ function Start-PSRest(){
 
     )
 
+    $ErrorActionPreference = 'Stop'
+
     if ($Port -gt 65535 -or $Port -lt 1 -and ($Port -ne 0)){
         throw "The port must be a positive whole number less than 65536."
     }
@@ -18,7 +20,7 @@ function Start-PSRest(){
 
     try{
         # Start the PSRest Workers
-        &python3 ($Global:InstallPath + '/' + "App.py") --port=$Port --loglevel=$LogLevel
+        &$($Global:Python) ($Global:InstallPath + '/' + "App.py") --port=$Port --loglevel=$LogLevel
     }finally{
     }
 }

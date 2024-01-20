@@ -10,6 +10,8 @@ function Get-PSRestApplication()
         # The Id of the Application to search for.
         [int32]$Id = 0
     )
+
+    $ErrorActionPreference = 'Stop'
     
     if ($Name -or $Id){
         if($Id){

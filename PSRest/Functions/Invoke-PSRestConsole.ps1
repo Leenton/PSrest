@@ -6,7 +6,9 @@ function Invoke-PSRestConsole(){
         [string]$Command
     )
 
-    $FullCommand = "& python3 $($Global:InstallPath + '/' + "ConsoleApp.py") " + $Command
+    $ErrorActionPreference = 'Stop'
+
+    $FullCommand = "& $($Global:Python) $($Global:InstallPath + '/' + "ConsoleApp.py") " + $Command
     $result = Invoke-Expression -Command ($FullCommand)
 
     return $result

@@ -7,45 +7,46 @@ function Start-PSRestProcess {
         [string]$Socket
     )
 
-    process{
-        Import-Module "$Global:DLLs/PSRestModule.dll"
-        
-        trap{
-            if(!$command){
-                #Process failed but no command was received, so it doesn't matter just exit
-                exit 
-            }
+    $ErrorActionPreference = 'Stop'
 
-            #If we have a response try again, and if we fail again just exit
-            try {
-                Send-PSRestResponse -Ticket $command.Ticket -Socket $Socket -InputObject $Response
-            }
-            catch {
-                exit
-            }
-        }
+    Import-Module "$Global:DLLs/PSRestModule.dll"
     
-        while($true){
-            #Get the command to execute
-            $Command = Receive-PSRestCommand -Socket $Socket -ProcessorId $ProcessorId
+    trap{
+        if(!$command){
+            #Process failed but no command was received, so it doesn't matter just exit
+            exit 
+        }
 
-            #Try and execute the command and send the result back
-            try{
-                $Data = Invoke-Expression -Command $Command 
-            }
-            catch {
-                $Exception = $_.Exception.Message
-            }
-
-            #Convert the data to json
-            $Response = @{
-                data = $Data;
-                error = $Exception
-            } | ConvertTo-Json -Depth $command.Depth
-
-            #Send the response over the wire
+        #If we have a response try again, and if we fail again just exit
+        try {
             Send-PSRestResponse -Ticket $command.Ticket -Socket $Socket -InputObject $Response
-            $Command = $null
+        }
+        catch {
+            exit
         }
     }
+
+    while($true){
+        #Get the command to execute
+        $Command = Receive-PSRestCommand -Socket $Socket -ProcessorId $ProcessorId
+
+        #Try and execute the command and send the result back
+        try{
+            $Data = Invoke-Expression -Command $Command 
+        }
+        catch {
+            $Exception = $_.Exception.Message
+        }
+
+        #Convert the data to json
+        $Response = @{
+            data = $Data;
+            error = $Exception
+        } | ConvertTo-Json -Depth $command.Depth
+
+        #Send the response over the wire
+        Send-PSRestResponse -Ticket $command.Ticket -Socket $Socket -InputObject $Response
+        $Command = $null
+    }
+
 }

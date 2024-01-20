@@ -5,6 +5,8 @@ function Update-PSRest(){
         [string]$InstallPath = $Global:InstallPath
     )
 
+    $ErrorActionPreference = 'Stop'
+
     Write-Warning "Ensure PSRest is not running before updating."
 
     $Activity = 'Updating PSRest'

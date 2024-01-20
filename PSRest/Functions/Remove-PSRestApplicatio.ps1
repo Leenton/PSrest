@@ -11,6 +11,8 @@ function Remove-PSRestApplication()
 
     )
 
+    $ErrorActionPreference = 'Stop'
+
     try{
         if($Name){
             $application = Get-PSRestApplication -Name $Name

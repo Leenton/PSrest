@@ -23,6 +23,8 @@ function New-PSRestApplication()
         [string[]]$DisabledModuleCmdlets = @()
     )
 
+    $ErrorActionPreference = 'Stop'
+    
     #Check that the description is no more than 10^9 bytes long when encoded as UTF-8
     if ($Description){
         $DescriptionBytes = [System.Text.Encoding]::UTF8.GetBytes($Description)
