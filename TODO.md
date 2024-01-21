@@ -1,6 +1,10 @@
+8. Fix virtual environments for windows/ AKA fix distribution of application on the local machine, how are things going to be stored? 
+7. Virtual environment in the user's appdata folder? 
+
+
 3. Test scaling down Processor works
 6. Sort out disptribution of application on the internet
-7. Virtual environment in the user's appdata folder? 
+
 
 
 

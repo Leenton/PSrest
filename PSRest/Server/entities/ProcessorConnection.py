@@ -1,12 +1,19 @@
 import asyncio
-from socket import socket, AF_INET, AF_UNIX,  SOCK_STREAM
-from configuration import INGESTER_ADDRESS, INGESTER_UNIX_ADDRESS, PLATFORM
+
+from configuration import INGESTER_ADDRESS, INGESTER_UNIX_ADDRESS, PLATFORM, PROCESSOR_HOST, PSREST_PORT
+
+if (PLATFORM == 'Windows'):
+    from socket import socket, AF_INET,  SOCK_STREAM
+else:
+    from socket import socket, AF_INET, AF_UNIX,  SOCK_STREAM
 
 class ProcessorConnection():
     async def connect(self) -> tuple[asyncio.StreamReader,asyncio.StreamWriter]:
         if(PLATFORM == 'Windows'):
-            return await asyncio.open_connection('localhost', 5000)
+            # windows python doesn't support unix sockets natively, so we have to use a tcp socket.
+            return await asyncio.open_connection(PROCESSOR_HOST, PSREST_PORT)
         else:
+            # unix python supports unix sockets natively, so we can use them. 
             return await asyncio.open_unix_connection(INGESTER_UNIX_ADDRESS)
         
     def connect_sync(self) -> socket:

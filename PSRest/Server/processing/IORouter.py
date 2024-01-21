@@ -4,7 +4,9 @@ from queue import Queue
 from configuration import (
     COMPETED,
     INGESTER_UNIX_ADDRESS,
-    PLATFORM
+    PLATFORM,
+    PROCESSOR_HOST,
+    PSREST_PORT
 )
 from entities import (
     Ticket,
@@ -127,7 +129,10 @@ class IORouter():
                     break
                 
                 if(ticket.expiry < self.clock.now):
+                    writer.write('2'.encode('utf-8'))
+                    await writer.drain()
                     writer.close()
+                    break
                 
                 else:
                     # TODO: Exponential backoff here to prevent busy waiting
@@ -160,7 +165,7 @@ class IORouter():
 
     async def route(self):
         if(PLATFORM == 'Windows'):
-            server = await asyncio.start_server(self.io_hanlder, 'localhost', 5001)
+            server = await asyncio.start_server(self.io_hanlder, PROCESSOR_HOST, PSREST_PORT)
             async with server:
                 await server.serve_forever()
         else:

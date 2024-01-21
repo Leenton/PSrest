@@ -81,7 +81,7 @@
         'Remove-PSRestApplication',
 
         'Get-PSRestCommandLibrary',
-        'Start-PSRestProcessor',
+        'Start-PSRestProcess',
         'Import-PSRest',
         'Get-PSRestActions'
     )

@@ -14,11 +14,11 @@ class CmdletResponse():
         # Read the length of the response
         data = await self.reader.read(16)
         return int(data.decode('utf-8'))
-    
+
     async def get_content(self):
         while True:
             data = await self.reader.read(4096)
-            
+
             if(not data):
                 break
             yield data
@@ -37,7 +37,10 @@ class CmdletResponse():
         except TimeoutError:
             raise StreamTimeout('Timed out waiting for stream status response.')
 
+        if int(status.decode('utf-8')) == 2:
+            raise StreamTimeout('Timed out waiting for stream status response.')
+
         if int(status.decode('utf-8')) == 1:
             raise ProcessorException('Too many busy.')
-        
+
         return self

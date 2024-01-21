@@ -74,7 +74,15 @@ function New-PSRestApplication()
     Write-Verbose "The following cmdlets will be enabled for the application: $($Cmdlets -join ',')"
 
     # Verify that the application does not already exist.
-    $existingApplication = Get-PSRestApplication -Name $Name -ErrorAction SilentlyContinue
+    try{
+        $existingApplication = Get-PSRestApplication -Name $Name -ErrorAction SilentlyContinue
+    }
+    catch {
+        if ($_.Exception.Message -notmatch 'does not exist'){
+            throw $_
+        }
+    }
+
     if ($existingApplication){
         throw "The application '$Name' already exists."
     }
