@@ -10,7 +10,7 @@ from jsonschema.exceptions import ValidationError
 from json import load
 from .Schema import CONFIG_SCHEMA
 from os import getenv, path, listdir
-from entities import VersionNumber
+from .VersionNumber import VersionNumber
 
 # PSRestVersion
 VERSION = '1.0.0'
@@ -75,7 +75,6 @@ HELP = CONFIG['Help']
 PSREST_CMDLETS = [
     'Get-PSRestConfiguration',
     'Set-PSRestConfiguration',
-    'Update-PSRest',
     'Start-PSRest',
     'New-PSRestApplication',
     'Set-PSRestApplication',

@@ -7,4 +7,3 @@ from .Ticket import Ticket
 from .Cmdlet import *
 from .CmdletInfo import CmdletInfo
 from .CmdletResponse import CmdletResponse
-from .VersionNumber import VersionNumber

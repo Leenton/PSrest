@@ -1,3 +1,7 @@
 function Exit-PSRestVirtualEnvironment{
-    deactivate
+    try{
+        deactivate
+    }catch{
+        throw "Failed to deactivate the virtual environment."
+    }
 }

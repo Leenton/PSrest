@@ -8,7 +8,11 @@ function Invoke-PSRestConsole(){
 
     $ErrorActionPreference = 'Stop'
 
-    Enter-PSRestVirtualEnvironment
+    try{
+        Enter-PSRestVirtualEnvironment
+    }catch{
+        throw "Unable to enter virtual environment to run the command requested. Contact PSRest support for assistance."
+    }
 
     $FullCommand = "& $($Global:Python) $($Global:InstallPath + '/' + "ConsoleApp.py") " + $Command
     $result = Invoke-Expression -Command ($FullCommand)

@@ -22,7 +22,9 @@ def get_actions(enabled: str, disabled: str, modules: str) -> List[str]:
     )
 
     cmdlets = loads(b64decode(result.stdout).decode('utf-8'))
-
+    if isinstance(cmdlets, str):
+        cmdlets = [cmdlets]
+    
     return cmdlets
 
 class Console():
