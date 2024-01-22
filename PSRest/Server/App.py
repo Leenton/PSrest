@@ -13,10 +13,9 @@ from configuration import (
     KEY_FILE,
     KEYFILE_PASSWORD,
     CIPHERS,
-    CREDENTIAL_DATABASE,
     PORT,
     LOG_LEVEL,
-    setup_credential_db
+    setup_credential_database
 )
 from endpoints import(
     Help,
@@ -49,9 +48,7 @@ Optional arguments:
         exit(0)
 
 if __name__ == '__main__':
-    #Check if the databases exists if not create them
-    if(not os.path.exists(CREDENTIAL_DATABASE)):
-        setup_credential_db()
+    setup_credential_database()
 
     #Create queues for communication between threads and processes
     messages = ProcessQueue()

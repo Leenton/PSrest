@@ -1,0 +1,3 @@
+function Exit-PSRestVirtualEnvironment{
+    deactivate
+}

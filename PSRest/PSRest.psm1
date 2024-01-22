@@ -1,5 +1,6 @@
 $Global:InstallPath = "$PSScriptRoot/Server"
 $Global:DLLs = "$PSScriptRoot/DLLs"
+$Global:Dependencies = "$PSScriptRoot/Dependencies"
 $Global:AppData = ''
 
 if ($PSVersionTable.Platform -eq 'Win32NT') {

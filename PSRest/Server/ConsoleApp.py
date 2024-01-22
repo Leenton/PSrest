@@ -1,11 +1,22 @@
 
 import sys, getopt
 import json
-from configuration import Console
+from configuration import Console, setup_credential_database
 
 def main(argv):
-
-    opts, args = getopt.getopt(argv,"hi:o:",["method=", 'name=', 'description=', 'authentication=', 'enabledActions=', 'disabledActions=', 'enabledModules=' ,'id='])
+    opts, args = getopt.getopt(
+        argv,"hi:o:",
+        [
+            "method=",
+            'name=',
+            'description=',
+            'authentication=',
+            'enabledActions=',
+            'disabledActions=',
+            'enabledModules=',
+            'id='
+        ]
+    )
 
     request = {'mandatory' : []}
     for opt, arg in opts:
@@ -66,5 +77,6 @@ def main(argv):
     print(json.dumps({'data': result}))
 
 if __name__ == "__main__":
-   main(sys.argv[1:])
+    setup_credential_database()
+    main(sys.argv[1:])
 

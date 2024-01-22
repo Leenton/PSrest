@@ -9,10 +9,11 @@ from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 from json import load
 from .Schema import CONFIG_SCHEMA
-from os import getenv
+from os import getenv, path, listdir
+from entities import VersionNumber
 
 # PSRestVersion
-VERSION = 'Alpha 0.9.1'
+VERSION = '1.0.0'
 
 # Constants for the platform
 PLATFORM = platform.system()
@@ -94,6 +95,7 @@ PSREST_PORT = 27500
 INGESTER_ADDRESS = f"{PROCESSOR_HOST}:{PSREST_PORT}"
 INGESTER_UNIX_ADDRESS = TMP_DIR + '/' + '95b51250d7ef4fcdaea1cf51886b8ba5'
 RESOURCE_DIR = str(Path(__file__).parent.parent) + '/resources'
+PATCH_DIR = str(Path(__file__).parent.parent) + '/configuration/patches'
 
 # Logging preferences
 LOG_LEVEL = 'info'
@@ -110,12 +112,40 @@ with open(APP_DATA + '/zvakavanzika', 'rb') as f:
 
 CREDENTIAL_DATABASE = APP_DATA + '/data.db' # OAuth2 credential database
 
-def setup_credential_db():
-    db = sqlite3.connect(CREDENTIAL_DATABASE)
-    cursor = db.cursor()
-    cursor.executescript(
-        """--sql
-        CREATE TABLE client (cid INTEGER PRIMARY KEY AUTOINCREMENT, client_id TEXT, client_secret TEXT, name TEXT, description TEXT, authentication TEXT, enabled_cmdlets TEXT, disabled_cmdlets TEXT, enabled_modules TEXT);
-        CREATE TABLE refresh_client_map (rid INTEGER PRIMARY KEY AUTOINCREMENT, refresh_token TEXT, expiry REAL, cid INTEGER, FOREIGN KEY(cid) REFERENCES client(cid) ON DELETE CASCADE);
-        """
-    )
+def setup_credential_database():
+    # Check if the databases exists if not create them
+    if(not path.exists(CREDENTIAL_DATABASE)):
+        db = sqlite3.connect(CREDENTIAL_DATABASE)
+        cursor = db.cursor()
+        cursor.executescript(
+            """--sql
+            CREATE TABLE client (cid INTEGER PRIMARY KEY AUTOINCREMENT, client_id TEXT, client_secret TEXT, name TEXT, description TEXT, authentication TEXT, enabled_cmdlets TEXT, disabled_cmdlets TEXT, enabled_modules TEXT);
+            CREATE TABLE refresh_client_map (rid INTEGER PRIMARY KEY AUTOINCREMENT, refresh_token TEXT, expiry REAL, cid INTEGER, FOREIGN KEY(cid) REFERENCES client(cid) ON DELETE CASCADE);
+            CREATE TABLE version (version TEXT);
+            """
+        )
+
+        cursor.execute("INSERT INTO version (version) VALUES (?)", (VERSION,))
+        db.commit()
+
+        DB_VERSION = VERSION
+    else:
+        db = sqlite3.connect(CREDENTIAL_DATABASE)
+        cursor = db.cursor()
+        cursor.execute("SELECT version FROM version")
+        DB_VERSION = cursor.fetchone()[0]
+        db.close()
+
+    if(VersionNumber(DB_VERSION) < VersionNumber(VERSION)):
+        # Get all the patches in the patches folder greater than the current version
+        patches = listdir(PATCH_DIR)
+        patches = [patch for patch in patches if VersionNumber(patch.split('.sql')[0]) > VersionNumber(DB_VERSION)]
+        patches.sort()
+
+        for patch in patches:
+            db = sqlite3.connect(CREDENTIAL_DATABASE)
+            cursor = db.cursor()
+            cursor.executescript(open(PATCH_DIR + '/' + patch, 'r').read())
+            cursor.execute("UPDATE version SET version = ?", (patch.split('.sql')[0],))
+            db.commit()
+            db.close()

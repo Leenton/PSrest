@@ -8,8 +8,12 @@ function Invoke-PSRestConsole(){
 
     $ErrorActionPreference = 'Stop'
 
+    Enter-PSRestVirtualEnvironment
+
     $FullCommand = "& $($Global:Python) $($Global:InstallPath + '/' + "ConsoleApp.py") " + $Command
     $result = Invoke-Expression -Command ($FullCommand)
+
+    Exit-PSRestVirtualEnvironment
 
     return $result
 }
